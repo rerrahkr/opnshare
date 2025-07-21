@@ -26,9 +26,9 @@ export default function HomePage() {
       <section className="container mx-auto px-4 py-16 text-center">
         <div className="max-w-4xl mx-auto space-y-8">
           <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-            音色共有サービス
+            Instrument Sharing Service
           </h1>
-          <p className="text-lg text-muted-foreground">FM音源の音色を共有し、新しいサウンドを発見しよう</p>
+          <p className="text-lg text-muted-foreground">Share FM synthesizer instruments and discover new sounds</p>
 
           {/* Search Bar */}
           <div className="max-w-2xl mx-auto">
@@ -36,24 +36,24 @@ export default function HomePage() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
-                  placeholder="音色を検索..."
+                  placeholder="Search instruments..."
                   className="pl-10 h-12 text-lg"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
               <Button type="submit" size="lg" className="h-12 px-6">
-                検索
+                Search
               </Button>
               <Button
                 type="button"
                 variant="outline"
                 size="lg"
-                className="h-12 px-6"
+                className="h-12 px-6 bg-transparent"
                 onClick={() => router.push("/timbre/random-id-789")}
               >
                 <Shuffle className="h-4 w-4 mr-2" />
-                気まぐれ
+                Random
               </Button>
             </form>
           </div>
@@ -78,9 +78,9 @@ export default function HomePage() {
         {/* New Arrivals */}
         <section>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold">新着音色</h2>
+            <h2 className="text-2xl font-bold">New Instruments</h2>
             <Button variant="ghost" onClick={() => router.push("/search")}>
-              すべて見る
+              View All
             </Button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -96,7 +96,7 @@ export default function HomePage() {
           <section>
             <div className="flex items-center gap-2 mb-6">
               <Download className="h-5 w-5" />
-              <h2 className="text-2xl font-bold">ダウンロードランキング</h2>
+              <h2 className="text-2xl font-bold">Download Ranking</h2>
             </div>
             <div className="space-y-3">
               {[1, 2, 3, 4, 5].map((rank) => (
@@ -109,7 +109,7 @@ export default function HomePage() {
           <section>
             <div className="flex items-center gap-2 mb-6">
               <Heart className="h-5 w-5" />
-              <h2 className="text-2xl font-bold">いいねランキング</h2>
+              <h2 className="text-2xl font-bold">Like Ranking</h2>
             </div>
             <div className="space-y-3">
               {[1, 2, 3, 4, 5].map((rank) => (
@@ -123,10 +123,10 @@ export default function HomePage() {
         <section>
           <div className="flex items-center gap-2 mb-6">
             <Hash className="h-5 w-5" />
-            <h2 className="text-2xl font-bold">人気タグ</h2>
+            <h2 className="text-2xl font-bold">Popular Tags</h2>
           </div>
           <div className="flex flex-wrap gap-3">
-            {["ベース", "リード", "パッド", "プラック", "ブラス", "ストリングス", "FX", "ドラム"].map((tag) => (
+            {["Bass", "Lead", "Pad", "Pluck", "Brass", "Strings", "FX", "Drum"].map((tag) => (
               <Badge
                 key={tag}
                 variant="secondary"
@@ -162,10 +162,10 @@ function TimbreCard() {
         <div className="space-y-3">
           <div className="flex flex-wrap gap-1">
             <Badge variant="outline" className="text-xs">
-              リード
+              Lead
             </Badge>
             <Badge variant="outline" className="text-xs">
-              エピック
+              Epic
             </Badge>
           </div>
           <div className="flex items-center justify-between text-sm text-muted-foreground">

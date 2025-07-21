@@ -17,12 +17,12 @@ export default function SearchPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  // URLから初期値を取得
+  // Get initial values from URL
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "")
   const [sortBy, setSortBy] = useState(searchParams.get("sort") || "newest")
 
-  // フィルタ条件をURLから初期化
+  // Initialize filter conditions from URL
   const [selectedChips, setSelectedChips] = useState<string[]>(
     searchParams.get("chips") ? searchParams.get("chips")!.split(",") : [],
   )
@@ -46,7 +46,7 @@ export default function SearchPage() {
     return [0, 500]
   })
 
-  // URLを更新する関数
+  // Function to update URL
   const updateURL = (updates: Record<string, string | string[] | number[] | null>) => {
     const params = new URLSearchParams(searchParams.toString())
 
@@ -107,11 +107,11 @@ export default function SearchPage() {
     updateURL({ likes: value })
   }
 
-  // 検索結果の件数を計算（フィルタ条件に基づく）
+  // Calculate search result count (based on filter conditions)
   const getResultCount = () => {
-    let count = 245 // ベース件数
+    let count = 245 // Base count
 
-    // フィルタ条件に応じて件数を調整
+    // Adjust count based on filter conditions
     if (filterTags.length > 0) count = Math.floor(count * 0.7)
     if (selectedChips.length > 0) count = Math.floor(count * 0.8)
     if (downloadRange[0] > 0 || downloadRange[1] < 1000) count = Math.floor(count * 0.6)
@@ -128,13 +128,13 @@ export default function SearchPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
-              placeholder="音色を検索..."
+              placeholder="Search instruments..."
               className="pl-10"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <Button onClick={handleSearch}>検索</Button>
+          <Button onClick={handleSearch}>Search</Button>
         </div>
 
         <div className="flex items-center justify-between flex-wrap gap-4">
@@ -144,12 +144,12 @@ export default function SearchPage() {
               <SheetTrigger asChild>
                 <Button variant="outline" className="md:hidden bg-transparent">
                   <Filter className="h-4 w-4 mr-2" />
-                  フィルタ
+                  Filter
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="w-80">
                 <SheetHeader>
-                  <SheetTitle>フィルタ</SheetTitle>
+                  <SheetTitle>Filter</SheetTitle>
                 </SheetHeader>
                 <FilterPanel
                   selectedChips={selectedChips}
@@ -171,10 +171,10 @@ export default function SearchPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="newest">新着順</SelectItem>
-                <SelectItem value="popular">人気順</SelectItem>
-                <SelectItem value="downloads">DL数順</SelectItem>
-                <SelectItem value="likes">いいね順</SelectItem>
+                <SelectItem value="newest">Newest</SelectItem>
+                <SelectItem value="popular">Popular</SelectItem>
+                <SelectItem value="downloads">Downloads</SelectItem>
+                <SelectItem value="likes">Likes</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -213,7 +213,7 @@ export default function SearchPage() {
 
         {/* Results */}
         <div className="flex-1">
-          <div className="mb-4 text-sm text-muted-foreground">検索結果: {getResultCount()}件</div>
+          <div className="mb-4 text-sm text-muted-foreground">Search results: {getResultCount()} items</div>
 
           {viewMode === "grid" ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -258,19 +258,19 @@ function FilterPanel({
   const chips = ["OPL3", "OPN2", "OPM", "OPL2", "OPNA"]
   const [newFilterTag, setNewFilterTag] = useState("")
 
-  // 数値入力用の状態
+  // State for numeric inputs
   const [downloadMin, setDownloadMin] = useState(downloadRange[0].toString())
   const [downloadMax, setDownloadMax] = useState(downloadRange[1].toString())
   const [likeMin, setLikeMin] = useState(likeRange[0].toString())
   const [likeMax, setLikeMax] = useState(likeRange[1].toString())
 
-  // downloadRangeが変更されたときに入力フィールドを更新
+  // Update input fields when downloadRange changes
   useEffect(() => {
     setDownloadMin(downloadRange[0].toString())
     setDownloadMax(downloadRange[1].toString())
   }, [downloadRange])
 
-  // likeRangeが変更されたときに入力フィールドを更新
+  // Update input fields when likeRange changes
   useEffect(() => {
     setLikeMin(likeRange[0].toString())
     setLikeMax(likeRange[1].toString())
@@ -283,64 +283,64 @@ function FilterPanel({
     }
   }
 
-  // ダウンロード数の範囲を補正して更新
+  // Correct and update download range
   const handleDownloadRangeUpdate = () => {
     let min = Number.parseInt(downloadMin) || 0
     let max = Number.parseInt(downloadMax) || 1000
 
-    // 範囲補正
+    // Range correction
     min = Math.max(0, Math.min(min, 1000))
     max = Math.max(0, Math.min(max, 1000))
 
-    // 最小値が最大値より大きい場合は入れ替え
+    // Swap if min > max
     if (min > max) {
       ;[min, max] = [max, min]
     }
 
-    // 入力フィールドを補正された値で更新
+    // Update input fields with corrected values
     setDownloadMin(min.toString())
     setDownloadMax(max.toString())
 
-    // 親コンポーネントに通知
+    // Notify parent component
     onDownloadRangeChange([min, max])
   }
 
-  // いいね数の範囲を補正して更新
+  // Correct and update like range
   const handleLikeRangeUpdate = () => {
     let min = Number.parseInt(likeMin) || 0
     let max = Number.parseInt(likeMax) || 500
 
-    // 範囲補正
+    // Range correction
     min = Math.max(0, Math.min(min, 500))
     max = Math.max(0, Math.min(max, 500))
 
-    // 最小値が最大値より大きい場合は入れ替え
+    // Swap if min > max
     if (min > max) {
       ;[min, max] = [max, min]
     }
 
-    // 入力フィールドを補正された値で更新
+    // Update input fields with corrected values
     setLikeMin(min.toString())
     setLikeMax(max.toString())
 
-    // 親コンポーネントに通知
+    // Notify parent component
     onLikeRangeChange([min, max])
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="font-medium mb-3">タグで絞り込み</h3>
+        <h3 className="font-medium mb-3">Filter by Tags</h3>
         <div className="space-y-3">
           <div className="flex gap-2">
             <Input
-              placeholder="タグを入力"
+              placeholder="Enter tag"
               value={newFilterTag}
               onChange={(e) => setNewFilterTag(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addFilterTag())}
             />
             <Button size="sm" onClick={addFilterTag} disabled={!newFilterTag}>
-              追加
+              Add
             </Button>
           </div>
           {filterTags.length > 0 && (
@@ -353,12 +353,12 @@ function FilterPanel({
               ))}
             </div>
           )}
-          {filterTags.length > 0 && <p className="text-xs text-muted-foreground">これらのタグを含む音色を検索します</p>}
+          {filterTags.length > 0 && <p className="text-xs text-muted-foreground">Search instruments with these tags</p>}
         </div>
       </div>
 
       <div>
-        <h3 className="font-medium mb-3">チップ</h3>
+        <h3 className="font-medium mb-3">Chip</h3>
         <div className="space-y-2">
           {chips.map((chip) => (
             <div key={chip} className="flex items-center space-x-2">
@@ -376,11 +376,11 @@ function FilterPanel({
       </div>
 
       <div>
-        <h3 className="font-medium mb-3">ダウンロード数</h3>
+        <h3 className="font-medium mb-3">Downloads</h3>
         <div className="space-y-2">
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-xs text-muted-foreground">最小</label>
+              <label className="text-xs text-muted-foreground">Min</label>
               <Input
                 type="number"
                 min="0"
@@ -393,7 +393,7 @@ function FilterPanel({
               />
             </div>
             <div>
-              <label className="text-xs text-muted-foreground">最大</label>
+              <label className="text-xs text-muted-foreground">Max</label>
               <Input
                 type="number"
                 min="0"
@@ -406,16 +406,16 @@ function FilterPanel({
               />
             </div>
           </div>
-          <p className="text-xs text-muted-foreground">範囲: 0-1000</p>
+          <p className="text-xs text-muted-foreground">Range: 0-1000</p>
         </div>
       </div>
 
       <div>
-        <h3 className="font-medium mb-3">いいね数</h3>
+        <h3 className="font-medium mb-3">Likes</h3>
         <div className="space-y-2">
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-xs text-muted-foreground">最小</label>
+              <label className="text-xs text-muted-foreground">Min</label>
               <Input
                 type="number"
                 min="0"
@@ -428,7 +428,7 @@ function FilterPanel({
               />
             </div>
             <div>
-              <label className="text-xs text-muted-foreground">最大</label>
+              <label className="text-xs text-muted-foreground">Max</label>
               <Input
                 type="number"
                 min="0"
@@ -441,7 +441,7 @@ function FilterPanel({
               />
             </div>
           </div>
-          <p className="text-xs text-muted-foreground">範囲: 0-500</p>
+          <p className="text-xs text-muted-foreground">Range: 0-500</p>
         </div>
       </div>
     </div>
@@ -464,10 +464,10 @@ function TimbreCard() {
           </div>
           <div className="flex flex-wrap gap-1">
             <Badge variant="outline" className="text-xs">
-              リード
+              Lead
             </Badge>
             <Badge variant="outline" className="text-xs">
-              エピック
+              Epic
             </Badge>
             <Badge variant="outline" className="text-xs">
               OPL3
@@ -501,10 +501,10 @@ function TimbreListItem() {
             <p className="text-sm text-muted-foreground mb-2">by SynthMaster</p>
             <div className="flex flex-wrap gap-1 mb-2">
               <Badge variant="outline" className="text-xs">
-                リード
+                Lead
               </Badge>
               <Badge variant="outline" className="text-xs">
-                エピック
+                Epic
               </Badge>
               <Badge variant="outline" className="text-xs">
                 OPL3

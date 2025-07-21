@@ -46,9 +46,9 @@ export function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <div className="h-8 w-8 rounded bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold">音</span>
+              <span className="text-primary-foreground font-bold">I</span>
             </div>
-            <span className="font-bold text-xl hidden sm:inline">音色共有</span>
+            <span className="font-bold text-xl hidden sm:inline">InstrumentShare</span>
           </Link>
 
           {/* Search Bar (desktop, not on home page) */}
@@ -57,7 +57,7 @@ export function Header() {
               <div className="relative w-full">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
-                  placeholder="音色を検索..."
+                  placeholder="Search instruments..."
                   className="pl-10"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -73,7 +73,7 @@ export function Header() {
                 <Button variant="ghost" asChild>
                   <Link href="/upload">
                     <Upload className="h-4 w-4 mr-2" />
-                    投稿
+                    Upload
                   </Link>
                 </Button>
                 <DropdownMenu>
@@ -89,19 +89,19 @@ export function Header() {
                     <DropdownMenuItem asChild>
                       <Link href="/user/johndoe">
                         <User className="mr-2 h-4 w-4" />
-                        マイページ
+                        My Page
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link href="/settings">
                         <Settings className="mr-2 h-4 w-4" />
-                        アカウント設定
+                        Account Settings
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>
                       <LogOut className="mr-2 h-4 w-4" />
-                      ログアウト
+                      Logout
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -109,10 +109,10 @@ export function Header() {
             ) : (
               <>
                 <Button variant="ghost" asChild>
-                  <Link href="/login">ログイン</Link>
+                  <Link href="/login">Login</Link>
                 </Button>
                 <Button asChild>
-                  <Link href="/register">ユーザー登録</Link>
+                  <Link href="/register">Register</Link>
                 </Button>
               </>
             )}
@@ -131,7 +131,7 @@ export function Header() {
                   <form onSubmit={handleSearch} className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                     <Input
-                      placeholder="音色を検索..."
+                      placeholder="Search instruments..."
                       className="pl-10"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
@@ -144,33 +144,33 @@ export function Header() {
                     <Button variant="ghost" className="justify-start" asChild>
                       <Link href="/upload">
                         <Upload className="h-4 w-4 mr-2" />
-                        投稿
+                        Upload
                       </Link>
                     </Button>
                     <Button variant="ghost" className="justify-start" asChild>
                       <Link href="/user/johndoe">
                         <User className="h-4 w-4 mr-2" />
-                        マイページ
+                        My Page
                       </Link>
                     </Button>
                     <Button variant="ghost" className="justify-start" asChild>
                       <Link href="/settings">
                         <Settings className="h-4 w-4 mr-2" />
-                        アカウント設定
+                        Account Settings
                       </Link>
                     </Button>
                     <Button variant="ghost" className="justify-start" onClick={handleLogout}>
                       <LogOut className="h-4 w-4 mr-2" />
-                      ログアウト
+                      Logout
                     </Button>
                   </>
                 ) : (
                   <>
                     <Button variant="ghost" className="justify-start" asChild>
-                      <Link href="/login">ログイン</Link>
+                      <Link href="/login">Login</Link>
                     </Button>
                     <Button className="justify-start" asChild>
-                      <Link href="/register">ユーザー登録</Link>
+                      <Link href="/register">Register</Link>
                     </Button>
                   </>
                 )}
