@@ -60,7 +60,7 @@ export default function UploadPage() {
         setFileError("")
       } else {
         setFile(null)
-        setFileError("対応していないファイル形式です。mp3ファイルを選択してください。")
+        setFileError("Unsupported file format. Please select an mp3 file.")
       }
     }
   }
@@ -77,7 +77,7 @@ export default function UploadPage() {
       setHasValidTextData(true)
       setTextDialogOpen(false)
     } else {
-      setTextError("無効な音色データです。正しい形式で入力してください。")
+      setTextError("Invalid instrument data. Please enter in correct format.")
     }
   }
 
@@ -97,14 +97,14 @@ export default function UploadPage() {
       if (uploadMethod === "file" && file) {
         const fileExtension = file.name.split(".").pop()?.toLowerCase()
         if (fileExtension === "mp3") {
-          throw new Error("mp3ファイルの処理中にエラーが発生しました。別の形式のファイルをお試しください。")
+          throw new Error("An error occurred while processing the mp3 file. Please try a different file format.")
         }
       }
 
       // 投稿成功 - 完了ページに遷移
       router.push("/upload/success")
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : "投稿中にエラーが発生しました。")
+      setSubmitError(error instanceof Error ? error.message : "An error occurred during upload.")
     } finally {
       setIsSubmitting(false)
     }
@@ -114,20 +114,20 @@ export default function UploadPage() {
     <div className="container mx-auto px-4 py-8 max-w-2xl">
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold mb-2">音色を投稿</h1>
-          <p className="text-muted-foreground">あなたの音色を共有して、他のユーザーに発見してもらいましょう</p>
+          <h1 className="text-3xl font-bold mb-2">Upload Instrument</h1>
+          <p className="text-muted-foreground">Share your instruments and let other users discover them</p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>基本情報</CardTitle>
+            <CardTitle>Basic Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Timbre Name */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">音色名 *</label>
+              <label className="text-sm font-medium">Instrument Name *</label>
               <Input
-                placeholder="例: Epic Lead Sound"
+                placeholder="e.g. Epic Lead Sound"
                 value={timbeName}
                 onChange={(e) => setTimbeName(e.target.value)}
                 disabled={isSubmitting}
@@ -136,17 +136,17 @@ export default function UploadPage() {
 
             {/* Tags */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">タグ (最大5個)</label>
+              <label className="text-sm font-medium">Tags (max 5)</label>
               <div className="flex gap-2 mb-2">
                 <Input
-                  placeholder="タグを入力"
+                  placeholder="Enter tag"
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addTag())}
                   disabled={isSubmitting}
                 />
                 <Button onClick={addTag} disabled={tags.length >= 5 || isSubmitting}>
-                  追加
+                  Add
                 </Button>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -161,9 +161,9 @@ export default function UploadPage() {
 
             {/* Description */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">説明 (最大500文字)</label>
+              <label className="text-sm font-medium">Description (max 500 characters)</label>
               <Textarea
-                placeholder="この音色の特徴や使用方法について説明してください..."
+                placeholder="Describe the characteristics and usage of this instrument..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 maxLength={500}
@@ -177,7 +177,7 @@ export default function UploadPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>ファイルアップロード</CardTitle>
+            <CardTitle>File Upload</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Upload Method Selection */}
@@ -189,7 +189,7 @@ export default function UploadPage() {
                 disabled={isSubmitting}
               >
                 <Binary className="h-6 w-6 mb-2" />
-                バイナリファイル
+                Binary File
               </Button>
               <Button
                 variant={uploadMethod === "text" ? "default" : "outline"}
@@ -198,7 +198,7 @@ export default function UploadPage() {
                 disabled={isSubmitting}
               >
                 <FileText className="h-6 w-6 mb-2" />
-                テキスト入力
+                Text Input
               </Button>
             </div>
 
@@ -208,8 +208,8 @@ export default function UploadPage() {
                 <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center relative">
                   <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                   <div className="space-y-2">
-                    <p className="text-sm font-medium">ファイルをドロップするか、クリックして選択</p>
-                    <p className="text-xs text-muted-foreground">対応形式: .mp3</p>
+                    <p className="text-sm font-medium">Drop files here or click to select</p>
+                    <p className="text-xs text-muted-foreground">Supported format: .mp3</p>
                   </div>
                   {!isSubmitting && (
                     <input
@@ -243,22 +243,22 @@ export default function UploadPage() {
               <div className="space-y-4">
                 <Dialog open={textDialogOpen} onOpenChange={setTextDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button variant="outline" className="w-full" disabled={isSubmitting}>
+                    <Button variant="outline" className="w-full bg-transparent" disabled={isSubmitting}>
                       <FileText className="h-4 w-4 mr-2" />
-                      テキストで入力
+                      Input as Text
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-2xl">
                     <DialogHeader>
-                      <DialogTitle>音色データ入力</DialogTitle>
+                      <DialogTitle>Instrument Data Input</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4">
                       {/* Driver Selection */}
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">音源ドライバ *</label>
+                        <label className="text-sm font-medium">Sound Driver *</label>
                         <Select value={selectedDriver} onValueChange={handleDriverChange}>
                           <SelectTrigger>
-                            <SelectValue placeholder="ドライバを選択" />
+                            <SelectValue placeholder="Select driver" />
                           </SelectTrigger>
                           <SelectContent>
                             {Object.keys(driverChipMap).map((driver) => (
@@ -272,10 +272,10 @@ export default function UploadPage() {
 
                       {/* Chip Selection */}
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">チップ種別 *</label>
+                        <label className="text-sm font-medium">Chip Type *</label>
                         <Select value={selectedChip} onValueChange={setSelectedChip} disabled={!selectedDriver}>
                           <SelectTrigger>
-                            <SelectValue placeholder="チップを選択" />
+                            <SelectValue placeholder="Select chip" />
                           </SelectTrigger>
                           <SelectContent>
                             {selectedDriver &&
@@ -289,7 +289,7 @@ export default function UploadPage() {
                       </div>
 
                       <Textarea
-                        placeholder="音色データをペーストしてください... (テスト用: 1234 と入力してください)"
+                        placeholder="Paste instrument data... (For testing: enter 1234)"
                         value={textInput}
                         onChange={(e) => setTextInput(e.target.value)}
                         rows={10}
@@ -305,13 +305,13 @@ export default function UploadPage() {
 
                       <div className="flex justify-end gap-2">
                         <Button variant="outline" onClick={handleTextDialogClose}>
-                          キャンセル
+                          Cancel
                         </Button>
                         <Button
                           onClick={handleTextImport}
                           disabled={!selectedDriver || !selectedChip || !textInput.trim()}
                         >
-                          インポート
+                          Import
                         </Button>
                       </div>
                     </div>
@@ -321,7 +321,7 @@ export default function UploadPage() {
                 {hasValidTextData && (
                   <div className="p-3 bg-muted rounded-lg">
                     <p className="text-sm text-muted-foreground">
-                      テキストデータが正常にインポートされました ({selectedDriver} - {selectedChip})
+                      Text data imported successfully ({selectedDriver} - {selectedChip})
                     </p>
                   </div>
                 )}
@@ -346,10 +346,10 @@ export default function UploadPage() {
             {isSubmitting ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                投稿中...
+                Uploading...
               </>
             ) : (
-              "投稿する"
+              "Upload"
             )}
           </Button>
         </div>

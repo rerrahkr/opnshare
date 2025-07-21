@@ -50,7 +50,7 @@ export default function HomePage() {
                 variant="outline"
                 size="lg"
                 className="h-12 px-6 bg-transparent"
-                onClick={() => router.push("/timbre/random-id-789")}
+                onClick={() => router.push("/instrument/random-id-789")}
               >
                 <Shuffle className="h-4 w-4 mr-2" />
                 Random
@@ -148,7 +148,7 @@ function TimbreCard() {
   return (
     <Card
       className="hover:shadow-lg transition-shadow cursor-pointer"
-      onClick={() => router.push("/timbre/sample-id-" + Math.floor(Math.random() * 1000))}
+      onClick={() => router.push("/instrument/sample-id-" + Math.floor(Math.random() * 1000))}
     >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
@@ -196,7 +196,7 @@ function RankingItem({ rank, type }: { rank: number; type: "download" | "like" }
   return (
     <Card
       className="p-4 hover:shadow-md transition-shadow cursor-pointer"
-      onClick={() => router.push("/timbre/ranking-id-" + rank)}
+      onClick={() => router.push("/instrument/ranking-id-" + rank)}
     >
       <div className="flex items-center gap-4">
         <div

@@ -21,17 +21,17 @@ export default function ResetPasswordConfirmPage() {
     <div className="min-h-screen flex items-center justify-center bg-muted/20 px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">新しいパスワードを設定</CardTitle>
-          <p className="text-muted-foreground">新しいパスワードを入力してください</p>
+          <CardTitle className="text-2xl">Set New Password</CardTitle>
+          <p className="text-muted-foreground">Enter your new password</p>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="password">新しいパスワード</Label>
+            <Label htmlFor="password">New Password</Label>
             <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">パスワード確認</Label>
+            <Label htmlFor="confirmPassword">Confirm Password</Label>
             <Input
               id="confirmPassword"
               type="password"
@@ -45,7 +45,7 @@ export default function ResetPasswordConfirmPage() {
             disabled={!password || !confirmPassword || password !== confirmPassword}
             onClick={handleSubmit}
           >
-            パスワードを再設定
+            Reset Password
           </Button>
         </CardContent>
       </Card>

@@ -454,7 +454,7 @@ function TimbreCard() {
   return (
     <Card
       className="hover:shadow-lg transition-shadow cursor-pointer"
-      onClick={() => router.push("/timbre/sample-id-123")}
+      onClick={() => router.push("/instrument/sample-id-123")}
     >
       <CardContent className="p-4">
         <div className="space-y-3">
@@ -492,7 +492,7 @@ function TimbreListItem() {
   return (
     <Card
       className="hover:shadow-md transition-shadow cursor-pointer"
-      onClick={() => router.push("/timbre/sample-id-456")}
+      onClick={() => router.push("/instrument/sample-id-456")}
     >
       <CardContent className="p-4">
         <div className="flex items-center justify-between">

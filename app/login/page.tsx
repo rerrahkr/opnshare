@@ -15,12 +15,12 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-muted/20 px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">ログイン</CardTitle>
-          <p className="text-muted-foreground">アカウントにログインしてください</p>
+          <CardTitle className="text-2xl">Login</CardTitle>
+          <p className="text-muted-foreground">Please login to your account</p>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">メールアドレス</Label>
+            <Label htmlFor="email">Email Address</Label>
             <Input
               id="email"
               type="email"
@@ -31,22 +31,22 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">パスワード</Label>
+            <Label htmlFor="password">Password</Label>
             <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
 
           <Button className="w-full" disabled={!email || !password}>
-            ログイン
+            Login
           </Button>
 
           <div className="text-center space-y-2">
             <Link href="/reset-password" className="text-sm text-primary hover:underline">
-              パスワードを忘れた方はこちら
+              Forgot your password?
             </Link>
             <div className="text-sm text-muted-foreground">
-              アカウントをお持ちでない方は{" "}
+              Don't have an account?{" "}
               <Link href="/register" className="text-primary hover:underline">
-                新規登録
+                Sign up
               </Link>
             </div>
           </div>
