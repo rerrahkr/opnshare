@@ -2,7 +2,7 @@
 import type React from "react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Search, Shuffle, Heart, Download, Hash, Github } from "lucide-react"
+import { FaSearch, FaShuffle, FaHeart, FaDownload, FaHashtag, FaGithub } from "react-icons/fa6"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -34,7 +34,7 @@ export default function HomePage() {
           <div className="max-w-2xl mx-auto">
             <form onSubmit={handleSearch} className="flex gap-2">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
                   placeholder="Search instruments..."
                   className="pl-10 h-12 text-lg"
@@ -52,7 +52,7 @@ export default function HomePage() {
                 className="h-12 px-6 bg-transparent"
                 onClick={() => router.push("/instrument/random-id-789")}
               >
-                <Shuffle className="h-4 w-4 mr-2" />
+                <FaShuffle className="h-4 w-4 mr-2" />
                 Random
               </Button>
             </form>
@@ -61,12 +61,12 @@ export default function HomePage() {
         <div className="mt-6">
           <Button variant="outline" size="sm" asChild>
             <a
-              href="https://github.com/your-org/timbre-sharing-service"
+              href="https://github.com/your-org/instrument-sharing-service"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2"
             >
-              <Github className="h-4 w-4" />
+              <FaGithub className="h-4 w-4" />
               GitHub
             </a>
           </Button>
@@ -95,7 +95,7 @@ export default function HomePage() {
           {/* Download Ranking */}
           <section>
             <div className="flex items-center gap-2 mb-6">
-              <Download className="h-5 w-5" />
+              <FaDownload className="h-5 w-5" />
               <h2 className="text-2xl font-bold">Download Ranking</h2>
             </div>
             <div className="space-y-3">
@@ -108,7 +108,7 @@ export default function HomePage() {
           {/* Like Ranking */}
           <section>
             <div className="flex items-center gap-2 mb-6">
-              <Heart className="h-5 w-5" />
+              <FaHeart className="h-5 w-5" />
               <h2 className="text-2xl font-bold">Like Ranking</h2>
             </div>
             <div className="space-y-3">
@@ -122,7 +122,7 @@ export default function HomePage() {
         {/* Popular Tags */}
         <section>
           <div className="flex items-center gap-2 mb-6">
-            <Hash className="h-5 w-5" />
+            <FaHashtag className="h-5 w-5" />
             <h2 className="text-2xl font-bold">Popular Tags</h2>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -171,11 +171,11 @@ function TimbreCard() {
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1">
-                <Download className="h-3 w-3" />
+                <FaDownload className="h-3 w-3" />
                 245
               </span>
               <span className="flex items-center gap-1">
-                <Heart className="h-3 w-3" />
+                <FaHeart className="h-3 w-3" />
                 89
               </span>
             </div>
@@ -189,7 +189,7 @@ function TimbreCard() {
 
 function RankingItem({ rank, type }: { rank: number; type: "download" | "like" }) {
   const router = useRouter()
-  const icon = type === "download" ? Download : Heart
+  const icon = type === "download" ? FaDownload : FaHeart
   const Icon = icon
   const count = type === "download" ? 1250 - rank * 100 : 500 - rank * 50
 

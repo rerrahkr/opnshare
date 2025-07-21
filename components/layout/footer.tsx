@@ -1,4 +1,4 @@
-import { Github } from "lucide-react"
+import { FaGithub } from "react-icons/fa6"
 import { Button } from "@/components/ui/button"
 
 export function Footer() {
@@ -25,7 +25,7 @@ export function Footer() {
               rel="noopener noreferrer"
               className="flex items-center gap-2"
             >
-              <Github className="h-4 w-4" />
+              <FaGithub className="h-4 w-4" />
               GitHub
             </a>
           </Button>

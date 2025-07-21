@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 
-import { Search, Filter, Grid, List, X } from "lucide-react"
+import { FaSearch, FaFilter, FaTh, FaList, FaXmark } from "react-icons/fa6"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
@@ -126,7 +126,7 @@ export default function SearchPage() {
       <div className="mb-8">
         <div className="flex gap-4 mb-4">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               placeholder="Search instruments..."
               className="pl-10"
@@ -143,7 +143,7 @@ export default function SearchPage() {
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="outline" className="md:hidden bg-transparent">
-                  <Filter className="h-4 w-4 mr-2" />
+                  <FaFilter className="h-4 w-4 mr-2" />
                   Filter
                 </Button>
               </SheetTrigger>
@@ -182,10 +182,10 @@ export default function SearchPage() {
           {/* View Mode Toggle */}
           <div className="flex items-center gap-2">
             <Button variant={viewMode === "grid" ? "default" : "outline"} size="sm" onClick={() => setViewMode("grid")}>
-              <Grid className="h-4 w-4" />
+              <FaTh className="h-4 w-4" />
             </Button>
             <Button variant={viewMode === "list" ? "default" : "outline"} size="sm" onClick={() => setViewMode("list")}>
-              <List className="h-4 w-4" />
+              <FaList className="h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -348,7 +348,7 @@ function FilterPanel({
               {filterTags.map((tag) => (
                 <Badge key={tag} variant="secondary" className="cursor-pointer">
                   {tag}
-                  <X className="h-3 w-3 ml-1" onClick={() => onTagRemove(tag)} />
+                  <FaXmark className="h-3 w-3 ml-1" onClick={() => onTagRemove(tag)} />
                 </Badge>
               ))}
             </div>
