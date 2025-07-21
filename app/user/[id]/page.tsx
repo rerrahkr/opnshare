@@ -28,8 +28,8 @@ export default function UserPage({ params }: { params: { id: string } }) {
   const [displayName, setDisplayName] = useState(isOwnProfile ? "JohnDoe" : "SynthMaster")
   const [bio, setBio] = useState(
     isOwnProfile
-      ? "音色制作が趣味です。特にFM音源を使った実験的なサウンドを作るのが好きです。"
-      : "FM音源とシンセサイザーが大好きです。80年代のサウンドを現代に蘇らせることを目標にしています。",
+      ? "I enjoy creating instruments as a hobby. I especially like making experimental sounds using FM synthesis."
+      : "I love FM synthesis and synthesizers. My goal is to bring 80s sounds back to the modern era.",
   )
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -163,7 +163,7 @@ export default function UserPage({ params }: { params: { id: string } }) {
                       <DropdownMenuItem
                         onClick={() =>
                           window.open(
-                            `https://twitter.com/intent/tweet?text=${encodeURIComponent(`${displayName}さんの音色をチェック！`)}&url=${encodeURIComponent(shareUrl)}`,
+                            `https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out ${displayName}'s instruments!`)}&url=${encodeURIComponent(shareUrl)}`,
                           )
                         }
                       >
@@ -230,10 +230,10 @@ function TimbreCard({ title, author }: { title: string; author: string }) {
         <div className="space-y-3">
           <div className="flex flex-wrap gap-1">
             <Badge variant="outline" className="text-xs">
-              リード
+              Lead
             </Badge>
             <Badge variant="outline" className="text-xs">
-              エピック
+              Epic
             </Badge>
           </div>
           <div className="flex items-center justify-between text-sm text-muted-foreground">
