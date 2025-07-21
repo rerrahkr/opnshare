@@ -1,4 +1,4 @@
-import { Github } from "lucide-react"
+import { FaGithub } from "react-icons/fa"
 import { Button } from "@/components/ui/button"
 
 export function Footer() {
@@ -11,28 +11,28 @@ export function Footer() {
               <div className="h-6 w-6 rounded bg-primary flex items-center justify-center">
                 <span className="text-primary-foreground font-bold text-sm">音</span>
               </div>
-              <span className="font-bold">音色共有サービス</span>
+              <span className="font-bold">Instrument Sharing Service</span>
             </div>
             <p className="text-sm text-muted-foreground text-center md:text-left">
-              FM音源の音色を共有するオープンソースプラットフォーム
+              Open source platform for sharing FM synthesizer instruments
             </p>
           </div>
 
           <Button variant="ghost" size="sm" asChild>
             <a
-              href="https://github.com/your-org/timbre-sharing-service"
+              href="https://github.com/your-org/instrument-sharing-service"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2"
             >
-              <Github className="h-4 w-4" />
+              <FaGithub className="h-4 w-4" />
               GitHub
             </a>
           </Button>
         </div>
 
         <div className="border-t mt-6 pt-6 text-center">
-          <div className="text-sm text-muted-foreground">© 2024 音色共有サービス</div>
+          <div className="text-sm text-muted-foreground">© 2024 Instrument Sharing Service</div>
         </div>
       </div>
     </footer>

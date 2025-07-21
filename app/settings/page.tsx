@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { AlertCircle, Mail, Lock, Trash2, Loader2 } from "lucide-react"
+import { useState, useRouter } from "react"
+import { LuAlertCircle, LuMail, LuLock, LuTrash2, LuLoader2 } from "react-icons/lu"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -36,6 +36,7 @@ export default function SettingsPage() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [pendingAction, setPendingAction] = useState<"email" | "password" | null>(null)
   const [deleteError, setDeleteError] = useState("")
+  const router = useRouter()
 
   const requiresReauth = () => Math.random() < 0.5 // 50%の確率で再認証が必要
 
@@ -52,7 +53,7 @@ export default function SettingsPage() {
 
       // メール変更処理
       setEmailDialogOpen(false)
-      setEmailChangeMessage(`${newEmail} に確認用メールを送信しました。メールをご確認ください。`)
+      setEmailChangeMessage(`A confirmation email has been sent to ${newEmail}. Please check your email.`)
       setNewEmail("")
     } catch (error) {
       console.error("Email change error:", error)
@@ -93,15 +94,16 @@ export default function SettingsPage() {
 
       // ランダムで失敗させる（20%の確率）
       if (Math.random() < 0.2) {
-        throw new Error("パスワードが正しくありません。")
+        throw new Error("Incorrect password.")
       }
 
       // アカウント削除処理
       setDeleteDialogOpen(false)
       setDeletePassword("")
       // 成功時はトップページに遷移する処理をここに追加
+      router.push("/")
     } catch (error) {
-      setDeleteError(error instanceof Error ? error.message : "削除処理中にエラーが発生しました。")
+      setDeleteError(error instanceof Error ? error.message : "An error occurred during deletion.")
     } finally {
       setIsProcessing(false)
     }
@@ -119,7 +121,7 @@ export default function SettingsPage() {
       switch (pendingAction) {
         case "email":
           setEmailDialogOpen(false)
-          setEmailChangeMessage(`${newEmail} に確認用メールを送信しました。メールをご確認ください。`)
+          setEmailChangeMessage(`A confirmation email has been sent to ${newEmail}. Please check your email.`)
           setNewEmail("")
           break
         case "password":
@@ -142,56 +144,56 @@ export default function SettingsPage() {
     <div className="container mx-auto px-4 py-8 max-w-2xl">
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold mb-2">アカウント設定</h1>
-          <p className="text-muted-foreground">アカウントの設定を管理できます</p>
+          <h1 className="text-3xl font-bold mb-2">Account Settings</h1>
+          <p className="text-muted-foreground">Manage your account settings</p>
         </div>
 
         {/* Email Settings */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Mail className="h-5 w-5" />
-              メールアドレス
+              <LuMail className="h-5 w-5" />
+              Email Address
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label>現在のメールアドレス</Label>
+              <Label>Current Email Address</Label>
               <div className="mt-1 p-3 bg-muted rounded-md">{currentEmail}</div>
             </div>
 
             {emailChangeMessage && (
               <Alert>
-                <Mail className="h-4 w-4" />
+                <LuMail className="h-4 w-4" />
                 <AlertDescription>{emailChangeMessage}</AlertDescription>
               </Alert>
             )}
 
             <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline">メールアドレスを変更</Button>
+                <Button variant="outline">Change Email Address</Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>メールアドレス変更</DialogTitle>
+                  <DialogTitle>Change Email Address</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="newEmail">新しいメールアドレス</Label>
+                    <Label htmlFor="newEmail">New Email Address</Label>
                     <Input id="newEmail" type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} />
                   </div>
                   <div className="flex justify-end gap-2">
                     <Button variant="outline" onClick={() => setEmailDialogOpen(false)} disabled={isProcessing}>
-                      キャンセル
+                      Cancel
                     </Button>
                     <Button onClick={handleEmailChange} disabled={!newEmail || isProcessing}>
                       {isProcessing ? (
                         <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          変更中...
+                          <LuLoader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Changing...
                         </>
                       ) : (
-                        "変更"
+                        "Change"
                       )}
                     </Button>
                   </div>
@@ -205,22 +207,22 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Lock className="h-5 w-5" />
-              パスワード
+              <LuLock className="h-5 w-5" />
+              Password
             </CardTitle>
           </CardHeader>
           <CardContent>
             <Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline">パスワードを変更</Button>
+                <Button variant="outline">Change Password</Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>パスワード変更</DialogTitle>
+                  <DialogTitle>Change Password</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="currentPassword">現在のパスワード</Label>
+                    <Label htmlFor="currentPassword">Current Password</Label>
                     <Input
                       id="currentPassword"
                       type="password"
@@ -229,7 +231,7 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="newPassword">新しいパスワード</Label>
+                    <Label htmlFor="newPassword">New Password</Label>
                     <Input
                       id="newPassword"
                       type="password"
@@ -238,7 +240,7 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="confirmPassword">新しいパスワード（確認）</Label>
+                    <Label htmlFor="confirmPassword">Confirm New Password</Label>
                     <Input
                       id="confirmPassword"
                       type="password"
@@ -248,7 +250,7 @@ export default function SettingsPage() {
                   </div>
                   <div className="flex justify-end gap-2">
                     <Button variant="outline" onClick={() => setPasswordDialogOpen(false)} disabled={isProcessing}>
-                      キャンセル
+                      Cancel
                     </Button>
                     <Button
                       onClick={handlePasswordChange}
@@ -256,11 +258,11 @@ export default function SettingsPage() {
                     >
                       {isProcessing ? (
                         <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          変更中...
+                          <LuLoader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Changing...
                         </>
                       ) : (
-                        "変更"
+                        "Change"
                       )}
                     </Button>
                   </div>
@@ -274,51 +276,52 @@ export default function SettingsPage() {
         <Card className="border-destructive">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-destructive">
-              <Trash2 className="h-5 w-5" />
-              アカウント削除
+              <LuTrash2 className="h-5 w-5" />
+              Delete Account
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
+              <LuAlertCircle className="h-4 w-4" />
               <AlertDescription>
-                アカウントを削除すると、すべての投稿データが完全に削除されます。この操作は取り消せません。
+                Deleting your account will permanently remove all your posted data. This action cannot be undone.
               </AlertDescription>
             </Alert>
             <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive">アカウントを削除</Button>
+                <Button variant="destructive">Delete Account</Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>アカウント削除の確認</AlertDialogTitle>
+                  <AlertDialogTitle>Confirm Account Deletion</AlertDialogTitle>
                   <AlertDialogDescription>
-                    本当にアカウントを削除しますか？この操作は取り消せません。すべての投稿データが完全に削除されます。
+                    Are you sure you want to delete your account? This action cannot be undone. All your posted data
+                    will be permanently removed.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
 
                 <div className="space-y-4 py-4">
                   <div className="space-y-2">
-                    <Label htmlFor="deletePassword">パスワードを入力して確認</Label>
+                    <Label htmlFor="deletePassword">Enter your password to confirm</Label>
                     <Input
                       id="deletePassword"
                       type="password"
                       value={deletePassword}
                       onChange={(e) => setDeletePassword(e.target.value)}
-                      placeholder="現在のパスワードを入力"
+                      placeholder="Enter your current password"
                     />
                   </div>
 
                   {deleteError && (
                     <Alert variant="destructive">
-                      <AlertCircle className="h-4 w-4" />
+                      <LuAlertCircle className="h-4 w-4" />
                       <AlertDescription>{deleteError}</AlertDescription>
                     </Alert>
                   )}
                 </div>
 
                 <AlertDialogFooter>
-                  <AlertDialogCancel disabled={isProcessing}>キャンセル</AlertDialogCancel>
+                  <AlertDialogCancel disabled={isProcessing}>Cancel</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={handleAccountDelete}
                     disabled={!deletePassword || isProcessing}
@@ -326,11 +329,11 @@ export default function SettingsPage() {
                   >
                     {isProcessing ? (
                       <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        削除中...
+                        <LuLoader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Deleting...
                       </>
                     ) : (
-                      "削除する"
+                      "Delete"
                     )}
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -344,37 +347,37 @@ export default function SettingsPage() {
       <Dialog open={reauthDialogOpen} onOpenChange={setReauthDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>再認証が必要です</DialogTitle>
+            <DialogTitle>Re-authentication Required</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <Alert>
-              <AlertCircle className="h-4 w-4" />
+              <LuAlertCircle className="h-4 w-4" />
               <AlertDescription>
-                セキュリティのため、この操作を実行するには再度パスワードを入力してください。
+                For security reasons, please enter your password again to perform this action.
               </AlertDescription>
             </Alert>
             <div className="space-y-2">
-              <Label htmlFor="reauthPassword">パスワード</Label>
+              <Label htmlFor="reauthPassword">Password</Label>
               <Input
                 id="reauthPassword"
                 type="password"
                 value={reauthPassword}
                 onChange={(e) => setReauthPassword(e.target.value)}
-                placeholder="現在のパスワードを入力"
+                placeholder="Enter your current password"
               />
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setReauthDialogOpen(false)} disabled={isProcessing}>
-                キャンセル
+                Cancel
               </Button>
               <Button onClick={handleReauth} disabled={!reauthPassword || isProcessing}>
                 {isProcessing ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    認証中...
+                    <LuLoader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Authenticating...
                   </>
                 ) : (
-                  "認証"
+                  "Authenticate"
                 )}
               </Button>
             </div>

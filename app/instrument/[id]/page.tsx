@@ -5,7 +5,18 @@ import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/component
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Heart, Download, Volume2, Edit, MoreVertical, Share2, X, AlertCircle, Loader2 } from "lucide-react"
+import {
+  LuArrowLeft,
+  LuHeart,
+  LuDownload,
+  LuVolume2,
+  LuEdit,
+  LuMoreVertical,
+  LuShare2,
+  LuX,
+  LuAlertCircle,
+  LuLoader2,
+} from "react-icons/lu"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -28,7 +39,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
-export default function TimbreDetailPage({ params }: { params: { id: string } }) {
+export default function InstrumentDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const [selectedChip, setSelectedChip] = useState("OPL3")
   const [isLiked, setIsLiked] = useState(false)
@@ -45,18 +56,18 @@ export default function TimbreDetailPage({ params }: { params: { id: string } })
   const [isDeleting, setIsDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState("")
 
-  // 編集用の状態
-  const [editTimbeName, setEditTimbeName] = useState("Epic Lead Sound")
+  // Edit state
+  const [editInstrumentName, setEditInstrumentName] = useState("Epic Lead Sound")
   const [editDescription, setEditDescription] = useState(
-    "この音色は80年代のシンセポップにインスパイアされたエピックなリードサウンドです。高域の輝きと温かみのある中域が特徴で、メロディラインを際立たせることができます。特にOPL3チップでの再生時に最も美しく響くように調整されています。アルペジオやソロパートに最適で、楽曲に壮大さを演出できます。",
+    "This instrument is an epic lead sound inspired by 80s synthpop. It features bright highs and warm mids that make melody lines stand out. It's specially tuned to sound most beautiful when played on the OPL3 chip. Perfect for arpeggios and solo parts, it can add grandeur to your music.",
   )
-  const [editTags, setEditTags] = useState<string[]>(["リード", "エピック", "シンセサイザー"])
+  const [editTags, setEditTags] = useState<string[]>(["Lead", "Epic", "Synthesizer"])
   const [newTag, setNewTag] = useState("")
 
   const chips = ["OPL3", "OPN2", "OPM", "OPL2"]
-  const currentUser = "johndoe" // 現在のユーザー
-  const timbreAuthor = "johndoe" // この音色の作者
-  const isOwnTimbre = currentUser === timbreAuthor
+  const currentUser = "johndoe" // Current user
+  const instrumentAuthor = "johndoe" // Author of this instrument
+  const isOwnInstrument = currentUser === instrumentAuthor
 
   const exportTargets: Record<string, Array<{ name: string; type: "file" | "text" }>> = {
     OPN: [
@@ -96,7 +107,7 @@ export default function TimbreDetailPage({ params }: { params: { id: string } })
   }
 
   const handleEdit = () => {
-    // 編集処理
+    // Edit processing
     setEditOpen(false)
   }
 
@@ -107,15 +118,15 @@ export default function TimbreDetailPage({ params }: { params: { id: string } })
     try {
       await new Promise((resolve) => setTimeout(resolve, 2000))
 
-      // ランダムで失敗させる（50%の確率）
+      // Random failure (50% chance)
       if (Math.random() < 0.5) {
-        throw new Error("削除処理中にエラーが発生しました。しばらく時間をおいてから再度お試しください。")
+        throw new Error("An error occurred during deletion. Please try again later.")
       }
 
-      // 成功時はユーザーページに戻る
+      // On success, return to user page
       router.push("/user/johndoe")
     } catch (error) {
-      setDeleteError(error instanceof Error ? error.message : "削除中にエラーが発生しました。")
+      setDeleteError(error instanceof Error ? error.message : "An error occurred during deletion.")
     } finally {
       setIsDeleting(false)
     }
@@ -138,7 +149,7 @@ export default function TimbreDetailPage({ params }: { params: { id: string } })
     setIsLiked(!isLiked)
   }
 
-  const shareUrl = `${window.location.origin}/timbre/${params.id}`
+  const shareUrl = `${window.location.origin}/instrument/${params.id}`
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -146,8 +157,8 @@ export default function TimbreDetailPage({ params }: { params: { id: string } })
       <div className="mb-6">
         <Button variant="ghost" asChild className="mb-4">
           <Link href="/search">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            検索に戻る
+            <LuArrowLeft className="h-4 w-4 mr-2" />
+            Back to Search
           </Link>
         </Button>
       </div>
@@ -168,7 +179,7 @@ export default function TimbreDetailPage({ params }: { params: { id: string } })
                   SynthMaster
                 </Link>
                 <span>•</span>
-                <span>2024年1月15日</span>
+                <span>January 15, 2024</span>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -177,50 +188,48 @@ export default function TimbreDetailPage({ params }: { params: { id: string } })
                 onClick={handleLikeToggle}
                 className="flex items-center gap-2"
               >
-                <Heart className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
-                {isLiked ? "いいね済み" : "いいね"}
+                <LuHeart className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
+                {isLiked ? "Liked" : "Like"}
                 <span className="text-sm">{likeCount}</span>
               </Button>
 
               <DropdownMenu open={shareOpen} onOpenChange={setShareOpen}>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline">
-                    <Share2 className="h-4 w-4 mr-2" />
-                    シェア
+                    <LuShare2 className="h-4 w-4 mr-2" />
+                    Share
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
                   <DropdownMenuItem
                     onClick={() =>
                       window.open(
-                        `https://twitter.com/intent/tweet?text=${encodeURIComponent("Epic Lead Sound をチェック！")}&url=${encodeURIComponent(shareUrl)}`,
+                        `https://twitter.com/intent/tweet?text=${encodeURIComponent("Check out Epic Lead Sound!")}&url=${encodeURIComponent(shareUrl)}`,
                       )
                     }
                   >
-                    Twitterでシェア
+                    Share on Twitter
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigator.clipboard.writeText(shareUrl)}>
-                    リンクをコピー
-                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigator.clipboard.writeText(shareUrl)}>Copy Link</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              {isOwnTimbre && (
+              {isOwnInstrument && (
                 <>
                   <Button variant="outline" onClick={() => setEditOpen(true)}>
-                    <Edit className="h-4 w-4 mr-2" />
-                    編集
+                    <LuEdit className="h-4 w-4 mr-2" />
+                    Edit
                   </Button>
 
                   <DropdownMenu modal={false}>
                     <DropdownMenuTrigger asChild>
                       <Button variant="outline" size="icon">
-                        <MoreVertical className="h-4 w-4" />
+                        <LuMoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                       <DropdownMenuItem onClick={() => setDeleteOpen(true)} className="text-destructive">
-                        削除
+                        Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -235,27 +244,27 @@ export default function TimbreDetailPage({ params }: { params: { id: string } })
               <Badge
                 variant="secondary"
                 className="cursor-pointer hover:bg-secondary/80 transition-colors"
-                onClick={() => handleTagClick("リード")}
+                onClick={() => handleTagClick("Lead")}
               >
-                リード
+                Lead
               </Badge>
               <Badge
                 variant="secondary"
                 className="cursor-pointer hover:bg-secondary/80 transition-colors"
-                onClick={() => handleTagClick("エピック")}
+                onClick={() => handleTagClick("Epic")}
               >
-                エピック
+                Epic
               </Badge>
               <Badge
                 variant="secondary"
                 className="cursor-pointer hover:bg-secondary/80 transition-colors"
-                onClick={() => handleTagClick("シンセサイザー")}
+                onClick={() => handleTagClick("Synthesizer")}
               >
-                シンセサイザー
+                Synthesizer
               </Badge>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">推奨チップ:</span>
+              <span className="text-sm font-medium">Recommended Chip:</span>
               <Badge
                 variant="outline"
                 className="px-3 py-1 cursor-pointer hover:bg-accent transition-colors"
@@ -270,7 +279,7 @@ export default function TimbreDetailPage({ params }: { params: { id: string } })
         {/* Description */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">説明</CardTitle>
+            <CardTitle className="text-lg">Description</CardTitle>
           </CardHeader>
           <CardContent>
             <Collapsible open={descriptionOpen} onOpenChange={setDescriptionOpen}>
@@ -281,19 +290,19 @@ export default function TimbreDetailPage({ params }: { params: { id: string } })
                       {!descriptionOpen ? (
                         <div className="break-words overflow-hidden">
                           <span className="line-clamp-3">
-                            この音色は80年代のシンセポップにインスパイアされたエピックなリードサウンドです。
-                            高域の輝きと温かみのある中域が特徴で、メロディラインを際立たせることができます。
-                            特にOPL3チップでの再生時に最も美しく響くように調整されています。
-                            アルペジオやソロパートに最適で、楽曲に壮大さを演出できます。
+                            This instrument is an epic lead sound inspired by 80s synthpop. It features bright highs and
+                            warm mids that make melody lines stand out. It's specially tuned to sound most beautiful
+                            when played on the OPL3 chip. Perfect for arpeggios and solo parts, it can add grandeur to
+                            your music.
                           </span>
-                          <span className="text-primary ml-1">続きを読む</span>
+                          <span className="text-primary ml-1">Read more</span>
                         </div>
                       ) : (
                         <div className="whitespace-pre-wrap break-words word-break-break-all">
-                          この音色は80年代のシンセポップにインスパイアされたエピックなリードサウンドです。
-                          高域の輝きと温かみのある中域が特徴で、メロディラインを際立たせることができます。
-                          特にOPL3チップでの再生時に最も美しく響くように調整されています。
-                          アルペジオやソロパートに最適で、楽曲に壮大さを演出できます。
+                          This instrument is an epic lead sound inspired by 80s synthpop. It features bright highs and
+                          warm mids that make melody lines stand out. It's specially tuned to sound most beautiful when
+                          played on the OPL3 chip. Perfect for arpeggios and solo parts, it can add grandeur to your
+                          music.
                         </div>
                       )}
                     </div>
@@ -302,7 +311,7 @@ export default function TimbreDetailPage({ params }: { params: { id: string } })
                 <CollapsibleContent>
                   {descriptionOpen && (
                     <Button variant="ghost" className="p-0 h-auto font-normal text-primary">
-                      閉じる
+                      Show less
                     </Button>
                   )}
                 </CollapsibleContent>
@@ -315,9 +324,9 @@ export default function TimbreDetailPage({ params }: { params: { id: string } })
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center justify-between">
-              ダウンロード
+              Download
               <span className="text-sm font-normal text-muted-foreground">
-                総DL数: 387回 (オリジナル: 245回 + エクスポート: 142回)
+                Total Downloads: 387 (Original: 245 + Export: 142)
               </span>
             </CardTitle>
           </CardHeader>
@@ -325,8 +334,8 @@ export default function TimbreDetailPage({ params }: { params: { id: string } })
             {/* Original File */}
             <div>
               <Button className="w-full">
-                <Download className="h-4 w-4 mr-2" />
-                オリジナルファイルをダウンロード
+                <LuDownload className="h-4 w-4 mr-2" />
+                Download Original File
               </Button>
             </div>
 
@@ -334,10 +343,10 @@ export default function TimbreDetailPage({ params }: { params: { id: string } })
 
             {/* Export Section */}
             <div className="space-y-4">
-              <h3 className="font-medium">エクスポート</h3>
+              <h3 className="font-medium">Export</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium mb-2 block">チップ:</label>
+                  <label className="text-sm font-medium mb-2 block">Chip:</label>
                   <Select value={selectedChip} onValueChange={setSelectedChip}>
                     <SelectTrigger>
                       <SelectValue />
@@ -352,7 +361,7 @@ export default function TimbreDetailPage({ params }: { params: { id: string } })
                   </Select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">ターゲット:</label>
+                  <label className="text-sm font-medium mb-2 block">Target:</label>
                   <Select value={selectedTarget} onValueChange={setSelectedTarget}>
                     <SelectTrigger>
                       <SelectValue />
@@ -367,9 +376,9 @@ export default function TimbreDetailPage({ params }: { params: { id: string } })
                   </Select>
                 </div>
               </div>
-              <Button variant="outline" className="w-full" onClick={handleExport}>
-                <Download className="h-4 w-4 mr-2" />
-                エクスポート ({selectedTarget})
+              <Button variant="outline" className="w-full bg-transparent" onClick={handleExport}>
+                <LuDownload className="h-4 w-4 mr-2" />
+                Export ({selectedTarget})
               </Button>
             </div>
           </CardContent>
@@ -379,15 +388,15 @@ export default function TimbreDetailPage({ params }: { params: { id: string } })
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <Volume2 className="h-5 w-5" />
-              試聴
+              <LuVolume2 className="h-5 w-5" />
+              Preview
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium">チップ:</label>
+                  <label className="text-sm font-medium">Chip:</label>
                   <Select value={playbackChip} onValueChange={setPlaybackChip}>
                     <SelectTrigger className="w-32">
                       <SelectValue />
@@ -402,7 +411,7 @@ export default function TimbreDetailPage({ params }: { params: { id: string } })
                   </Select>
                 </div>
                 <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium">オクターブ:</label>
+                  <label className="text-sm font-medium">Octave:</label>
                   <Button
                     variant="outline"
                     size="sm"
@@ -492,7 +501,7 @@ export default function TimbreDetailPage({ params }: { params: { id: string } })
         {/* Parameters Section */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">パラメーター</CardTitle>
+            <CardTitle className="text-lg">Parameters</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="p-4 bg-muted rounded-lg">
@@ -514,39 +523,39 @@ OP4: AR=15, DR=2, SL=0, RR=4, TL=0, KS=0, ML=4, AM=0, VB=1, EG=1, KR=0, WS=2`}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>音色を編集</DialogTitle>
+            <DialogTitle>Edit Instrument</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">音色名 *</label>
-              <Input value={editTimbeName} onChange={(e) => setEditTimbeName(e.target.value)} />
+              <label className="text-sm font-medium">Instrument Name *</label>
+              <Input value={editInstrumentName} onChange={(e) => setEditInstrumentName(e.target.value)} />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">タグ (最大5個)</label>
+              <label className="text-sm font-medium">Tags (max 5)</label>
               <div className="flex gap-2 mb-2">
                 <Input
-                  placeholder="タグを入力"
+                  placeholder="Enter tag"
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addTag())}
                 />
                 <Button onClick={addTag} disabled={editTags.length >= 5}>
-                  追加
+                  Add
                 </Button>
               </div>
               <div className="flex flex-wrap gap-2">
                 {editTags.map((tag) => (
                   <Badge key={tag} variant="secondary" className="cursor-pointer">
                     {tag}
-                    <X className="h-3 w-3 ml-1" onClick={() => removeTag(tag)} />
+                    <LuX className="h-3 w-3 ml-1" onClick={() => removeTag(tag)} />
                   </Badge>
                 ))}
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">説明 (最大500文字)</label>
+              <label className="text-sm font-medium">Description (max 500 characters)</label>
               <Textarea
                 value={editDescription}
                 onChange={(e) => setEditDescription(e.target.value)}
@@ -558,9 +567,9 @@ OP4: AR=15, DR=2, SL=0, RR=4, TL=0, KS=0, ML=4, AM=0, VB=1, EG=1, KR=0, WS=2`}
 
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setEditOpen(false)}>
-                キャンセル
+                Cancel
               </Button>
-              <Button onClick={handleEdit}>保存</Button>
+              <Button onClick={handleEdit}>Save</Button>
             </div>
           </div>
         </DialogContent>
@@ -570,20 +579,22 @@ OP4: AR=15, DR=2, SL=0, RR=4, TL=0, KS=0, ML=4, AM=0, VB=1, EG=1, KR=0, WS=2`}
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>音色を削除</AlertDialogTitle>
-            <AlertDialogDescription>本当にこの音色を削除しますか？この操作は取り消せません。</AlertDialogDescription>
+            <AlertDialogTitle>Delete Instrument</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this instrument? This action cannot be undone.
+            </AlertDialogDescription>
           </AlertDialogHeader>
 
           {deleteError && (
             <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
+              <LuAlertCircle className="h-4 w-4" />
               <AlertDescription>{deleteError}</AlertDescription>
             </Alert>
           )}
 
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeleting} onClick={() => setDeleteOpen(false)}>
-              キャンセル
+              Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
@@ -592,11 +603,11 @@ OP4: AR=15, DR=2, SL=0, RR=4, TL=0, KS=0, ML=4, AM=0, VB=1, EG=1, KR=0, WS=2`}
             >
               {isDeleting ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  削除中...
+                  <LuLoader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Deleting...
                 </>
               ) : (
-                "削除する"
+                "Delete"
               )}
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -607,7 +618,7 @@ OP4: AR=15, DR=2, SL=0, RR=4, TL=0, KS=0, ML=4, AM=0, VB=1, EG=1, KR=0, WS=2`}
       <Dialog open={textExportOpen} onOpenChange={setTextExportOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{selectedTarget} エクスポート</DialogTitle>
+            <DialogTitle>{selectedTarget} Export</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <Textarea
@@ -627,9 +638,9 @@ OP4: AR=15, DR=2, SL=0, RR=4, TL=0, KS=0, ML=4, AM=0, VB=1, EG=1, KR=0, WS=2`}
             />
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setTextExportOpen(false)}>
-                閉じる
+                Close
               </Button>
-              <Button onClick={() => navigator.clipboard.writeText("export text")}>クリップボードにコピー</Button>
+              <Button onClick={() => navigator.clipboard.writeText("export text")}>Copy to Clipboard</Button>
             </div>
           </div>
         </DialogContent>

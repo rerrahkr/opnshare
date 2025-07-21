@@ -2,7 +2,8 @@
 import type React from "react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Search, Shuffle, Heart, Download, Hash, Github } from "lucide-react"
+import { LuSearch, LuShuffle, LuHeart, LuDownload, LuHash } from "react-icons/lu"
+import { FaGithub } from "react-icons/fa"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -26,34 +27,34 @@ export default function HomePage() {
       <section className="container mx-auto px-4 py-16 text-center">
         <div className="max-w-4xl mx-auto space-y-8">
           <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-            音色共有サービス
+            Instrument Sharing Service
           </h1>
-          <p className="text-lg text-muted-foreground">FM音源の音色を共有し、新しいサウンドを発見しよう</p>
+          <p className="text-lg text-muted-foreground">Share FM synthesizer instruments and discover new sounds</p>
 
           {/* Search Bar */}
           <div className="max-w-2xl mx-auto">
             <form onSubmit={handleSearch} className="flex gap-2">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <LuSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
-                  placeholder="音色を検索..."
+                  placeholder="Search instruments..."
                   className="pl-10 h-12 text-lg"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
               <Button type="submit" size="lg" className="h-12 px-6">
-                検索
+                Search
               </Button>
               <Button
                 type="button"
                 variant="outline"
                 size="lg"
-                className="h-12 px-6"
-                onClick={() => router.push("/timbre/random-id-789")}
+                className="h-12 px-6 bg-transparent"
+                onClick={() => router.push("/instrument/random-id-789")}
               >
-                <Shuffle className="h-4 w-4 mr-2" />
-                気まぐれ
+                <LuShuffle className="h-4 w-4 mr-2" />
+                Random
               </Button>
             </form>
           </div>
@@ -61,12 +62,12 @@ export default function HomePage() {
         <div className="mt-6">
           <Button variant="outline" size="sm" asChild>
             <a
-              href="https://github.com/your-org/timbre-sharing-service"
+              href="https://github.com/your-org/instrument-sharing-service"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2"
             >
-              <Github className="h-4 w-4" />
+              <FaGithub className="h-4 w-4" />
               GitHub
             </a>
           </Button>
@@ -78,9 +79,9 @@ export default function HomePage() {
         {/* New Arrivals */}
         <section>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold">新着音色</h2>
+            <h2 className="text-2xl font-bold">New Instruments</h2>
             <Button variant="ghost" onClick={() => router.push("/search")}>
-              すべて見る
+              View All
             </Button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -95,8 +96,8 @@ export default function HomePage() {
           {/* Download Ranking */}
           <section>
             <div className="flex items-center gap-2 mb-6">
-              <Download className="h-5 w-5" />
-              <h2 className="text-2xl font-bold">ダウンロードランキング</h2>
+              <LuDownload className="h-5 w-5" />
+              <h2 className="text-2xl font-bold">Download Ranking</h2>
             </div>
             <div className="space-y-3">
               {[1, 2, 3, 4, 5].map((rank) => (
@@ -108,8 +109,8 @@ export default function HomePage() {
           {/* Like Ranking */}
           <section>
             <div className="flex items-center gap-2 mb-6">
-              <Heart className="h-5 w-5" />
-              <h2 className="text-2xl font-bold">いいねランキング</h2>
+              <LuHeart className="h-5 w-5" />
+              <h2 className="text-2xl font-bold">Like Ranking</h2>
             </div>
             <div className="space-y-3">
               {[1, 2, 3, 4, 5].map((rank) => (
@@ -122,11 +123,11 @@ export default function HomePage() {
         {/* Popular Tags */}
         <section>
           <div className="flex items-center gap-2 mb-6">
-            <Hash className="h-5 w-5" />
-            <h2 className="text-2xl font-bold">人気タグ</h2>
+            <LuHash className="h-5 w-5" />
+            <h2 className="text-2xl font-bold">Popular Tags</h2>
           </div>
           <div className="flex flex-wrap gap-3">
-            {["ベース", "リード", "パッド", "プラック", "ブラス", "ストリングス", "FX", "ドラム"].map((tag) => (
+            {["Bass", "Lead", "Pad", "Pluck", "Brass", "Strings", "FX", "Drum"].map((tag) => (
               <Badge
                 key={tag}
                 variant="secondary"
@@ -148,7 +149,7 @@ function TimbreCard() {
   return (
     <Card
       className="hover:shadow-lg transition-shadow cursor-pointer"
-      onClick={() => router.push("/timbre/sample-id-" + Math.floor(Math.random() * 1000))}
+      onClick={() => router.push("/instrument/sample-id-" + Math.floor(Math.random() * 1000))}
     >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
@@ -162,20 +163,20 @@ function TimbreCard() {
         <div className="space-y-3">
           <div className="flex flex-wrap gap-1">
             <Badge variant="outline" className="text-xs">
-              リード
+              Lead
             </Badge>
             <Badge variant="outline" className="text-xs">
-              エピック
+              Epic
             </Badge>
           </div>
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1">
-                <Download className="h-3 w-3" />
+                <LuDownload className="h-3 w-3" />
                 245
               </span>
               <span className="flex items-center gap-1">
-                <Heart className="h-3 w-3" />
+                <LuHeart className="h-3 w-3" />
                 89
               </span>
             </div>
@@ -189,14 +190,14 @@ function TimbreCard() {
 
 function RankingItem({ rank, type }: { rank: number; type: "download" | "like" }) {
   const router = useRouter()
-  const icon = type === "download" ? Download : Heart
+  const icon = type === "download" ? LuDownload : LuHeart
   const Icon = icon
   const count = type === "download" ? 1250 - rank * 100 : 500 - rank * 50
 
   return (
     <Card
       className="p-4 hover:shadow-md transition-shadow cursor-pointer"
-      onClick={() => router.push("/timbre/ranking-id-" + rank)}
+      onClick={() => router.push("/instrument/ranking-id-" + rank)}
     >
       <div className="flex items-center gap-4">
         <div

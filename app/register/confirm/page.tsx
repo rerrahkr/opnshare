@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Upload } from "lucide-react"
+import { LuUpload } from "react-icons/lu"
 
 export default function RegisterConfirmPage() {
   const router = useRouter()
@@ -35,22 +35,22 @@ export default function RegisterConfirmPage() {
     <div className="min-h-screen flex items-center justify-center bg-muted/20 px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">アカウント登録完了</CardTitle>
-          <p className="text-muted-foreground">プロフィール情報を入力してください</p>
+          <CardTitle className="text-2xl">Complete Registration</CardTitle>
+          <p className="text-muted-foreground">Please enter your profile information</p>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* User ID (Read-only) */}
           <div className="space-y-2">
-            <Label>投稿者ID（変更不可）</Label>
+            <Label>User ID (Cannot be changed)</Label>
             <Input value={userId} disabled />
           </div>
 
           {/* Display Name */}
           <div className="space-y-2">
-            <Label htmlFor="displayName">表示名</Label>
+            <Label htmlFor="displayName">Display Name</Label>
             <Input
               id="displayName"
-              placeholder="表示名を入力"
+              placeholder="Enter display name"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
             />
@@ -58,13 +58,13 @@ export default function RegisterConfirmPage() {
 
           {/* Password */}
           <div className="space-y-2">
-            <Label htmlFor="password">パスワード</Label>
+            <Label htmlFor="password">Password</Label>
             <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
 
           {/* Confirm Password */}
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">パスワード確認</Label>
+            <Label htmlFor="confirmPassword">Confirm Password</Label>
             <Input
               id="confirmPassword"
               type="password"
@@ -75,18 +75,18 @@ export default function RegisterConfirmPage() {
 
           {/* Profile Image */}
           <div className="space-y-2">
-            <Label>プロフィール画像（任意）</Label>
+            <Label>Profile Image (Optional)</Label>
             <div className="flex items-center gap-4">
               <Avatar className="h-16 w-16">
                 <AvatarImage src={profileImage ? URL.createObjectURL(profileImage) : undefined} />
                 <AvatarFallback>
-                  <Upload className="h-6 w-6" />
+                  <LuUpload className="h-6 w-6" />
                 </AvatarFallback>
               </Avatar>
               <div>
                 <Button variant="outline" asChild>
                   <label className="cursor-pointer">
-                    画像を選択
+                    Select Image
                     <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
                   </label>
                 </Button>
@@ -99,7 +99,7 @@ export default function RegisterConfirmPage() {
             disabled={!password || !confirmPassword || !displayName || password !== confirmPassword}
             onClick={handleSubmit}
           >
-            登録完了
+            Complete Registration
           </Button>
         </CardContent>
       </Card>

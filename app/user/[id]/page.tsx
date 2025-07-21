@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Calendar, Heart, Music, Settings, Edit, Share2, Download } from "lucide-react"
+import { LuCalendar, LuHeart, LuMusic, LuSettings, LuEdit, LuShare2, LuDownload } from "react-icons/lu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -28,8 +28,8 @@ export default function UserPage({ params }: { params: { id: string } }) {
   const [displayName, setDisplayName] = useState(isOwnProfile ? "JohnDoe" : "SynthMaster")
   const [bio, setBio] = useState(
     isOwnProfile
-      ? "音色制作が趣味です。特にFM音源を使った実験的なサウンドを作るのが好きです。"
-      : "FM音源とシンセサイザーが大好きです。80年代のサウンドを現代に蘇らせることを目標にしています。",
+      ? "I enjoy creating instruments as a hobby. I especially like making experimental sounds using FM synthesis."
+      : "I love FM synthesis and synthesizers. My goal is to bring 80s sounds back to the modern era.",
   )
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -65,16 +65,16 @@ export default function UserPage({ params }: { params: { id: string } }) {
 
                 <div className="flex flex-wrap gap-4 justify-center md:justify-start text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
-                    <Calendar className="h-4 w-4" />
-                    2023年5月に登録
+                    <LuCalendar className="h-4 w-4" />
+                    Joined May 2023
                   </div>
                   <div className="flex items-center gap-1">
-                    <Music className="h-4 w-4" />
-                    投稿数: {isOwnProfile ? 1 : 24}
+                    <LuMusic className="h-4 w-4" />
+                    Posts: {isOwnProfile ? 1 : 24}
                   </div>
                   <div className="flex items-center gap-1">
-                    <Heart className="h-4 w-4" />
-                    受けたいいね: {isOwnProfile ? 42 : 1247}
+                    <LuHeart className="h-4 w-4" />
+                    Likes received: {isOwnProfile ? 42 : 1247}
                   </div>
                 </div>
 
@@ -84,17 +84,17 @@ export default function UserPage({ params }: { params: { id: string } }) {
                       <Dialog open={profileEditOpen} onOpenChange={setProfileEditOpen}>
                         <DialogTrigger asChild>
                           <Button variant="outline">
-                            <Edit className="h-4 w-4 mr-2" />
-                            プロフィール編集
+                            <LuEdit className="h-4 w-4 mr-2" />
+                            Edit Profile
                           </Button>
                         </DialogTrigger>
                         <DialogContent>
                           <DialogHeader>
-                            <DialogTitle>プロフィール編集</DialogTitle>
+                            <DialogTitle>Edit Profile</DialogTitle>
                           </DialogHeader>
                           <div className="space-y-4">
                             <div className="space-y-2">
-                              <Label>プロフィール画像</Label>
+                              <Label>Profile Image</Label>
                               <div className="flex items-center gap-4">
                                 <Avatar className="h-16 w-16">
                                   <AvatarImage
@@ -109,7 +109,7 @@ export default function UserPage({ params }: { params: { id: string } }) {
                                 <div>
                                   <Button variant="outline" asChild>
                                     <label className="cursor-pointer">
-                                      画像を選択
+                                      Select Image
                                       <input
                                         type="file"
                                         accept="image/*"
@@ -122,7 +122,7 @@ export default function UserPage({ params }: { params: { id: string } }) {
                               </div>
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="displayName">表示名</Label>
+                              <Label htmlFor="displayName">Display Name</Label>
                               <Input
                                 id="displayName"
                                 value={displayName}
@@ -130,14 +130,14 @@ export default function UserPage({ params }: { params: { id: string } }) {
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="bio">自己紹介</Label>
+                              <Label htmlFor="bio">Bio</Label>
                               <Textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={4} />
                             </div>
                             <div className="flex justify-end gap-2">
                               <Button variant="outline" onClick={() => setProfileEditOpen(false)}>
-                                キャンセル
+                                Cancel
                               </Button>
-                              <Button onClick={() => setProfileEditOpen(false)}>保存</Button>
+                              <Button onClick={() => setProfileEditOpen(false)}>Save</Button>
                             </div>
                           </div>
                         </DialogContent>
@@ -145,8 +145,8 @@ export default function UserPage({ params }: { params: { id: string } }) {
 
                       <Button variant="outline" asChild>
                         <Link href="/settings">
-                          <Settings className="h-4 w-4 mr-2" />
-                          アカウント設定
+                          <LuSettings className="h-4 w-4 mr-2" />
+                          Account Settings
                         </Link>
                       </Button>
                     </>
@@ -155,22 +155,22 @@ export default function UserPage({ params }: { params: { id: string } }) {
                   <DropdownMenu open={shareOpen} onOpenChange={setShareOpen}>
                     <DropdownMenuTrigger asChild>
                       <Button variant="outline">
-                        <Share2 className="h-4 w-4 mr-2" />
-                        シェア
+                        <LuShare2 className="h-4 w-4 mr-2" />
+                        Share
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                       <DropdownMenuItem
                         onClick={() =>
                           window.open(
-                            `https://twitter.com/intent/tweet?text=${encodeURIComponent(`${displayName}さんの音色をチェック！`)}&url=${encodeURIComponent(shareUrl)}`,
+                            `https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out ${displayName}'s instruments!`)}&url=${encodeURIComponent(shareUrl)}`,
                           )
                         }
                       >
-                        Twitterでシェア
+                        Share on Twitter
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => navigator.clipboard.writeText(shareUrl)}>
-                        リンクをコピー
+                        Copy Link
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -183,8 +183,8 @@ export default function UserPage({ params }: { params: { id: string } }) {
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="posts">投稿音色</TabsTrigger>
-            <TabsTrigger value="likes">いいねした音色</TabsTrigger>
+            <TabsTrigger value="posts">Posted Instruments</TabsTrigger>
+            <TabsTrigger value="likes">Liked Instruments</TabsTrigger>
           </TabsList>
 
           <TabsContent value="posts" className="space-y-6">
@@ -216,7 +216,7 @@ function TimbreCard({ title, author }: { title: string; author: string }) {
   return (
     <Card
       className="hover:shadow-lg transition-shadow cursor-pointer"
-      onClick={() => router.push("/timbre/sample-id-" + Math.floor(Math.random() * 1000))}
+      onClick={() => router.push("/instrument/sample-id-" + Math.floor(Math.random() * 1000))}
     >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
@@ -230,20 +230,20 @@ function TimbreCard({ title, author }: { title: string; author: string }) {
         <div className="space-y-3">
           <div className="flex flex-wrap gap-1">
             <Badge variant="outline" className="text-xs">
-              リード
+              Lead
             </Badge>
             <Badge variant="outline" className="text-xs">
-              エピック
+              Epic
             </Badge>
           </div>
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1">
-                <Download className="h-3 w-3" />
+                <LuDownload className="h-3 w-3" />
                 245
               </span>
               <span className="flex items-center gap-1">
-                <Heart className="h-3 w-3" />
+                <LuHeart className="h-3 w-3" />
                 89
               </span>
             </div>

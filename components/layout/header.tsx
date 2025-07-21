@@ -5,7 +5,7 @@ import type React from "react"
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { Search, User, Settings, LogOut, Upload, Menu } from "lucide-react"
+import { LuSearch, LuUser, LuSettings, LuLogOut, LuUpload, LuMenu } from "react-icons/lu"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -46,18 +46,18 @@ export function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <div className="h-8 w-8 rounded bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold">音</span>
+              <span className="text-primary-foreground font-bold">I</span>
             </div>
-            <span className="font-bold text-xl hidden sm:inline">音色共有</span>
+            <span className="font-bold text-xl hidden sm:inline">InstrumentShare</span>
           </Link>
 
           {/* Search Bar (desktop, not on home page) */}
           {showSearchInHeader && (
             <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md mx-8">
               <div className="relative w-full">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <LuSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
-                  placeholder="音色を検索..."
+                  placeholder="Search instruments..."
                   className="pl-10"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -72,8 +72,8 @@ export function Header() {
               <>
                 <Button variant="ghost" asChild>
                   <Link href="/upload">
-                    <Upload className="h-4 w-4 mr-2" />
-                    投稿
+                    <LuUpload className="h-4 w-4 mr-2" />
+                    Upload
                   </Link>
                 </Button>
                 <DropdownMenu>
@@ -88,20 +88,20 @@ export function Header() {
                   <DropdownMenuContent className="w-56" align="end">
                     <DropdownMenuItem asChild>
                       <Link href="/user/johndoe">
-                        <User className="mr-2 h-4 w-4" />
-                        マイページ
+                        <LuUser className="mr-2 h-4 w-4" />
+                        My Page
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link href="/settings">
-                        <Settings className="mr-2 h-4 w-4" />
-                        アカウント設定
+                        <LuSettings className="mr-2 h-4 w-4" />
+                        Account Settings
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>
-                      <LogOut className="mr-2 h-4 w-4" />
-                      ログアウト
+                      <LuLogOut className="mr-2 h-4 w-4" />
+                      Logout
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -109,10 +109,10 @@ export function Header() {
             ) : (
               <>
                 <Button variant="ghost" asChild>
-                  <Link href="/login">ログイン</Link>
+                  <Link href="/login">Login</Link>
                 </Button>
                 <Button asChild>
-                  <Link href="/register">ユーザー登録</Link>
+                  <Link href="/register">Register</Link>
                 </Button>
               </>
             )}
@@ -122,16 +122,16 @@ export function Header() {
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild className="md:hidden">
               <Button variant="ghost" size="sm">
-                <Menu className="h-5 w-5" />
+                <LuMenu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-80">
               <div className="flex flex-col space-y-4 mt-8">
                 {showSearchInHeader && (
                   <form onSubmit={handleSearch} className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                    <LuSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                     <Input
-                      placeholder="音色を検索..."
+                      placeholder="Search instruments..."
                       className="pl-10"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
@@ -143,34 +143,34 @@ export function Header() {
                   <>
                     <Button variant="ghost" className="justify-start" asChild>
                       <Link href="/upload">
-                        <Upload className="h-4 w-4 mr-2" />
-                        投稿
+                        <LuUpload className="h-4 w-4 mr-2" />
+                        Upload
                       </Link>
                     </Button>
                     <Button variant="ghost" className="justify-start" asChild>
                       <Link href="/user/johndoe">
-                        <User className="h-4 w-4 mr-2" />
-                        マイページ
+                        <LuUser className="h-4 w-4 mr-2" />
+                        My Page
                       </Link>
                     </Button>
                     <Button variant="ghost" className="justify-start" asChild>
                       <Link href="/settings">
-                        <Settings className="h-4 w-4 mr-2" />
-                        アカウント設定
+                        <LuSettings className="h-4 w-4 mr-2" />
+                        Account Settings
                       </Link>
                     </Button>
                     <Button variant="ghost" className="justify-start" onClick={handleLogout}>
-                      <LogOut className="h-4 w-4 mr-2" />
-                      ログアウト
+                      <LuLogOut className="h-4 w-4 mr-2" />
+                      Logout
                     </Button>
                   </>
                 ) : (
                   <>
                     <Button variant="ghost" className="justify-start" asChild>
-                      <Link href="/login">ログイン</Link>
+                      <Link href="/login">Login</Link>
                     </Button>
                     <Button className="justify-start" asChild>
-                      <Link href="/register">ユーザー登録</Link>
+                      <Link href="/register">Register</Link>
                     </Button>
                   </>
                 )}
