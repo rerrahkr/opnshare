@@ -1,0 +1,184 @@
+"use client"
+
+import type React from "react"
+
+import { useState } from "react"
+import Link from "next/link"
+import { usePathname, useRouter } from "next/navigation"
+import { Search, User, Settings, LogOut, Upload, Menu } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+
+export function Header() {
+  const pathname = usePathname()
+  const router = useRouter()
+  const isLoggedIn = true // TODO: Replace with actual auth state
+  const showSearchInHeader = pathname !== "/"
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
+      setSearchQuery("")
+    }
+  }
+
+  const handleLogout = () => {
+    // TODO: Implement actual logout logic
+    router.push("/")
+  }
+
+  return (
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container mx-auto px-4">
+        <div className="flex h-16 items-center justify-between">
+          {/* Logo */}
+          <Link href="/" className="flex items-center space-x-2">
+            <div className="h-8 w-8 rounded bg-primary flex items-center justify-center">
+              <span className="text-primary-foreground font-bold">音</span>
+            </div>
+            <span className="font-bold text-xl hidden sm:inline">音色共有</span>
+          </Link>
+
+          {/* Search Bar (desktop, not on home page) */}
+          {showSearchInHeader && (
+            <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md mx-8">
+              <div className="relative w-full">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  placeholder="音色を検索..."
+                  className="pl-10"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+            </form>
+          )}
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-4">
+            {isLoggedIn ? (
+              <>
+                <Button variant="ghost" asChild>
+                  <Link href="/upload">
+                    <Upload className="h-4 w-4 mr-2" />
+                    投稿
+                  </Link>
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src="/placeholder.svg?height=32&width=32" />
+                        <AvatarFallback>U</AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end">
+                    <DropdownMenuItem asChild>
+                      <Link href="/user/johndoe">
+                        <User className="mr-2 h-4 w-4" />
+                        マイページ
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/settings">
+                        <Settings className="mr-2 h-4 w-4" />
+                        アカウント設定
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      ログアウト
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" asChild>
+                  <Link href="/login">ログイン</Link>
+                </Button>
+                <Button asChild>
+                  <Link href="/register">ユーザー登録</Link>
+                </Button>
+              </>
+            )}
+          </div>
+
+          {/* Mobile Menu */}
+          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <SheetTrigger asChild className="md:hidden">
+              <Button variant="ghost" size="sm">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-80">
+              <div className="flex flex-col space-y-4 mt-8">
+                {showSearchInHeader && (
+                  <form onSubmit={handleSearch} className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                    <Input
+                      placeholder="音色を検索..."
+                      className="pl-10"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </form>
+                )}
+
+                {isLoggedIn ? (
+                  <>
+                    <Button variant="ghost" className="justify-start" asChild>
+                      <Link href="/upload">
+                        <Upload className="h-4 w-4 mr-2" />
+                        投稿
+                      </Link>
+                    </Button>
+                    <Button variant="ghost" className="justify-start" asChild>
+                      <Link href="/user/johndoe">
+                        <User className="h-4 w-4 mr-2" />
+                        マイページ
+                      </Link>
+                    </Button>
+                    <Button variant="ghost" className="justify-start" asChild>
+                      <Link href="/settings">
+                        <Settings className="h-4 w-4 mr-2" />
+                        アカウント設定
+                      </Link>
+                    </Button>
+                    <Button variant="ghost" className="justify-start" onClick={handleLogout}>
+                      <LogOut className="h-4 w-4 mr-2" />
+                      ログアウト
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="ghost" className="justify-start" asChild>
+                      <Link href="/login">ログイン</Link>
+                    </Button>
+                    <Button className="justify-start" asChild>
+                      <Link href="/register">ユーザー登録</Link>
+                    </Button>
+                  </>
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+      </div>
+    </header>
+  )
+}

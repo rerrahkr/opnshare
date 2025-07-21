@@ -1,0 +1,359 @@
+"use client"
+
+import type React from "react"
+
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { Upload, X, FileText, Binary, AlertCircle, Loader2 } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+
+export default function UploadPage() {
+  const router = useRouter()
+  const [timbeName, setTimbeName] = useState("")
+  const [description, setDescription] = useState("")
+  const [tags, setTags] = useState<string[]>([])
+  const [newTag, setNewTag] = useState("")
+  const [uploadMethod, setUploadMethod] = useState<"file" | "text">("file")
+  const [textInput, setTextInput] = useState("")
+  const [selectedDriver, setSelectedDriver] = useState("")
+  const [selectedChip, setSelectedChip] = useState("")
+  const [file, setFile] = useState<File | null>(null)
+  const [fileError, setFileError] = useState("")
+  const [textDialogOpen, setTextDialogOpen] = useState(false)
+  const [textError, setTextError] = useState("")
+  const [hasValidTextData, setHasValidTextData] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState("")
+
+  const driverChipMap: Record<string, string[]> = {
+    PMD: ["OPN", "OPNA", "OPM"],
+    FMP: ["OPN", "OPNA"],
+    BambooTracker: ["OPN2", "OPL3"],
+    Furnace: ["OPN", "OPN2", "OPL3", "OPM"],
+  }
+
+  const addTag = () => {
+    if (newTag && tags.length < 5 && !tags.includes(newTag)) {
+      setTags([...tags, newTag])
+      setNewTag("")
+    }
+  }
+
+  const removeTag = (tagToRemove: string) => {
+    setTags(tags.filter((tag) => tag !== tagToRemove))
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0]
+    if (selectedFile) {
+      // ファイル検証（仮実装：mp3のみ許可）
+      const fileExtension = selectedFile.name.split(".").pop()?.toLowerCase()
+      if (fileExtension === "mp3") {
+        setFile(selectedFile)
+        setFileError("")
+      } else {
+        setFile(null)
+        setFileError("対応していないファイル形式です。mp3ファイルを選択してください。")
+      }
+    }
+  }
+
+  const handleDriverChange = (driver: string) => {
+    setSelectedDriver(driver)
+    setSelectedChip("") // チップ選択をリセット
+  }
+
+  const handleTextImport = () => {
+    // テキスト検証（仮実装：「1234」のみ許可）
+    if (textInput.trim() === "1234") {
+      setTextError("")
+      setHasValidTextData(true)
+      setTextDialogOpen(false)
+    } else {
+      setTextError("無効な音色データです。正しい形式で入力してください。")
+    }
+  }
+
+  const handleTextDialogClose = () => {
+    setTextDialogOpen(false)
+    setTextError("")
+  }
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true)
+    setSubmitError("")
+
+    try {
+      // 仮の投稿処理（mp3ファイルの場合は失敗）
+      await new Promise((resolve) => setTimeout(resolve, 2000)) // 2秒待機
+
+      if (uploadMethod === "file" && file) {
+        const fileExtension = file.name.split(".").pop()?.toLowerCase()
+        if (fileExtension === "mp3") {
+          throw new Error("mp3ファイルの処理中にエラーが発生しました。別の形式のファイルをお試しください。")
+        }
+      }
+
+      // 投稿成功 - 完了ページに遷移
+      router.push("/upload/success")
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "投稿中にエラーが発生しました。")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8 max-w-2xl">
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">音色を投稿</h1>
+          <p className="text-muted-foreground">あなたの音色を共有して、他のユーザーに発見してもらいましょう</p>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>基本情報</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Timbre Name */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">音色名 *</label>
+              <Input
+                placeholder="例: Epic Lead Sound"
+                value={timbeName}
+                onChange={(e) => setTimbeName(e.target.value)}
+                disabled={isSubmitting}
+              />
+            </div>
+
+            {/* Tags */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">タグ (最大5個)</label>
+              <div className="flex gap-2 mb-2">
+                <Input
+                  placeholder="タグを入力"
+                  value={newTag}
+                  onChange={(e) => setNewTag(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addTag())}
+                  disabled={isSubmitting}
+                />
+                <Button onClick={addTag} disabled={tags.length >= 5 || isSubmitting}>
+                  追加
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {tags.map((tag) => (
+                  <Badge key={tag} variant="secondary" className="cursor-pointer">
+                    {tag}
+                    <X className="h-3 w-3 ml-1" onClick={() => !isSubmitting && removeTag(tag)} />
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            {/* Description */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">説明 (最大500文字)</label>
+              <Textarea
+                placeholder="この音色の特徴や使用方法について説明してください..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                maxLength={500}
+                rows={4}
+                disabled={isSubmitting}
+              />
+              <div className="text-xs text-muted-foreground text-right">{description.length}/500</div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>ファイルアップロード</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Upload Method Selection */}
+            <div className="grid grid-cols-2 gap-4">
+              <Button
+                variant={uploadMethod === "file" ? "default" : "outline"}
+                className="h-20 flex flex-col"
+                onClick={() => setUploadMethod("file")}
+                disabled={isSubmitting}
+              >
+                <Binary className="h-6 w-6 mb-2" />
+                バイナリファイル
+              </Button>
+              <Button
+                variant={uploadMethod === "text" ? "default" : "outline"}
+                className="h-20 flex flex-col"
+                onClick={() => setUploadMethod("text")}
+                disabled={isSubmitting}
+              >
+                <FileText className="h-6 w-6 mb-2" />
+                テキスト入力
+              </Button>
+            </div>
+
+            {/* File Upload */}
+            {uploadMethod === "file" && (
+              <div className="space-y-4">
+                <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center relative">
+                  <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">ファイルをドロップするか、クリックして選択</p>
+                    <p className="text-xs text-muted-foreground">対応形式: .mp3</p>
+                  </div>
+                  {!isSubmitting && (
+                    <input
+                      type="file"
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      onChange={handleFileChange}
+                    />
+                  )}
+                </div>
+
+                {fileError && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{fileError}</AlertDescription>
+                  </Alert>
+                )}
+
+                {file && (
+                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                    <span className="text-sm">{file.name}</span>
+                    <Button variant="ghost" size="sm" onClick={() => setFile(null)} disabled={isSubmitting}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Text Input */}
+            {uploadMethod === "text" && (
+              <div className="space-y-4">
+                <Dialog open={textDialogOpen} onOpenChange={setTextDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="w-full" disabled={isSubmitting}>
+                      <FileText className="h-4 w-4 mr-2" />
+                      テキストで入力
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>音色データ入力</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      {/* Driver Selection */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">音源ドライバ *</label>
+                        <Select value={selectedDriver} onValueChange={handleDriverChange}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="ドライバを選択" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Object.keys(driverChipMap).map((driver) => (
+                              <SelectItem key={driver} value={driver}>
+                                {driver}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Chip Selection */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">チップ種別 *</label>
+                        <Select value={selectedChip} onValueChange={setSelectedChip} disabled={!selectedDriver}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="チップを選択" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {selectedDriver &&
+                              driverChipMap[selectedDriver]?.map((chip) => (
+                                <SelectItem key={chip} value={chip}>
+                                  {chip}
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <Textarea
+                        placeholder="音色データをペーストしてください... (テスト用: 1234 と入力してください)"
+                        value={textInput}
+                        onChange={(e) => setTextInput(e.target.value)}
+                        rows={10}
+                        className="font-mono text-sm"
+                      />
+
+                      {textError && (
+                        <Alert variant="destructive">
+                          <AlertCircle className="h-4 w-4" />
+                          <AlertDescription>{textError}</AlertDescription>
+                        </Alert>
+                      )}
+
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={handleTextDialogClose}>
+                          キャンセル
+                        </Button>
+                        <Button
+                          onClick={handleTextImport}
+                          disabled={!selectedDriver || !selectedChip || !textInput.trim()}
+                        >
+                          インポート
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+
+                {hasValidTextData && (
+                  <div className="p-3 bg-muted rounded-lg">
+                    <p className="text-sm text-muted-foreground">
+                      テキストデータが正常にインポートされました ({selectedDriver} - {selectedChip})
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Submit Button */}
+        <div className="flex flex-col items-end space-y-3">
+          {submitError && (
+            <Alert variant="destructive" className="w-full">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{submitError}</AlertDescription>
+            </Alert>
+          )}
+          <Button
+            disabled={!timbeName || (!file && !hasValidTextData) || isSubmitting}
+            className="px-8"
+            onClick={handleSubmit}
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                投稿中...
+              </>
+            ) : (
+              "投稿する"
+            )}
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}

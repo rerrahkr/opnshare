@@ -1,0 +1,256 @@
+"use client"
+
+import type React from "react"
+
+import { useState } from "react"
+import { Calendar, Heart, Music, Settings, Edit, Share2, Download } from "lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { useRouter } from "next/navigation"
+import Link from "next/link"
+
+export default function UserPage({ params }: { params: { id: string } }) {
+  const router = useRouter()
+  const [activeTab, setActiveTab] = useState("posts")
+  const [profileEditOpen, setProfileEditOpen] = useState(false)
+  const [shareOpen, setShareOpen] = useState(false)
+  const [profileImage, setProfileImage] = useState<File | null>(null)
+
+  const isOwnProfile = params.id === "johndoe"
+  const [displayName, setDisplayName] = useState(isOwnProfile ? "JohnDoe" : "SynthMaster")
+  const [bio, setBio] = useState(
+    isOwnProfile
+      ? "音色制作が趣味です。特にFM音源を使った実験的なサウンドを作るのが好きです。"
+      : "FM音源とシンセサイザーが大好きです。80年代のサウンドを現代に蘇らせることを目標にしています。",
+  )
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setProfileImage(file)
+    }
+  }
+
+  const shareUrl = `${window.location.origin}/user/${params.id}`
+
+  return (
+    <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="space-y-8">
+        {/* Profile Header */}
+        <Card>
+          <CardContent className="p-8">
+            <div className="flex flex-col md:flex-row gap-6">
+              <Avatar className="h-32 w-32 mx-auto md:mx-0">
+                <AvatarImage
+                  src={profileImage ? URL.createObjectURL(profileImage) : "/placeholder.svg?height=128&width=128"}
+                />
+                <AvatarFallback className="text-2xl">{isOwnProfile ? "JD" : "SM"}</AvatarFallback>
+              </Avatar>
+
+              <div className="flex-1 text-center md:text-left space-y-4">
+                <div>
+                  <h1 className="text-3xl font-bold">{displayName}</h1>
+                  <p className="text-muted-foreground">@{params.id}</p>
+                </div>
+
+                <p className="text-muted-foreground">{bio}</p>
+
+                <div className="flex flex-wrap gap-4 justify-center md:justify-start text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <Calendar className="h-4 w-4" />
+                    2023年5月に登録
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Music className="h-4 w-4" />
+                    投稿数: {isOwnProfile ? 1 : 24}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Heart className="h-4 w-4" />
+                    受けたいいね: {isOwnProfile ? 42 : 1247}
+                  </div>
+                </div>
+
+                <div className="flex gap-3 justify-center md:justify-start">
+                  {isOwnProfile && (
+                    <>
+                      <Dialog open={profileEditOpen} onOpenChange={setProfileEditOpen}>
+                        <DialogTrigger asChild>
+                          <Button variant="outline">
+                            <Edit className="h-4 w-4 mr-2" />
+                            プロフィール編集
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>プロフィール編集</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div className="space-y-2">
+                              <Label>プロフィール画像</Label>
+                              <div className="flex items-center gap-4">
+                                <Avatar className="h-16 w-16">
+                                  <AvatarImage
+                                    src={
+                                      profileImage
+                                        ? URL.createObjectURL(profileImage)
+                                        : "/placeholder.svg?height=64&width=64"
+                                    }
+                                  />
+                                  <AvatarFallback>JD</AvatarFallback>
+                                </Avatar>
+                                <div>
+                                  <Button variant="outline" asChild>
+                                    <label className="cursor-pointer">
+                                      画像を選択
+                                      <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageChange}
+                                        className="hidden"
+                                      />
+                                    </label>
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="displayName">表示名</Label>
+                              <Input
+                                id="displayName"
+                                value={displayName}
+                                onChange={(e) => setDisplayName(e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="bio">自己紹介</Label>
+                              <Textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={4} />
+                            </div>
+                            <div className="flex justify-end gap-2">
+                              <Button variant="outline" onClick={() => setProfileEditOpen(false)}>
+                                キャンセル
+                              </Button>
+                              <Button onClick={() => setProfileEditOpen(false)}>保存</Button>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+
+                      <Button variant="outline" asChild>
+                        <Link href="/settings">
+                          <Settings className="h-4 w-4 mr-2" />
+                          アカウント設定
+                        </Link>
+                      </Button>
+                    </>
+                  )}
+
+                  <DropdownMenu open={shareOpen} onOpenChange={setShareOpen}>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline">
+                        <Share2 className="h-4 w-4 mr-2" />
+                        シェア
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem
+                        onClick={() =>
+                          window.open(
+                            `https://twitter.com/intent/tweet?text=${encodeURIComponent(`${displayName}さんの音色をチェック！`)}&url=${encodeURIComponent(shareUrl)}`,
+                          )
+                        }
+                      >
+                        Twitterでシェア
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigator.clipboard.writeText(shareUrl)}>
+                        リンクをコピー
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="posts">投稿音色</TabsTrigger>
+            <TabsTrigger value="likes">いいねした音色</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="posts" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {isOwnProfile ? (
+                <TimbreCard title="JohnDoeTone" author="JohnDoe" />
+              ) : (
+                Array.from({ length: 6 }).map((_, i) => <TimbreCard key={i} title="Epic Lead" author="SynthMaster" />)
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="likes" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <TimbreCard key={i} title="Epic Lead" author="SynthMaster" />
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  )
+}
+
+function TimbreCard({ title, author }: { title: string; author: string }) {
+  const router = useRouter()
+
+  return (
+    <Card
+      className="hover:shadow-lg transition-shadow cursor-pointer"
+      onClick={() => router.push("/timbre/sample-id-" + Math.floor(Math.random() * 1000))}
+    >
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between">
+          <div>
+            <CardTitle className="text-lg">{title}</CardTitle>
+            <p className="text-sm text-muted-foreground">by {author}</p>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          <div className="flex flex-wrap gap-1">
+            <Badge variant="outline" className="text-xs">
+              リード
+            </Badge>
+            <Badge variant="outline" className="text-xs">
+              エピック
+            </Badge>
+          </div>
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
+            <div className="flex items-center gap-4">
+              <span className="flex items-center gap-1">
+                <Download className="h-3 w-3" />
+                245
+              </span>
+              <span className="flex items-center gap-1">
+                <Heart className="h-3 w-3" />
+                89
+              </span>
+            </div>
+            <span>2024/01/15</span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
