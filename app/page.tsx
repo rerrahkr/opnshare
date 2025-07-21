@@ -2,7 +2,8 @@
 import type React from "react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { FaSearch, FaShuffle, FaHeart, FaDownload, FaHashtag, FaGithub } from "react-icons/fa6"
+import { LuSearch, LuShuffle, LuHeart, LuDownload, LuHash } from "react-icons/lu"
+import { FaGithub } from "react-icons/fa"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -34,7 +35,7 @@ export default function HomePage() {
           <div className="max-w-2xl mx-auto">
             <form onSubmit={handleSearch} className="flex gap-2">
               <div className="relative flex-1">
-                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <LuSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
                   placeholder="Search instruments..."
                   className="pl-10 h-12 text-lg"
@@ -52,7 +53,7 @@ export default function HomePage() {
                 className="h-12 px-6 bg-transparent"
                 onClick={() => router.push("/instrument/random-id-789")}
               >
-                <FaShuffle className="h-4 w-4 mr-2" />
+                <LuShuffle className="h-4 w-4 mr-2" />
                 Random
               </Button>
             </form>
@@ -95,7 +96,7 @@ export default function HomePage() {
           {/* Download Ranking */}
           <section>
             <div className="flex items-center gap-2 mb-6">
-              <FaDownload className="h-5 w-5" />
+              <LuDownload className="h-5 w-5" />
               <h2 className="text-2xl font-bold">Download Ranking</h2>
             </div>
             <div className="space-y-3">
@@ -108,7 +109,7 @@ export default function HomePage() {
           {/* Like Ranking */}
           <section>
             <div className="flex items-center gap-2 mb-6">
-              <FaHeart className="h-5 w-5" />
+              <LuHeart className="h-5 w-5" />
               <h2 className="text-2xl font-bold">Like Ranking</h2>
             </div>
             <div className="space-y-3">
@@ -122,7 +123,7 @@ export default function HomePage() {
         {/* Popular Tags */}
         <section>
           <div className="flex items-center gap-2 mb-6">
-            <FaHashtag className="h-5 w-5" />
+            <LuHash className="h-5 w-5" />
             <h2 className="text-2xl font-bold">Popular Tags</h2>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -171,11 +172,11 @@ function TimbreCard() {
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1">
-                <FaDownload className="h-3 w-3" />
+                <LuDownload className="h-3 w-3" />
                 245
               </span>
               <span className="flex items-center gap-1">
-                <FaHeart className="h-3 w-3" />
+                <LuHeart className="h-3 w-3" />
                 89
               </span>
             </div>
@@ -189,7 +190,7 @@ function TimbreCard() {
 
 function RankingItem({ rank, type }: { rank: number; type: "download" | "like" }) {
   const router = useRouter()
-  const icon = type === "download" ? FaDownload : FaHeart
+  const icon = type === "download" ? LuDownload : LuHeart
   const Icon = icon
   const count = type === "download" ? 1250 - rank * 100 : 500 - rank * 50
 

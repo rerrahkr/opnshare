@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import { FaCalendar, FaHeart, FaMusic, FaCog, FaEdit, FaShare, FaDownload } from "react-icons/fa6"
+import { LuCalendar, LuHeart, LuMusic, LuSettings, LuEdit, LuShare2, LuDownload } from "react-icons/lu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -65,15 +65,15 @@ export default function UserPage({ params }: { params: { id: string } }) {
 
                 <div className="flex flex-wrap gap-4 justify-center md:justify-start text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
-                    <FaCalendar className="h-4 w-4" />
+                    <LuCalendar className="h-4 w-4" />
                     Joined May 2023
                   </div>
                   <div className="flex items-center gap-1">
-                    <FaMusic className="h-4 w-4" />
+                    <LuMusic className="h-4 w-4" />
                     Posts: {isOwnProfile ? 1 : 24}
                   </div>
                   <div className="flex items-center gap-1">
-                    <FaHeart className="h-4 w-4" />
+                    <LuHeart className="h-4 w-4" />
                     Likes received: {isOwnProfile ? 42 : 1247}
                   </div>
                 </div>
@@ -84,7 +84,7 @@ export default function UserPage({ params }: { params: { id: string } }) {
                       <Dialog open={profileEditOpen} onOpenChange={setProfileEditOpen}>
                         <DialogTrigger asChild>
                           <Button variant="outline">
-                            <FaEdit className="h-4 w-4 mr-2" />
+                            <LuEdit className="h-4 w-4 mr-2" />
                             Edit Profile
                           </Button>
                         </DialogTrigger>
@@ -145,7 +145,7 @@ export default function UserPage({ params }: { params: { id: string } }) {
 
                       <Button variant="outline" asChild>
                         <Link href="/settings">
-                          <FaCog className="h-4 w-4 mr-2" />
+                          <LuSettings className="h-4 w-4 mr-2" />
                           Account Settings
                         </Link>
                       </Button>
@@ -155,7 +155,7 @@ export default function UserPage({ params }: { params: { id: string } }) {
                   <DropdownMenu open={shareOpen} onOpenChange={setShareOpen}>
                     <DropdownMenuTrigger asChild>
                       <Button variant="outline">
-                        <FaShare className="h-4 w-4 mr-2" />
+                        <LuShare2 className="h-4 w-4 mr-2" />
                         Share
                       </Button>
                     </DropdownMenuTrigger>
@@ -239,11 +239,11 @@ function TimbreCard({ title, author }: { title: string; author: string }) {
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1">
-                <FaDownload className="h-3 w-3" />
+                <LuDownload className="h-3 w-3" />
                 245
               </span>
               <span className="flex items-center gap-1">
-                <FaHeart className="h-3 w-3" />
+                <LuHeart className="h-3 w-3" />
                 89
               </span>
             </div>

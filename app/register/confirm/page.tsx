@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Upload } from "lucide-react"
+import { LuUpload } from "react-icons/lu"
 
 export default function RegisterConfirmPage() {
   const router = useRouter()
@@ -80,7 +80,7 @@ export default function RegisterConfirmPage() {
               <Avatar className="h-16 w-16">
                 <AvatarImage src={profileImage ? URL.createObjectURL(profileImage) : undefined} />
                 <AvatarFallback>
-                  <Upload className="h-6 w-6" />
+                  <LuUpload className="h-6 w-6" />
                 </AvatarFallback>
               </Avatar>
               <div>

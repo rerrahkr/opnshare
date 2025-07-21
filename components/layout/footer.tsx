@@ -1,4 +1,4 @@
-import { FaGithub } from "react-icons/fa6"
+import { FaGithub } from "react-icons/fa"
 import { Button } from "@/components/ui/button"
 
 export function Footer() {

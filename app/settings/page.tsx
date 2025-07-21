@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRouter } from "react"
-import { AlertCircle, Mail, Lock, Trash2, Loader2 } from "lucide-react"
+import { LuAlertCircle, LuMail, LuLock, LuTrash2, LuLoader2 } from "react-icons/lu"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -152,7 +152,7 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Mail className="h-5 w-5" />
+              <LuMail className="h-5 w-5" />
               Email Address
             </CardTitle>
           </CardHeader>
@@ -164,7 +164,7 @@ export default function SettingsPage() {
 
             {emailChangeMessage && (
               <Alert>
-                <Mail className="h-4 w-4" />
+                <LuMail className="h-4 w-4" />
                 <AlertDescription>{emailChangeMessage}</AlertDescription>
               </Alert>
             )}
@@ -189,7 +189,7 @@ export default function SettingsPage() {
                     <Button onClick={handleEmailChange} disabled={!newEmail || isProcessing}>
                       {isProcessing ? (
                         <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          <LuLoader2 className="h-4 w-4 mr-2 animate-spin" />
                           Changing...
                         </>
                       ) : (
@@ -207,7 +207,7 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Lock className="h-5 w-5" />
+              <LuLock className="h-5 w-5" />
               Password
             </CardTitle>
           </CardHeader>
@@ -258,7 +258,7 @@ export default function SettingsPage() {
                     >
                       {isProcessing ? (
                         <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          <LuLoader2 className="h-4 w-4 mr-2 animate-spin" />
                           Changing...
                         </>
                       ) : (
@@ -276,13 +276,13 @@ export default function SettingsPage() {
         <Card className="border-destructive">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-destructive">
-              <Trash2 className="h-5 w-5" />
+              <LuTrash2 className="h-5 w-5" />
               Delete Account
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
+              <LuAlertCircle className="h-4 w-4" />
               <AlertDescription>
                 Deleting your account will permanently remove all your posted data. This action cannot be undone.
               </AlertDescription>
@@ -314,7 +314,7 @@ export default function SettingsPage() {
 
                   {deleteError && (
                     <Alert variant="destructive">
-                      <AlertCircle className="h-4 w-4" />
+                      <LuAlertCircle className="h-4 w-4" />
                       <AlertDescription>{deleteError}</AlertDescription>
                     </Alert>
                   )}
@@ -329,7 +329,7 @@ export default function SettingsPage() {
                   >
                     {isProcessing ? (
                       <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        <LuLoader2 className="h-4 w-4 mr-2 animate-spin" />
                         Deleting...
                       </>
                     ) : (
@@ -351,7 +351,7 @@ export default function SettingsPage() {
           </DialogHeader>
           <div className="space-y-4">
             <Alert>
-              <AlertCircle className="h-4 w-4" />
+              <LuAlertCircle className="h-4 w-4" />
               <AlertDescription>
                 For security reasons, please enter your password again to perform this action.
               </AlertDescription>
@@ -373,7 +373,7 @@ export default function SettingsPage() {
               <Button onClick={handleReauth} disabled={!reauthPassword || isProcessing}>
                 {isProcessing ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <LuLoader2 className="h-4 w-4 mr-2 animate-spin" />
                     Authenticating...
                   </>
                 ) : (

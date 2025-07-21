@@ -5,7 +5,7 @@ import type React from "react"
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { FaSearch, FaUser, FaCog, FaSignOutAlt, FaUpload, FaBars } from "react-icons/fa6"
+import { LuSearch, LuUser, LuSettings, LuLogOut, LuUpload, LuMenu } from "react-icons/lu"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -55,7 +55,7 @@ export function Header() {
           {showSearchInHeader && (
             <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md mx-8">
               <div className="relative w-full">
-                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <LuSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
                   placeholder="Search instruments..."
                   className="pl-10"
@@ -72,7 +72,7 @@ export function Header() {
               <>
                 <Button variant="ghost" asChild>
                   <Link href="/upload">
-                    <FaUpload className="h-4 w-4 mr-2" />
+                    <LuUpload className="h-4 w-4 mr-2" />
                     Upload
                   </Link>
                 </Button>
@@ -88,19 +88,19 @@ export function Header() {
                   <DropdownMenuContent className="w-56" align="end">
                     <DropdownMenuItem asChild>
                       <Link href="/user/johndoe">
-                        <FaUser className="mr-2 h-4 w-4" />
+                        <LuUser className="mr-2 h-4 w-4" />
                         My Page
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link href="/settings">
-                        <FaCog className="mr-2 h-4 w-4" />
+                        <LuSettings className="mr-2 h-4 w-4" />
                         Account Settings
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>
-                      <FaSignOutAlt className="mr-2 h-4 w-4" />
+                      <LuLogOut className="mr-2 h-4 w-4" />
                       Logout
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -122,14 +122,14 @@ export function Header() {
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild className="md:hidden">
               <Button variant="ghost" size="sm">
-                <FaBars className="h-5 w-5" />
+                <LuMenu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-80">
               <div className="flex flex-col space-y-4 mt-8">
                 {showSearchInHeader && (
                   <form onSubmit={handleSearch} className="relative">
-                    <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                    <LuSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                     <Input
                       placeholder="Search instruments..."
                       className="pl-10"
@@ -143,24 +143,24 @@ export function Header() {
                   <>
                     <Button variant="ghost" className="justify-start" asChild>
                       <Link href="/upload">
-                        <FaUpload className="h-4 w-4 mr-2" />
+                        <LuUpload className="h-4 w-4 mr-2" />
                         Upload
                       </Link>
                     </Button>
                     <Button variant="ghost" className="justify-start" asChild>
                       <Link href="/user/johndoe">
-                        <FaUser className="h-4 w-4 mr-2" />
+                        <LuUser className="h-4 w-4 mr-2" />
                         My Page
                       </Link>
                     </Button>
                     <Button variant="ghost" className="justify-start" asChild>
                       <Link href="/settings">
-                        <FaCog className="h-4 w-4 mr-2" />
+                        <LuSettings className="h-4 w-4 mr-2" />
                         Account Settings
                       </Link>
                     </Button>
                     <Button variant="ghost" className="justify-start" onClick={handleLogout}>
-                      <FaSignOutAlt className="h-4 w-4 mr-2" />
+                      <LuLogOut className="h-4 w-4 mr-2" />
                       Logout
                     </Button>
                   </>
