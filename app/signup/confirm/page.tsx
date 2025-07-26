@@ -4,6 +4,7 @@ import { FirebaseError } from "firebase/app";
 import {
   isSignInWithEmailLink,
   signInWithEmailLink,
+  type User,
   updatePassword,
 } from "firebase/auth";
 import {
@@ -17,9 +18,7 @@ import {
 } from "firebase/firestore";
 import { LucideAlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
-import type React from "react";
-import { use, useEffect, useState } from "react";
-import { LuAlertCircle } from "react-icons/lu";
+import { useEffect, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -44,7 +43,7 @@ export default function RegisterConfirmPage() {
       if (hasSignedIn) {
         const user = getUser();
         if (!user) {
-          console.error("User not found");
+          // console.error("User not found");
           router.push("/signin");
           return;
         }
@@ -67,18 +66,43 @@ export default function RegisterConfirmPage() {
 
         try {
           await signInWithEmailLink(auth, email || "", window.location.href);
-        } catch (error) {
-          console.error("Error confirming registration:", error);
+        } catch (_error: unknown) {
+          // console.error("Error confirming registration:", error);
           router.push("/signup");
         }
       } else {
-        console.error("Invalid sign-in link");
+        // console.error("Invalid sign-in link");
         router.push("/signup");
       }
     })();
   }, [router, hasSignedIn, getUser]);
 
-  const handleSubmit = async () => {
+  async function reauthenticate(user: User, emailToUse: string): Promise<void> {
+    try {
+      // Reauthenticate with email link.
+
+      if (emailToUse && isSignInWithEmailLink(auth, window.location.href)) {
+        // console.log("Attempting reauthentication with email link...");
+        await signInWithEmailLink(auth, emailToUse, window.location.href);
+        await updatePassword(user, password);
+        // console.log("Password updated successfully after reauthentication");
+      } else {
+        // console.error("Cannot reauthenticate: Email link not available");
+        throw "Authentication expired. Please sign in again from the email link.";
+      }
+    } catch (reauthError) {
+      // console.error("Reauthentication failed:", reauthError);
+      if (
+        reauthError instanceof FirebaseError &&
+        reauthError.code === "auth/invalid-action-code"
+      ) {
+        throw "The email link has expired. Please request a new registration link.";
+      }
+    }
+  }
+
+  async function handleSubmit() {
+    // Check User ID uniqueness
     try {
       const usersRef = collection(db, "users");
       const q = query(usersRef, where("userId", "==", userId));
@@ -94,17 +118,20 @@ export default function RegisterConfirmPage() {
       return;
     }
 
-    const user = getUser();
-    if (!user) {
-      window.alert("User not found");
-      return;
-    }
-
+    // Password check
     if (!password || password !== confirmPassword) {
       window.alert("Passwords do not match");
       return;
     }
 
+    const user = getUser();
+    if (!user) {
+      window.alert("User not found");
+      router.push("/signup");
+      return;
+    }
+
+    // Update password
     try {
       await updatePassword(user, password);
     } catch (err: unknown) {
@@ -116,52 +143,19 @@ export default function RegisterConfirmPage() {
 
           case "auth/requires-recent-login":
             try {
-              // Reauthenticate with email link.
-              const email = user.email;
               const savedEmail = window.localStorage.getItem("emailForSignIn");
-              const emailToUse = email || savedEmail;
-
-              if (
-                emailToUse &&
-                isSignInWithEmailLink(auth, window.location.href)
-              ) {
-                console.log("Attempting reauthentication with email link...");
-                await signInWithEmailLink(
-                  auth,
-                  emailToUse,
-                  window.location.href
-                );
-                await updatePassword(user, password);
-                console.log(
-                  "Password updated successfully after reauthentication"
-                );
-              } else {
-                console.error(
-                  "Cannot reauthenticate: Email link not available"
-                );
-                window.alert(
-                  "Authentication expired. Please sign in again from the email link."
-                );
-                router.push("/signup");
-                return;
+              const emailToUse = user.email || savedEmail || "";
+              await reauthenticate(user, emailToUse);
+            } catch (err: unknown) {
+              if (typeof err === "string") {
+                window.alert(err);
               }
-            } catch (reauthError) {
-              console.error("Reauthentication failed:", reauthError);
-              if (
-                reauthError instanceof FirebaseError &&
-                reauthError.code === "auth/invalid-action-code"
-              ) {
-                window.alert(
-                  "The email link has expired. Please request a new registration link."
-                );
-                router.push("/signup");
-              }
-              return;
+              router.push("/signup");
             }
             break;
 
           default:
-            console.error("Error updating password:", err);
+            // console.error("Error updating password:", err);
             return;
         }
       }
@@ -184,7 +178,7 @@ export default function RegisterConfirmPage() {
     }
 
     router.push("/");
-  };
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/20 px-4">
