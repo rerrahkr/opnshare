@@ -61,6 +61,8 @@ export default function RegisterConfirmPage() {
             />
           </div>
 
+          {/* Profile Image section removed - no image upload needed */}
+
           <Button
             className="w-full"
             disabled={!password || !confirmPassword || !displayName || password !== confirmPassword}

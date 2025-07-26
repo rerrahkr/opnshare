@@ -1,7 +1,6 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useRouter } from "react"
 import { FaExclamationCircle, FaEnvelope, FaLock, FaTrash, FaSpinner } from "react-icons/fa"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -22,7 +21,6 @@ import {
 } from "@/components/ui/alert-dialog"
 
 export default function SettingsPage() {
-  const router = useRouter()
   const [currentEmail, setCurrentEmail] = useState("user@example.com")
   const [emailDialogOpen, setEmailDialogOpen] = useState(false)
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false)
@@ -38,6 +36,7 @@ export default function SettingsPage() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [pendingAction, setPendingAction] = useState<"email" | "password" | null>(null)
   const [deleteError, setDeleteError] = useState("")
+  const router = useRouter()
 
   const requiresReauth = () => Math.random() < 0.5 // 50%の確率で再認証が必要
 

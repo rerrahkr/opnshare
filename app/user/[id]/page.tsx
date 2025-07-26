@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
 import { FaCalendar, FaHeart, FaMusic, FaCog, FaEdit, FaShare, FaDownload } from "react-icons/fa"
 import { Button } from "@/components/ui/button"
@@ -13,12 +15,14 @@ import { Label } from "@/components/ui/label"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { FaUser } from "react-icons/fa"
 
 export default function UserPage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState("posts")
   const [profileEditOpen, setProfileEditOpen] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
+  const [profileImage, setProfileImage] = useState<File | null>(null)
 
   const isOwnProfile = params.id === "johndoe"
   const [displayName, setDisplayName] = useState(isOwnProfile ? "JohnDoe" : "SynthMaster")
@@ -27,6 +31,13 @@ export default function UserPage({ params }: { params: { id: string } }) {
       ? "I enjoy creating instruments as a hobby. I especially like making experimental sounds using FM synthesis."
       : "I love FM synthesis and synthesizers. My goal is to bring 80s sounds back to the modern era.",
   )
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setProfileImage(file)
+    }
+  }
 
   const shareUrl = `${window.location.origin}/user/${params.id}`
 
@@ -38,7 +49,7 @@ export default function UserPage({ params }: { params: { id: string } }) {
           <CardContent className="p-8">
             <div className="flex flex-col md:flex-row gap-6">
               <div className="h-32 w-32 mx-auto md:mx-0 rounded-full bg-muted flex items-center justify-center">
-                <span className="text-4xl font-bold text-muted-foreground">{isOwnProfile ? "JD" : "SM"}</span>
+                <FaUser className="h-16 w-16 text-muted-foreground" />
               </div>
 
               <div className="flex-1 text-center md:text-left space-y-4">

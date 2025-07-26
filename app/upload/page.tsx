@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { FaUpload, FaTimes, FaFileText, FaFile, FaExclamationCircle, FaSpinner } from "react-icons/fa"
+import { FaUpload, FaTimes, FaFileAlt, FaMemory, FaExclamationCircle, FaSpinner } from "react-icons/fa"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -188,7 +188,7 @@ export default function UploadPage() {
                 onClick={() => setUploadMethod("file")}
                 disabled={isSubmitting}
               >
-                <FaFile className="h-6 w-6 mb-2" />
+                <FaMemory className="h-6 w-6 mb-2" />
                 Binary File
               </Button>
               <Button
@@ -197,7 +197,7 @@ export default function UploadPage() {
                 onClick={() => setUploadMethod("text")}
                 disabled={isSubmitting}
               >
-                <FaFileText className="h-6 w-6 mb-2" />
+                <FaFileAlt className="h-6 w-6 mb-2" />
                 Text Input
               </Button>
             </div>
@@ -244,7 +244,7 @@ export default function UploadPage() {
                 <Dialog open={textDialogOpen} onOpenChange={setTextDialogOpen}>
                   <DialogTrigger asChild>
                     <Button variant="outline" className="w-full bg-transparent" disabled={isSubmitting}>
-                      <FaFileText className="h-4 w-4 mr-2" />
+                      <FaFileAlt className="h-4 w-4 mr-2" />
                       Input as Text
                     </Button>
                   </DialogTrigger>

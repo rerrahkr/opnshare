@@ -16,6 +16,7 @@ import {
   FaTimes,
   FaExclamationCircle,
   FaSpinner,
+  FaUser,
 } from "react-icons/fa"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -171,9 +172,7 @@ export default function InstrumentDetailPage({ params }: { params: { id: string 
               <h1 className="text-3xl font-bold">Epic Lead Sound</h1>
               <div className="flex items-center gap-4 text-muted-foreground">
                 <Link href="/user/synthmaster" className="flex items-center gap-2 hover:underline">
-                  <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center">
-                    <span className="text-xs font-medium">SM</span>
-                  </div>
+                  <FaUser className="h-4 w-4" />
                   SynthMaster
                 </Link>
                 <span>•</span>
