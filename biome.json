@@ -13,7 +13,8 @@
 			"!components/ui/**/*",
 			"hooks/**/*",
 			"lib/**/*",
-			"styles/**/*"
+			"styles/**/*",
+			"stores/**/*"
 		]
 	},
 	"formatter": {

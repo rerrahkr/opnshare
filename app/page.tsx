@@ -1,25 +1,48 @@
-"use client"
-import type React from "react"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { LuSearch, LuShuffle, LuHeart, LuDownload, LuHash } from "react-icons/lu"
-import { FaGithub } from "react-icons/fa"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+"use client";
+
+import { addDoc, collection } from "firebase/firestore";
+import { useRouter } from "next/navigation";
+import type React from "react";
+import { useEffect, useState } from "react";
+import { FaGithub } from "react-icons/fa";
+import {
+  LuDownload,
+  LuHash,
+  LuHeart,
+  LuSearch,
+  LuShuffle,
+} from "react-icons/lu";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+// import { db } from "@/lib/firebase";
 
 export default function HomePage() {
-  const router = useRouter()
-  const [searchQuery, setSearchQuery] = useState("")
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // useEffect(() => {
+  //   (async () => {
+  //     try {
+  //       const docRef = await addDoc(collection(db, "tests"), {
+  //         name: "Test",
+  //         date: new Date(),
+  //       });
+  //       console.log("Document written with ID: ", docRef.id);
+  //     } catch (err) {
+  //       console.error("Error adding document: ", err);
+  //     }
+  //   })();
+  // }, []);
 
   const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
-      setSearchQuery("")
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery("");
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
@@ -29,7 +52,9 @@ export default function HomePage() {
           <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
             Instrument Sharing Service
           </h1>
-          <p className="text-lg text-muted-foreground">Share FM synthesizer instruments and discover new sounds</p>
+          <p className="text-lg text-muted-foreground">
+            Share FM synthesizer instruments and discover new sounds
+          </p>
 
           {/* Search Bar */}
           <div className="max-w-2xl mx-auto">
@@ -127,12 +152,23 @@ export default function HomePage() {
             <h2 className="text-2xl font-bold">Popular Tags</h2>
           </div>
           <div className="flex flex-wrap gap-3">
-            {["Bass", "Lead", "Pad", "Pluck", "Brass", "Strings", "FX", "Drum"].map((tag) => (
+            {[
+              "Bass",
+              "Lead",
+              "Pad",
+              "Pluck",
+              "Brass",
+              "Strings",
+              "FX",
+              "Drum",
+            ].map((tag) => (
               <Badge
                 key={tag}
                 variant="secondary"
                 className="text-sm py-2 px-4 cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
-                onClick={() => router.push(`/search?tag=${encodeURIComponent(tag)}`)}
+                onClick={() =>
+                  router.push(`/search?tag=${encodeURIComponent(tag)}`)
+                }
               >
                 {tag}
               </Badge>
@@ -141,15 +177,17 @@ export default function HomePage() {
         </section>
       </div>
     </div>
-  )
+  );
 }
 
 function TimbreCard() {
-  const router = useRouter()
+  const router = useRouter();
   return (
     <Card
       className="hover:shadow-lg transition-shadow cursor-pointer"
-      onClick={() => router.push("/instrument/sample-id-" + Math.floor(Math.random() * 1000))}
+      onClick={() =>
+        router.push("/instrument/sample-id-" + Math.floor(Math.random() * 1000))
+      }
     >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
@@ -185,14 +223,20 @@ function TimbreCard() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
-function RankingItem({ rank, type }: { rank: number; type: "download" | "like" }) {
-  const router = useRouter()
-  const icon = type === "download" ? LuDownload : LuHeart
-  const Icon = icon
-  const count = type === "download" ? 1250 - rank * 100 : 500 - rank * 50
+function RankingItem({
+  rank,
+  type,
+}: {
+  rank: number;
+  type: "download" | "like";
+}) {
+  const router = useRouter();
+  const icon = type === "download" ? LuDownload : LuHeart;
+  const Icon = icon;
+  const count = type === "download" ? 1250 - rank * 100 : 500 - rank * 50;
 
   return (
     <Card
@@ -226,5 +270,5 @@ function RankingItem({ rank, type }: { rank: number; type: "download" | "like" }
         </div>
       </div>
     </Card>
-  )
+  );
 }
