@@ -49,8 +49,8 @@ export default function UserPage({ params }: { params: { id: string } }) {
           <CardContent className="p-8">
             <div className="flex flex-col md:flex-row gap-6">
               <div className="h-32 w-32 mx-auto md:mx-0 rounded-full bg-muted flex items-center justify-center">
-                <FaUser className="h-16 w-16 text-muted-foreground" />
-              </div>
+            {/*<FaUser className="h-16 w-16 text-muted-foreground" />*/
+}                          </div>
 
               <div className="flex-1 text-center md:text-left space-y-4">
                 <div>
