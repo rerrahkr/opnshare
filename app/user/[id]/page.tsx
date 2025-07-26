@@ -3,8 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import { LuCalendar, LuHeart, LuMusic, LuSettings, LuEdit, LuShare2, LuDownload } from "react-icons/lu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { FaCalendar, FaHeart, FaMusic, FaCog, FaEdit, FaShare, FaDownload } from "react-icons/fa"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -47,14 +46,7 @@ export default function UserPage({ params }: { params: { id: string } }) {
         {/* Profile Header */}
         <Card>
           <CardContent className="p-8">
-            <div className="flex flex-col md:flex-row gap-6">
-              <Avatar className="h-32 w-32 mx-auto md:mx-0">
-                <AvatarImage
-                  src={profileImage ? URL.createObjectURL(profileImage) : "/placeholder.svg?height=128&width=128"}
-                />
-                <AvatarFallback className="text-2xl">{isOwnProfile ? "JD" : "SM"}</AvatarFallback>
-              </Avatar>
-
+            <div className="flex flex-col">
               <div className="flex-1 text-center md:text-left space-y-4">
                 <div>
                   <h1 className="text-3xl font-bold">{displayName}</h1>
@@ -65,15 +57,15 @@ export default function UserPage({ params }: { params: { id: string } }) {
 
                 <div className="flex flex-wrap gap-4 justify-center md:justify-start text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
-                    <LuCalendar className="h-4 w-4" />
+                    <FaCalendar className="h-4 w-4" />
                     Joined May 2023
                   </div>
                   <div className="flex items-center gap-1">
-                    <LuMusic className="h-4 w-4" />
+                    <FaMusic className="h-4 w-4" />
                     Posts: {isOwnProfile ? 1 : 24}
                   </div>
                   <div className="flex items-center gap-1">
-                    <LuHeart className="h-4 w-4" />
+                    <FaHeart className="h-4 w-4" />
                     Likes received: {isOwnProfile ? 42 : 1247}
                   </div>
                 </div>
@@ -84,7 +76,7 @@ export default function UserPage({ params }: { params: { id: string } }) {
                       <Dialog open={profileEditOpen} onOpenChange={setProfileEditOpen}>
                         <DialogTrigger asChild>
                           <Button variant="outline">
-                            <LuEdit className="h-4 w-4 mr-2" />
+                            <FaEdit className="h-4 w-4 mr-2" />
                             Edit Profile
                           </Button>
                         </DialogTrigger>
@@ -93,34 +85,6 @@ export default function UserPage({ params }: { params: { id: string } }) {
                             <DialogTitle>Edit Profile</DialogTitle>
                           </DialogHeader>
                           <div className="space-y-4">
-                            <div className="space-y-2">
-                              <Label>Profile Image</Label>
-                              <div className="flex items-center gap-4">
-                                <Avatar className="h-16 w-16">
-                                  <AvatarImage
-                                    src={
-                                      profileImage
-                                        ? URL.createObjectURL(profileImage)
-                                        : "/placeholder.svg?height=64&width=64"
-                                    }
-                                  />
-                                  <AvatarFallback>JD</AvatarFallback>
-                                </Avatar>
-                                <div>
-                                  <Button variant="outline" asChild>
-                                    <label className="cursor-pointer">
-                                      Select Image
-                                      <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleImageChange}
-                                        className="hidden"
-                                      />
-                                    </label>
-                                  </Button>
-                                </div>
-                              </div>
-                            </div>
                             <div className="space-y-2">
                               <Label htmlFor="displayName">Display Name</Label>
                               <Input
@@ -145,7 +109,7 @@ export default function UserPage({ params }: { params: { id: string } }) {
 
                       <Button variant="outline" asChild>
                         <Link href="/settings">
-                          <LuSettings className="h-4 w-4 mr-2" />
+                          <FaCog className="h-4 w-4 mr-2" />
                           Account Settings
                         </Link>
                       </Button>
@@ -155,7 +119,7 @@ export default function UserPage({ params }: { params: { id: string } }) {
                   <DropdownMenu open={shareOpen} onOpenChange={setShareOpen}>
                     <DropdownMenuTrigger asChild>
                       <Button variant="outline">
-                        <LuShare2 className="h-4 w-4 mr-2" />
+                        <FaShare className="h-4 w-4 mr-2" />
                         Share
                       </Button>
                     </DropdownMenuTrigger>
@@ -239,11 +203,11 @@ function TimbreCard({ title, author }: { title: string; author: string }) {
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1">
-                <LuDownload className="h-3 w-3" />
+                <FaDownload className="h-3 w-3" />
                 245
               </span>
               <span className="flex items-center gap-1">
-                <LuHeart className="h-3 w-3" />
+                <FaHeart className="h-3 w-3" />
                 89
               </span>
             </div>

@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { LuMail } from "react-icons/lu"
+import { FaEnvelope } from "react-icons/fa"
 
 export default function ResetPasswordPage() {
   const [step, setStep] = useState<1 | 2>(1)
@@ -23,7 +23,7 @@ export default function ResetPasswordPage() {
         <Card className="w-full max-w-md text-center">
           <CardHeader>
             <div className="mx-auto mb-4">
-              <LuMail className="h-16 w-16 text-primary" />
+              <FaEnvelope className="h-16 w-16 text-primary" />
             </div>
             <CardTitle className="text-2xl">Email Sent</CardTitle>
           </CardHeader>

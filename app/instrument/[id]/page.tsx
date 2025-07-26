@@ -6,23 +6,23 @@ import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import {
-  LuArrowLeft,
-  LuHeart,
-  LuDownload,
-  LuVolume2,
-  LuEdit,
-  LuMoreVertical,
-  LuShare2,
-  LuX,
-  LuAlertCircle,
-  LuLoader2,
-} from "react-icons/lu"
+  FaArrowLeft,
+  FaHeart,
+  FaDownload,
+  FaVolumeUp,
+  FaEdit,
+  FaEllipsisV,
+  FaShare,
+  FaTimes,
+  FaExclamationCircle,
+  FaSpinner,
+  FaUser,
+} from "react-icons/fa"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -157,7 +157,7 @@ export default function InstrumentDetailPage({ params }: { params: { id: string 
       <div className="mb-6">
         <Button variant="ghost" asChild className="mb-4">
           <Link href="/search">
-            <LuArrowLeft className="h-4 w-4 mr-2" />
+            <FaArrowLeft className="h-4 w-4 mr-2" />
             Back to Search
           </Link>
         </Button>
@@ -172,10 +172,7 @@ export default function InstrumentDetailPage({ params }: { params: { id: string 
               <h1 className="text-3xl font-bold">Epic Lead Sound</h1>
               <div className="flex items-center gap-4 text-muted-foreground">
                 <Link href="/user/synthmaster" className="flex items-center gap-2 hover:underline">
-                  <Avatar className="h-6 w-6">
-                    <AvatarImage src="/placeholder.svg?height=24&width=24" />
-                    <AvatarFallback>SM</AvatarFallback>
-                  </Avatar>
+                  <FaUser className="h-4 w-4" />
                   SynthMaster
                 </Link>
                 <span>•</span>
@@ -188,7 +185,7 @@ export default function InstrumentDetailPage({ params }: { params: { id: string 
                 onClick={handleLikeToggle}
                 className="flex items-center gap-2"
               >
-                <LuHeart className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
+                <FaHeart className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
                 {isLiked ? "Liked" : "Like"}
                 <span className="text-sm">{likeCount}</span>
               </Button>
@@ -196,7 +193,7 @@ export default function InstrumentDetailPage({ params }: { params: { id: string 
               <DropdownMenu open={shareOpen} onOpenChange={setShareOpen}>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline">
-                    <LuShare2 className="h-4 w-4 mr-2" />
+                    <FaShare className="h-4 w-4 mr-2" />
                     Share
                   </Button>
                 </DropdownMenuTrigger>
@@ -217,14 +214,14 @@ export default function InstrumentDetailPage({ params }: { params: { id: string 
               {isOwnInstrument && (
                 <>
                   <Button variant="outline" onClick={() => setEditOpen(true)}>
-                    <LuEdit className="h-4 w-4 mr-2" />
+                    <FaEdit className="h-4 w-4 mr-2" />
                     Edit
                   </Button>
 
                   <DropdownMenu modal={false}>
                     <DropdownMenuTrigger asChild>
                       <Button variant="outline" size="icon">
-                        <LuMoreVertical className="h-4 w-4" />
+                        <FaEllipsisV className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
@@ -334,7 +331,7 @@ export default function InstrumentDetailPage({ params }: { params: { id: string 
             {/* Original File */}
             <div>
               <Button className="w-full">
-                <LuDownload className="h-4 w-4 mr-2" />
+                <FaDownload className="h-4 w-4 mr-2" />
                 Download Original File
               </Button>
             </div>
@@ -377,7 +374,7 @@ export default function InstrumentDetailPage({ params }: { params: { id: string 
                 </div>
               </div>
               <Button variant="outline" className="w-full bg-transparent" onClick={handleExport}>
-                <LuDownload className="h-4 w-4 mr-2" />
+                <FaDownload className="h-4 w-4 mr-2" />
                 Export ({selectedTarget})
               </Button>
             </div>
@@ -388,7 +385,7 @@ export default function InstrumentDetailPage({ params }: { params: { id: string 
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <LuVolume2 className="h-5 w-5" />
+              <FaVolumeUp className="h-5 w-5" />
               Preview
             </CardTitle>
           </CardHeader>
@@ -548,7 +545,7 @@ OP4: AR=15, DR=2, SL=0, RR=4, TL=0, KS=0, ML=4, AM=0, VB=1, EG=1, KR=0, WS=2`}
                 {editTags.map((tag) => (
                   <Badge key={tag} variant="secondary" className="cursor-pointer">
                     {tag}
-                    <LuX className="h-3 w-3 ml-1" onClick={() => removeTag(tag)} />
+                    <FaTimes className="h-3 w-3 ml-1" onClick={() => removeTag(tag)} />
                   </Badge>
                 ))}
               </div>
@@ -587,7 +584,7 @@ OP4: AR=15, DR=2, SL=0, RR=4, TL=0, KS=0, ML=4, AM=0, VB=1, EG=1, KR=0, WS=2`}
 
           {deleteError && (
             <Alert variant="destructive">
-              <LuAlertCircle className="h-4 w-4" />
+              <FaExclamationCircle className="h-4 w-4" />
               <AlertDescription>{deleteError}</AlertDescription>
             </Alert>
           )}
@@ -603,7 +600,7 @@ OP4: AR=15, DR=2, SL=0, RR=4, TL=0, KS=0, ML=4, AM=0, VB=1, EG=1, KR=0, WS=2`}
             >
               {isDeleting ? (
                 <>
-                  <LuLoader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <FaSpinner className="h-4 w-4 mr-2 animate-spin" />
                   Deleting...
                 </>
               ) : (

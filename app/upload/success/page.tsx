@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { LuCheckCircle, LuUpload, LuUser } from "react-icons/lu"
+import { FaCheckCircle, FaUpload, FaUser } from "react-icons/fa"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -9,7 +9,7 @@ export default function UploadSuccessPage() {
       <Card className="w-full max-w-md text-center">
         <CardHeader>
           <div className="mx-auto mb-4">
-            <LuCheckCircle className="h-16 w-16 text-green-500" />
+            <FaCheckCircle className="h-16 w-16 text-green-500" />
           </div>
           <CardTitle className="text-2xl">Upload Complete</CardTitle>
         </CardHeader>
@@ -21,14 +21,14 @@ export default function UploadSuccessPage() {
           <div className="space-y-3 pt-4">
             <Button asChild className="w-full">
               <Link href="/upload">
-                <LuUpload className="h-4 w-4 mr-2" />
+                <FaUpload className="h-4 w-4 mr-2" />
                 Upload another instrument
               </Link>
             </Button>
 
             <Button variant="outline" asChild className="w-full bg-transparent">
               <Link href="/mypage">
-                <LuUser className="h-4 w-4 mr-2" />
+                <FaUser className="h-4 w-4 mr-2" />
                 Back to my page
               </Link>
             </Button>

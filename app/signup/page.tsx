@@ -3,7 +3,7 @@
 import { type ActionCodeSettings, sendSignInLinkToEmail } from "firebase/auth";
 import Link from "next/link";
 import { useState } from "react";
-import { LuMail } from "react-icons/lu";
+import { FaEnvelope } from "react-icons/fa";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -45,7 +45,7 @@ export default function RegisterPage() {
         <Card className="w-full max-w-md text-center">
           <CardHeader>
             <div className="mx-auto mb-4">
-              <LuMail className="h-16 w-16 text-primary" />
+              <FaEnvelope className="h-16 w-16 text-primary" />
             </div>
             <CardTitle className="text-2xl">Email Sent</CardTitle>
           </CardHeader>
