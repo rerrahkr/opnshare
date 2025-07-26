@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useRouter } from "react"
-import { LuAlertCircle, LuMail, LuLock, LuTrash2, LuLoader2 } from "react-icons/lu"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { FaExclamationCircle, FaEnvelope, FaLock, FaTrash, FaSpinner } from "react-icons/fa"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -21,6 +22,7 @@ import {
 } from "@/components/ui/alert-dialog"
 
 export default function SettingsPage() {
+  const router = useRouter()
   const [currentEmail, setCurrentEmail] = useState("user@example.com")
   const [emailDialogOpen, setEmailDialogOpen] = useState(false)
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false)
@@ -36,7 +38,6 @@ export default function SettingsPage() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [pendingAction, setPendingAction] = useState<"email" | "password" | null>(null)
   const [deleteError, setDeleteError] = useState("")
-  const router = useRouter()
 
   const requiresReauth = () => Math.random() < 0.5 // 50%の確率で再認証が必要
 
@@ -152,7 +153,7 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <LuMail className="h-5 w-5" />
+              <FaEnvelope className="h-5 w-5" />
               Email Address
             </CardTitle>
           </CardHeader>
@@ -164,7 +165,7 @@ export default function SettingsPage() {
 
             {emailChangeMessage && (
               <Alert>
-                <LuMail className="h-4 w-4" />
+                <FaEnvelope className="h-4 w-4" />
                 <AlertDescription>{emailChangeMessage}</AlertDescription>
               </Alert>
             )}
@@ -189,7 +190,7 @@ export default function SettingsPage() {
                     <Button onClick={handleEmailChange} disabled={!newEmail || isProcessing}>
                       {isProcessing ? (
                         <>
-                          <LuLoader2 className="h-4 w-4 mr-2 animate-spin" />
+                          <FaSpinner className="h-4 w-4 mr-2 animate-spin" />
                           Changing...
                         </>
                       ) : (
@@ -207,7 +208,7 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <LuLock className="h-5 w-5" />
+              <FaLock className="h-5 w-5" />
               Password
             </CardTitle>
           </CardHeader>
@@ -258,7 +259,7 @@ export default function SettingsPage() {
                     >
                       {isProcessing ? (
                         <>
-                          <LuLoader2 className="h-4 w-4 mr-2 animate-spin" />
+                          <FaSpinner className="h-4 w-4 mr-2 animate-spin" />
                           Changing...
                         </>
                       ) : (
@@ -276,13 +277,13 @@ export default function SettingsPage() {
         <Card className="border-destructive">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-destructive">
-              <LuTrash2 className="h-5 w-5" />
+              <FaTrash className="h-5 w-5" />
               Delete Account
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <Alert variant="destructive">
-              <LuAlertCircle className="h-4 w-4" />
+              <FaExclamationCircle className="h-4 w-4" />
               <AlertDescription>
                 Deleting your account will permanently remove all your posted data. This action cannot be undone.
               </AlertDescription>
@@ -314,7 +315,7 @@ export default function SettingsPage() {
 
                   {deleteError && (
                     <Alert variant="destructive">
-                      <LuAlertCircle className="h-4 w-4" />
+                      <FaExclamationCircle className="h-4 w-4" />
                       <AlertDescription>{deleteError}</AlertDescription>
                     </Alert>
                   )}
@@ -329,7 +330,7 @@ export default function SettingsPage() {
                   >
                     {isProcessing ? (
                       <>
-                        <LuLoader2 className="h-4 w-4 mr-2 animate-spin" />
+                        <FaSpinner className="h-4 w-4 mr-2 animate-spin" />
                         Deleting...
                       </>
                     ) : (
@@ -351,7 +352,7 @@ export default function SettingsPage() {
           </DialogHeader>
           <div className="space-y-4">
             <Alert>
-              <LuAlertCircle className="h-4 w-4" />
+              <FaExclamationCircle className="h-4 w-4" />
               <AlertDescription>
                 For security reasons, please enter your password again to perform this action.
               </AlertDescription>
@@ -373,7 +374,7 @@ export default function SettingsPage() {
               <Button onClick={handleReauth} disabled={!reauthPassword || isProcessing}>
                 {isProcessing ? (
                   <>
-                    <LuLoader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <FaSpinner className="h-4 w-4 mr-2 animate-spin" />
                     Authenticating...
                   </>
                 ) : (

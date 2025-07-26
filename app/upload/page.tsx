@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { LuUpload, LuX, LuFileText, LuBinary, LuAlertCircle, LuLoader2 } from "react-icons/lu"
+import { FaUpload, FaTimes, FaFileText, FaFile, FaExclamationCircle, FaSpinner } from "react-icons/fa"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -153,7 +153,7 @@ export default function UploadPage() {
                 {tags.map((tag) => (
                   <Badge key={tag} variant="secondary" className="cursor-pointer">
                     {tag}
-                    <LuX className="h-3 w-3 ml-1" onClick={() => !isSubmitting && removeTag(tag)} />
+                    <FaTimes className="h-3 w-3 ml-1" onClick={() => !isSubmitting && removeTag(tag)} />
                   </Badge>
                 ))}
               </div>
@@ -188,7 +188,7 @@ export default function UploadPage() {
                 onClick={() => setUploadMethod("file")}
                 disabled={isSubmitting}
               >
-                <LuBinary className="h-6 w-6 mb-2" />
+                <FaFile className="h-6 w-6 mb-2" />
                 Binary File
               </Button>
               <Button
@@ -197,7 +197,7 @@ export default function UploadPage() {
                 onClick={() => setUploadMethod("text")}
                 disabled={isSubmitting}
               >
-                <LuFileText className="h-6 w-6 mb-2" />
+                <FaFileText className="h-6 w-6 mb-2" />
                 Text Input
               </Button>
             </div>
@@ -206,7 +206,7 @@ export default function UploadPage() {
             {uploadMethod === "file" && (
               <div className="space-y-4">
                 <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center relative">
-                  <LuUpload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <FaUpload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                   <div className="space-y-2">
                     <p className="text-sm font-medium">Drop files here or click to select</p>
                     <p className="text-xs text-muted-foreground">Supported format: .mp3</p>
@@ -222,7 +222,7 @@ export default function UploadPage() {
 
                 {fileError && (
                   <Alert variant="destructive">
-                    <LuAlertCircle className="h-4 w-4" />
+                    <FaExclamationCircle className="h-4 w-4" />
                     <AlertDescription>{fileError}</AlertDescription>
                   </Alert>
                 )}
@@ -231,7 +231,7 @@ export default function UploadPage() {
                   <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
                     <span className="text-sm">{file.name}</span>
                     <Button variant="ghost" size="sm" onClick={() => setFile(null)} disabled={isSubmitting}>
-                      <LuX className="h-4 w-4" />
+                      <FaTimes className="h-4 w-4" />
                     </Button>
                   </div>
                 )}
@@ -244,7 +244,7 @@ export default function UploadPage() {
                 <Dialog open={textDialogOpen} onOpenChange={setTextDialogOpen}>
                   <DialogTrigger asChild>
                     <Button variant="outline" className="w-full bg-transparent" disabled={isSubmitting}>
-                      <LuFileText className="h-4 w-4 mr-2" />
+                      <FaFileText className="h-4 w-4 mr-2" />
                       Input as Text
                     </Button>
                   </DialogTrigger>
@@ -298,7 +298,7 @@ export default function UploadPage() {
 
                       {textError && (
                         <Alert variant="destructive">
-                          <LuAlertCircle className="h-4 w-4" />
+                          <FaExclamationCircle className="h-4 w-4" />
                           <AlertDescription>{textError}</AlertDescription>
                         </Alert>
                       )}
@@ -334,7 +334,7 @@ export default function UploadPage() {
         <div className="flex flex-col items-end space-y-3">
           {submitError && (
             <Alert variant="destructive" className="w-full">
-              <LuAlertCircle className="h-4 w-4" />
+              <FaExclamationCircle className="h-4 w-4" />
               <AlertDescription>{submitError}</AlertDescription>
             </Alert>
           )}
@@ -345,7 +345,7 @@ export default function UploadPage() {
           >
             {isSubmitting ? (
               <>
-                <LuLoader2 className="h-4 w-4 mr-2 animate-spin" />
+                <FaSpinner className="h-4 w-4 mr-2 animate-spin" />
                 Uploading...
               </>
             ) : (

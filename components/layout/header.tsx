@@ -5,7 +5,7 @@ import type React from "react"
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { LuSearch, LuUser, LuSettings, LuLogOut, LuUpload, LuMenu } from "react-icons/lu"
+import { FaSearch, FaUser, FaCog, FaSignOutAlt, FaUpload, FaBars } from "react-icons/fa"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -15,7 +15,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 
 export function Header() {
@@ -55,7 +54,7 @@ export function Header() {
           {showSearchInHeader && (
             <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md mx-8">
               <div className="relative w-full">
-                <LuSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
                   placeholder="Search instruments..."
                   className="pl-10"
@@ -72,35 +71,34 @@ export function Header() {
               <>
                 <Button variant="ghost" asChild>
                   <Link href="/upload">
-                    <LuUpload className="h-4 w-4 mr-2" />
+                    <FaUpload className="h-4 w-4 mr-2" />
                     Upload
                   </Link>
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src="/placeholder.svg?height=32&width=32" />
-                        <AvatarFallback>U</AvatarFallback>
-                      </Avatar>
+                      <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
+                        <FaUser className="h-4 w-4" />
+                      </div>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-56" align="end">
                     <DropdownMenuItem asChild>
                       <Link href="/user/johndoe">
-                        <LuUser className="mr-2 h-4 w-4" />
+                        <FaUser className="mr-2 h-4 w-4" />
                         My Page
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link href="/settings">
-                        <LuSettings className="mr-2 h-4 w-4" />
+                        <FaCog className="mr-2 h-4 w-4" />
                         Account Settings
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>
-                      <LuLogOut className="mr-2 h-4 w-4" />
+                      <FaSignOutAlt className="mr-2 h-4 w-4" />
                       Logout
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -122,14 +120,14 @@ export function Header() {
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild className="md:hidden">
               <Button variant="ghost" size="sm">
-                <LuMenu className="h-5 w-5" />
+                <FaBars className="h-5 w-5" />
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-80">
               <div className="flex flex-col space-y-4 mt-8">
                 {showSearchInHeader && (
                   <form onSubmit={handleSearch} className="relative">
-                    <LuSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                    <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                     <Input
                       placeholder="Search instruments..."
                       className="pl-10"
@@ -143,24 +141,24 @@ export function Header() {
                   <>
                     <Button variant="ghost" className="justify-start" asChild>
                       <Link href="/upload">
-                        <LuUpload className="h-4 w-4 mr-2" />
+                        <FaUpload className="h-4 w-4 mr-2" />
                         Upload
                       </Link>
                     </Button>
                     <Button variant="ghost" className="justify-start" asChild>
                       <Link href="/user/johndoe">
-                        <LuUser className="h-4 w-4 mr-2" />
+                        <FaUser className="h-4 w-4 mr-2" />
                         My Page
                       </Link>
                     </Button>
                     <Button variant="ghost" className="justify-start" asChild>
                       <Link href="/settings">
-                        <LuSettings className="h-4 w-4 mr-2" />
+                        <FaCog className="h-4 w-4 mr-2" />
                         Account Settings
                       </Link>
                     </Button>
                     <Button variant="ghost" className="justify-start" onClick={handleLogout}>
-                      <LuLogOut className="h-4 w-4 mr-2" />
+                      <FaSignOutAlt className="h-4 w-4 mr-2" />
                       Logout
                     </Button>
                   </>

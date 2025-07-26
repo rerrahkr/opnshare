@@ -1,34 +1,22 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { LuUpload } from "react-icons/lu"
 
 export default function RegisterConfirmPage() {
   const router = useRouter()
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [displayName, setDisplayName] = useState("")
-  const [profileImage, setProfileImage] = useState<File | null>(null)
   const [userId] = useState(() => Math.random().toString(36).substring(2, 8)) // Generated user ID
 
   const handleSubmit = () => {
     // TODO: Complete registration
     router.push("/mypage")
-  }
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setProfileImage(file)
-    }
   }
 
   return (
@@ -71,27 +59,6 @@ export default function RegisterConfirmPage() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
-          </div>
-
-          {/* Profile Image */}
-          <div className="space-y-2">
-            <Label>Profile Image (Optional)</Label>
-            <div className="flex items-center gap-4">
-              <Avatar className="h-16 w-16">
-                <AvatarImage src={profileImage ? URL.createObjectURL(profileImage) : undefined} />
-                <AvatarFallback>
-                  <LuUpload className="h-6 w-6" />
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <Button variant="outline" asChild>
-                  <label className="cursor-pointer">
-                    Select Image
-                    <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
-                  </label>
-                </Button>
-              </div>
-            </div>
           </div>
 
           <Button
