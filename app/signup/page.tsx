@@ -39,6 +39,11 @@ export default function SignUpPage() {
     }
   }
 
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    handleEmailSubmit();
+  }
+
   if (requestState === "requested") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted/20 px-4">
@@ -77,33 +82,35 @@ export default function SignUpPage() {
           <p className="text-muted-foreground">Create your account</p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="example@email.com"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
+          <form onSubmit={handleSubmit}>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email Address</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="example@email.com"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
 
-                const parsedEmail = emailSchema.safeParse(e.target.value);
-                if (parsedEmail.success) {
-                  setRequestState("prepared");
-                } else {
-                  setRequestState("prohibited");
-                }
-              }}
-            />
-          </div>
+                  const parsedEmail = emailSchema.safeParse(e.target.value);
+                  if (parsedEmail.success) {
+                    setRequestState("prepared");
+                  } else {
+                    setRequestState("prohibited");
+                  }
+                }}
+              />
+            </div>
 
-          <Button
-            className="w-full"
-            disabled={requestState !== "prepared"}
-            onClick={handleEmailSubmit}
-          >
-            Send Registration Link
-          </Button>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={requestState !== "prepared"}
+            >
+              Send Registration Link
+            </Button>
+          </form>
 
           <div className="text-center text-sm text-muted-foreground">
             Already have an account?{" "}

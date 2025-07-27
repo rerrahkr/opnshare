@@ -97,7 +97,7 @@ export default function SignUpConfirmPage() {
     }
   }
 
-  async function handleSubmit() {
+  async function handleSubmitInfo() {
     if (!user) {
       router.push("/signup");
       return;
@@ -183,6 +183,11 @@ export default function SignUpConfirmPage() {
     router.push("/");
   }
 
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    handleSubmitInfo();
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/20 px-4">
       <Card className="w-full max-w-md">
@@ -193,73 +198,78 @@ export default function SignUpConfirmPage() {
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* User ID */}
-          <div className="space-y-2">
-            <Label>User ID</Label>
-            <Input value={userId} onChange={(e) => setUserId(e.target.value)} />
-          </div>
-          {invalidUserId && (
-            <Alert variant="destructive">
-              <LucideAlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                This user ID is already taken. Please choose another one.
-              </AlertDescription>
-            </Alert>
-          )}
+          <form onSubmit={handleSubmit}>
+            {/* User ID */}
+            <div className="space-y-2">
+              <Label>User ID</Label>
+              <Input
+                value={userId}
+                onChange={(e) => setUserId(e.target.value)}
+              />
+            </div>
+            {invalidUserId && (
+              <Alert variant="destructive">
+                <LucideAlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  This user ID is already taken. Please choose another one.
+                </AlertDescription>
+              </Alert>
+            )}
 
-          {/* Display Name */}
-          <div className="space-y-2">
-            <Label htmlFor="displayName">Display Name</Label>
-            <Input
-              id="displayName"
-              placeholder="Enter display name"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-            />
-          </div>
+            {/* Display Name */}
+            <div className="space-y-2">
+              <Label htmlFor="displayName">Display Name</Label>
+              <Input
+                id="displayName"
+                placeholder="Enter display name"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+              />
+            </div>
 
-          {/* Password */}
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
+            {/* Password */}
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
 
-          {/* Confirm Password */}
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            />
-          </div>
-          {invalidPassword !== "" && (
-            <Alert variant="destructive">
-              <LucideAlertCircle className="h-4 w-4" />
-              <AlertDescription>{invalidPassword}</AlertDescription>
-            </Alert>
-          )}
+            {/* Confirm Password */}
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </div>
+            {invalidPassword !== "" && (
+              <Alert variant="destructive">
+                <LucideAlertCircle className="h-4 w-4" />
+                <AlertDescription>{invalidPassword}</AlertDescription>
+              </Alert>
+            )}
 
-          <Button
-            className="w-full"
-            disabled={
-              !userId ||
-              !password ||
-              !confirmPassword ||
-              !displayName ||
-              password !== confirmPassword ||
-              isSubmitting
-            }
-            onClick={handleSubmit}
-          >
-            Complete Registration
-          </Button>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={
+                !userId ||
+                !password ||
+                !confirmPassword ||
+                !displayName ||
+                password !== confirmPassword ||
+                isSubmitting
+              }
+            >
+              Complete Registration
+            </Button>
+          </form>
         </CardContent>
       </Card>
     </div>

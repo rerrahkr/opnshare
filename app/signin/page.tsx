@@ -4,7 +4,7 @@
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { LucideAlertCircle } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { z } from "zod";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -23,13 +23,16 @@ export default function SignInPage() {
   const [failedSignIn, setFailedSignIn] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
+  const searchParams = useSearchParams();
+  const redirectPath = searchParams.get("redirect") || "/";
+
   async function handleSignIn() {
     setFailedSignIn(false);
     setIsSubmitting(true);
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      router.push("/");
+      router.push(redirectPath);
     } catch (_error: unknown) {
       setFailedSignIn(true);
       setIsSubmitting(false);
@@ -39,6 +42,11 @@ export default function SignInPage() {
       //   console.error("An unknown error occurred during sign in:", _error);
       // }
     }
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    handleSignIn();
   }
 
   return (
@@ -51,45 +59,49 @@ export default function SignInPage() {
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="example@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
+          <form onSubmit={handleSubmit}>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email Address</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="example@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
 
-          {failedSignIn && (
-            <Alert variant="destructive">
-              <LucideAlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                Invalid email or password. Please try again.
-              </AlertDescription>
-            </Alert>
-          )}
+            {failedSignIn && (
+              <Alert variant="destructive">
+                <LucideAlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Invalid email or password. Please try again.
+                </AlertDescription>
+              </Alert>
+            )}
 
-          <Button
-            className="w-full"
-            disabled={
-              !emailSchema.safeParse(email).success || !password || isSubmitting
-            }
-            onClick={handleSignIn}
-          >
-            Sign In
-          </Button>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={
+                !emailSchema.safeParse(email).success ||
+                !password ||
+                isSubmitting
+              }
+            >
+              Sign In
+            </Button>
+          </form>
 
           <div className="text-center space-y-2">
             <Link
