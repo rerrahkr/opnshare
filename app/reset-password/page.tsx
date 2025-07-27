@@ -1,23 +1,60 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { FaEnvelope } from "react-icons/fa"
+import { type ActionCodeSettings, sendPasswordResetEmail } from "firebase/auth";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { FaEnvelope } from "react-icons/fa";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { auth } from "@/lib/firebase";
+import { useAuthUser } from "@/stores/auth";
+
+const emailSchema = z.string().email();
+
+type RequestState = "prohibited" | "prepared" | "requesting" | "requested";
 
 export default function ResetPasswordPage() {
-  const [step, setStep] = useState<1 | 2>(1)
-  const [email, setEmail] = useState("")
+  const [email, setEmail] = useState("");
+  const [requestState, setRequestState] = useState<RequestState>("prohibited");
 
-  const handleEmailSubmit = () => {
-    // TODO: Send password reset email
-    setStep(2)
+  const router = useRouter();
+  const user = useAuthUser();
+
+  useEffect(() => {
+    if (user) {
+      // If user is already signed in, redirect to home page.
+      router.push("/");
+    }
+  }, [router, user]);
+
+  async function handleEmailSubmit() {
+    setRequestState("requesting");
+
+    try {
+      const actionCodeSettings: ActionCodeSettings = {
+        // url: `${window.location.origin}/reset-password/confirm`,
+        url: `${window.location.origin}/signin`,
+        handleCodeInApp: true,
+      };
+      await sendPasswordResetEmail(auth, email, actionCodeSettings);
+
+      setRequestState("requested");
+    } catch (_error: unknown) {
+      // console.error("Error sending reset email:", _error);
+      setRequestState("prepared");
+    }
   }
 
-  if (step === 2) {
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    handleEmailSubmit();
+  }
+
+  if (requestState === "requested") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted/20 px-4">
         <Card className="w-full max-w-md text-center">
@@ -29,13 +66,17 @@ export default function ResetPasswordPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-muted-foreground">
-              We've sent a password reset link to {email}. Please check your email.
+              We've sent a password reset link to {email}. Please check your
+              email.
             </p>
             <div className="text-sm text-muted-foreground">
               If you don't receive the email, please check your spam folder.
             </div>
             <div className="space-y-2">
-              <Button variant="outline" onClick={() => setStep(1)}>
+              <Button
+                variant="outline"
+                onClick={() => setRequestState("prepared")}
+              >
                 Back
               </Button>
               <div className="text-sm text-muted-foreground">
@@ -47,7 +88,7 @@ export default function ResetPasswordPage() {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
@@ -55,31 +96,48 @@ export default function ResetPasswordPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Reset Password</CardTitle>
-          <p className="text-muted-foreground">Enter your registered email address</p>
+          <p className="text-muted-foreground">
+            Enter your registered email address
+          </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="example@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
+          <form onSubmit={handleSubmit}>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email Address</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="example@email.com"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
 
-          <Button className="w-full" disabled={!email} onClick={handleEmailSubmit}>
-            Send Reset Email
-          </Button>
+                  const parsedResult = emailSchema.safeParse(e.target.value);
+                  if (parsedResult.success) {
+                    setRequestState("prepared");
+                  } else {
+                    setRequestState("prohibited");
+                  }
+                }}
+              />
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={requestState !== "prepared"}
+            >
+              Send Reset Email
+            </Button>
+          </form>
 
           <div className="text-center text-sm text-muted-foreground">
-            <Link href="/login" className="text-primary hover:underline">
-              Back to Login
+            <Link href="/signin" className="text-primary hover:underline">
+              Back to Sign In
             </Link>
           </div>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
