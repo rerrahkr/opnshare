@@ -1,41 +1,58 @@
-"use client"
+"use client";
 
-import type React from "react"
-
-import { useState } from "react"
-import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
-import { FaSearch, FaUser, FaCog, FaSignOutAlt, FaUpload, FaBars } from "react-icons/fa"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { signOut } from "firebase/auth";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import type React from "react";
+import { useState } from "react";
+import {
+  FaBars,
+  FaCog,
+  FaSearch,
+  FaSignOutAlt,
+  FaUpload,
+  FaUser,
+} from "react-icons/fa";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { auth } from "@/lib/firebase";
+import { useAuthUser } from "@/stores/auth";
 
 export function Header() {
-  const pathname = usePathname()
-  const router = useRouter()
-  const isLoggedIn = true // TODO: Replace with actual auth state
-  const showSearchInHeader = pathname !== "/"
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState("")
+  const user = useAuthUser();
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
+  const pathname = usePathname();
+  const router = useRouter();
+  const isLoggedIn = user !== null;
+  const showSearchInHeader = pathname !== "/";
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  function handleSearch(e: React.FormEvent) {
+    e.preventDefault();
     if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
-      setSearchQuery("")
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery("");
     }
   }
 
-  const handleLogout = () => {
-    // TODO: Implement actual logout logic
-    router.push("/")
+  async function handleSignOut() {
+    try {
+      await signOut(auth);
+    } catch (_err: unknown) {
+      // console.error("Error signing out:", _err);
+      window.alert("Failed to log out. Please try again later.");
+      return;
+    }
+    router.push("/");
   }
 
   return (
@@ -47,12 +64,17 @@ export function Header() {
             <div className="h-8 w-8 rounded bg-primary flex items-center justify-center">
               <span className="text-primary-foreground font-bold">I</span>
             </div>
-            <span className="font-bold text-xl hidden sm:inline">InstrumentShare</span>
+            <span className="font-bold text-xl hidden sm:inline">
+              InstrumentShare
+            </span>
           </Link>
 
           {/* Search Bar (desktop, not on home page) */}
           {showSearchInHeader && (
-            <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md mx-8">
+            <form
+              onSubmit={handleSearch}
+              className="hidden md:flex flex-1 max-w-md mx-8"
+            >
               <div className="relative w-full">
                 <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
@@ -77,7 +99,10 @@ export function Header() {
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Button
+                      variant="ghost"
+                      className="relative h-8 w-8 rounded-full"
+                    >
                       <FaUser className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -95,9 +120,9 @@ export function Header() {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleLogout}>
+                    <DropdownMenuItem onClick={handleSignOut}>
                       <FaSignOutAlt className="mr-2 h-4 w-4" />
-                      Logout
+                      Sign Out
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -105,10 +130,10 @@ export function Header() {
             ) : (
               <>
                 <Button variant="ghost" asChild>
-                  <Link href="/login">Login</Link>
+                  <Link href="/signin">Sign In</Link>
                 </Button>
                 <Button asChild>
-                  <Link href="/register">Register</Link>
+                  <Link href="/signup">Sign Up</Link>
                 </Button>
               </>
             )}
@@ -155,7 +180,11 @@ export function Header() {
                         Account Settings
                       </Link>
                     </Button>
-                    <Button variant="ghost" className="justify-start" onClick={handleLogout}>
+                    <Button
+                      variant="ghost"
+                      className="justify-start"
+                      onClick={handleSignOut}
+                    >
                       <FaSignOutAlt className="h-4 w-4 mr-2" />
                       Logout
                     </Button>
@@ -163,10 +192,10 @@ export function Header() {
                 ) : (
                   <>
                     <Button variant="ghost" className="justify-start" asChild>
-                      <Link href="/login">Login</Link>
+                      <Link href="/signin">Sign In</Link>
                     </Button>
                     <Button className="justify-start" asChild>
-                      <Link href="/register">Register</Link>
+                      <Link href="/signup">Sign Up</Link>
                     </Button>
                   </>
                 )}
@@ -176,5 +205,5 @@ export function Header() {
         </div>
       </div>
     </header>
-  )
+  );
 }
