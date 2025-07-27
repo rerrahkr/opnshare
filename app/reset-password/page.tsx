@@ -4,7 +4,7 @@ import { type ActionCodeSettings, sendPasswordResetEmail } from "firebase/auth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { FaEnvelope } from "react-icons/fa";
+import { FaEnvelope, FaSpinner } from "react-icons/fa";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -124,10 +124,17 @@ export default function ResetPasswordPage() {
 
             <Button
               type="submit"
-              className="w-full"
+              className="w-full mt-2"
               disabled={requestState !== "prepared"}
             >
-              Send Reset Email
+              {requestState === "requesting" ? (
+                <>
+                  <FaSpinner className="h-4 w-4 mr-2 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                "Send Reset Email"
+              )}
             </Button>
           </form>
 

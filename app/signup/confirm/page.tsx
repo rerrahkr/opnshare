@@ -19,6 +19,7 @@ import {
 import { LucideAlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { FaSpinner } from "react-icons/fa";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -257,7 +258,7 @@ export default function SignUpConfirmPage() {
 
             <Button
               type="submit"
-              className="w-full"
+              className="w-full mt-2"
               disabled={
                 !userId ||
                 !password ||
@@ -267,7 +268,14 @@ export default function SignUpConfirmPage() {
                 isSubmitting
               }
             >
-              Complete Registration
+              {isSubmitting ? (
+                <>
+                  <FaSpinner className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Complete Registration"
+              )}
             </Button>
           </form>
         </CardContent>

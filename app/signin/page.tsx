@@ -5,7 +5,8 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { LucideAlertCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { FaSpinner } from "react-icons/fa";
 import { z } from "zod";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -13,11 +14,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { auth } from "@/lib/firebase";
+import { useAuthUser } from "@/stores/auth";
 
 const emailSchema = z.string().email();
 
 export default function SignInPage() {
   const router = useRouter();
+  const user = useAuthUser();
+
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [failedSignIn, setFailedSignIn] = useState<boolean>(false);
@@ -25,6 +29,12 @@ export default function SignInPage() {
 
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get("redirect") || "/";
+
+  useEffect(() => {
+    if (user) {
+      router.push("/");
+    }
+  }, [router, user]);
 
   async function handleSignIn() {
     setFailedSignIn(false);
@@ -92,14 +102,21 @@ export default function SignInPage() {
 
             <Button
               type="submit"
-              className="w-full"
+              className="w-full mt-2"
               disabled={
                 !emailSchema.safeParse(email).success ||
                 !password ||
                 isSubmitting
               }
             >
-              Sign In
+              {isSubmitting ? (
+                <>
+                  <FaSpinner className="h-4 w-4 mr-2 animate-spin" />
+                  Signing In...
+                </>
+              ) : (
+                "Sign In"
+              )}
             </Button>
           </form>
 

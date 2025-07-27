@@ -2,14 +2,16 @@
 
 import { type ActionCodeSettings, sendSignInLinkToEmail } from "firebase/auth";
 import Link from "next/link";
-import { useState } from "react";
-import { FaEnvelope } from "react-icons/fa";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { FaEnvelope, FaSpinner } from "react-icons/fa";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { auth } from "@/lib/firebase";
+import { useAuthUser } from "@/stores/auth";
 
 const emailSchema = z.string().email();
 
@@ -18,6 +20,15 @@ type RequestState = "prohibited" | "prepared" | "requesting" | "requested";
 export default function SignUpPage() {
   const [email, setEmail] = useState("");
   const [requestState, setRequestState] = useState<RequestState>("prohibited");
+
+  const user = useAuthUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (user) {
+      router.push("/");
+    }
+  }, [router, user]);
 
   async function handleEmailSubmit() {
     setRequestState("requesting");
@@ -105,10 +116,17 @@ export default function SignUpPage() {
 
             <Button
               type="submit"
-              className="w-full"
+              className="w-full mt-2"
               disabled={requestState !== "prepared"}
             >
-              Send Registration Link
+              {requestState === "requesting" ? (
+                <>
+                  <FaSpinner className="h-4 w-4 mr-2 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                "Send Registration Link"
+              )}
             </Button>
           </form>
 
