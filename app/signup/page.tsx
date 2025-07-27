@@ -15,29 +15,29 @@ const emailSchema = z.string().email();
 
 type RequestState = "prohibited" | "prepared" | "requesting" | "requested";
 
-export default function RegisterPage() {
+export default function SignUpPage() {
   const [email, setEmail] = useState("");
   const [requestState, setRequestState] = useState<RequestState>("prohibited");
 
-  const handleEmailSubmit = async () => {
+  async function handleEmailSubmit() {
     setRequestState("requesting");
 
     try {
-      const acionCodeSettings: ActionCodeSettings = {
+      const actionCodeSettings: ActionCodeSettings = {
         url: `${window.location.origin}/signup/confirm`,
         handleCodeInApp: true,
       };
 
-      await sendSignInLinkToEmail(auth, email, acionCodeSettings);
+      await sendSignInLinkToEmail(auth, email, actionCodeSettings);
 
       window.localStorage.setItem("emailForSignIn", email);
 
       setRequestState("requested");
-    } catch (error) {
-      console.error("Error creating user:", error);
+    } catch (_error) {
+      // console.error("Error creating user:", _error);
       setRequestState("prepared");
     }
-  };
+  }
 
   if (requestState === "requested") {
     return (
@@ -107,8 +107,8 @@ export default function RegisterPage() {
 
           <div className="text-center text-sm text-muted-foreground">
             Already have an account?{" "}
-            <Link href="/login" className="text-primary hover:underline">
-              Login
+            <Link href="/signin" className="text-primary hover:underline">
+              Sign In
             </Link>
           </div>
         </CardContent>

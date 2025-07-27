@@ -25,29 +25,24 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { auth, db } from "@/lib/firebase";
-import { useGetCurrentUser, useIsSignedIn } from "@/stores/auth";
+import { useAuthUser } from "@/stores/auth";
 
-export default function RegisterConfirmPage() {
+export default function SignUpConfirmPage() {
   const router = useRouter();
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [displayName, setDisplayName] = useState<string>("");
   const [userId, setUserId] = useState<string>("");
   const [invalidUserId, setInvalidUserId] = useState<boolean>(false);
+  const [invalidPassword, setInvalidPassword] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  const getUser = useGetCurrentUser();
-  const hasSignedIn = useIsSignedIn();
+  const user = useAuthUser();
 
   useEffect(() => {
     (async () => {
-      if (hasSignedIn) {
-        const user = getUser();
-        if (!user) {
-          // console.error("User not found");
-          router.push("/signin");
-          return;
-        }
-
+      // Check if user information is fulfilled.
+      if (user) {
         const userDoc = await getDoc(doc(db, "users", user.uid));
         if (userDoc.exists()) {
           // No need to confirm again if user already exists.
@@ -58,6 +53,7 @@ export default function RegisterConfirmPage() {
         return;
       }
 
+      // If user is not signed in, check if the email link is valid.
       if (isSignInWithEmailLink(auth, window.location.href)) {
         let email = window.localStorage.getItem("emailForSignIn");
         if (!email) {
@@ -67,7 +63,7 @@ export default function RegisterConfirmPage() {
         try {
           await signInWithEmailLink(auth, email || "", window.location.href);
         } catch (_error: unknown) {
-          // console.error("Error confirming registration:", error);
+          // console.error("Error confirming registration:", _error);
           router.push("/signup");
         }
       } else {
@@ -75,7 +71,7 @@ export default function RegisterConfirmPage() {
         router.push("/signup");
       }
     })();
-  }, [router, hasSignedIn, getUser]);
+  }, [router, user]);
 
   async function reauthenticate(user: User, emailToUse: string): Promise<void> {
     try {
@@ -102,6 +98,15 @@ export default function RegisterConfirmPage() {
   }
 
   async function handleSubmit() {
+    if (!user) {
+      router.push("/signup");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setInvalidUserId(false);
+    setInvalidPassword("");
+
     // Check User ID uniqueness
     try {
       const usersRef = collection(db, "users");
@@ -109,25 +114,19 @@ export default function RegisterConfirmPage() {
       const snapshot = await getDocs(q);
       if (!snapshot.empty) {
         setInvalidUserId(true);
+        setIsSubmitting(false);
         return;
       }
-
-      setInvalidUserId(false);
-    } catch (err) {
-      console.error("Error checking user ID:", err);
+    } catch (_err) {
+      // console.error("Error checking user ID:", err);
+      setIsSubmitting(false);
       return;
     }
 
     // Password check
     if (!password || password !== confirmPassword) {
       window.alert("Passwords do not match");
-      return;
-    }
-
-    const user = getUser();
-    if (!user) {
-      window.alert("User not found");
-      router.push("/signup");
+      setIsSubmitting(false);
       return;
     }
 
@@ -138,7 +137,8 @@ export default function RegisterConfirmPage() {
       if (err instanceof FirebaseError) {
         switch (err.code) {
           case "auth/weak-password":
-            window.alert("Weak password");
+            setInvalidPassword("Password must be at least 6 characters long.");
+            setIsSubmitting(false);
             return;
 
           case "auth/requires-recent-login":
@@ -151,11 +151,13 @@ export default function RegisterConfirmPage() {
                 window.alert(err);
               }
               router.push("/signup");
+              return;
             }
             break;
 
           default:
             // console.error("Error updating password:", err);
+            setIsSubmitting(false);
             return;
         }
       }
@@ -171,9 +173,10 @@ export default function RegisterConfirmPage() {
       });
 
       window.localStorage.removeItem("emailForSignIn");
-      console.log("Registration completed successfully");
-    } catch (err) {
-      console.error("Error saving user data:", err);
+      // console.log("Registration completed successfully");
+    } catch (_err) {
+      // console.error("Error saving user data:", _err);
+      setIsSubmitting(false);
       return;
     }
 
@@ -196,7 +199,7 @@ export default function RegisterConfirmPage() {
             <Input value={userId} onChange={(e) => setUserId(e.target.value)} />
           </div>
           {invalidUserId && (
-            <Alert>
+            <Alert variant="destructive">
               <LucideAlertCircle className="h-4 w-4" />
               <AlertDescription>
                 This user ID is already taken. Please choose another one.
@@ -236,6 +239,12 @@ export default function RegisterConfirmPage() {
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
           </div>
+          {invalidPassword !== "" && (
+            <Alert variant="destructive">
+              <LucideAlertCircle className="h-4 w-4" />
+              <AlertDescription>{invalidPassword}</AlertDescription>
+            </Alert>
+          )}
 
           <Button
             className="w-full"
@@ -244,7 +253,8 @@ export default function RegisterConfirmPage() {
               !password ||
               !confirmPassword ||
               !displayName ||
-              password !== confirmPassword
+              password !== confirmPassword ||
+              isSubmitting
             }
             onClick={handleSubmit}
           >
