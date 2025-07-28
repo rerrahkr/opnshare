@@ -8,7 +8,13 @@ import {
   updatePassword,
   verifyBeforeUpdateEmail,
 } from "firebase/auth";
-import { deleteDoc, doc } from "firebase/firestore";
+import {
+  collection,
+  deleteDoc,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
 import { LucideAlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -164,7 +170,13 @@ export default function SettingsPage() {
       );
 
       // Delete user info and account
-      await deleteDoc(doc(db, "users", user.uid));
+      const q = query(collection(db, "users"), where("uid", "==", user.uid));
+      const querySnapshot = await getDocs(q);
+      const userDoc = querySnapshot.docs[0];
+      if (userDoc) {
+        await deleteDoc(userDoc.ref);
+      }
+
       await deleteUser(user);
 
       setDeleteDialogOpen(false);

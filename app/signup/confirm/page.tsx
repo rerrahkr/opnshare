@@ -10,10 +10,11 @@ import {
 import {
   collection,
   doc,
-  getDoc,
   getDocs,
   query,
-  setDoc,
+  runTransaction,
+  serverTimestamp,
+  type Transaction,
   where,
 } from "firebase/firestore";
 import { LucideAlertCircle } from "lucide-react";
@@ -25,7 +26,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { auth, db } from "@/lib/firebase";
+import { auth, db, type ReservedUserIdDoc, type UserDoc } from "@/lib/firebase";
 import { useAuthUser } from "@/stores/auth";
 
 export default function SignUpConfirmPage() {
@@ -44,8 +45,10 @@ export default function SignUpConfirmPage() {
     (async () => {
       // Check if user information is fulfilled.
       if (user) {
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (userDoc.exists()) {
+        const usersRef = collection(db, "users");
+        const q = query(usersRef, where("uid", "==", user.uid));
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
           // No need to confirm again if user already exists.
           router.push("/");
         }
@@ -108,22 +111,6 @@ export default function SignUpConfirmPage() {
     setInvalidUserId(false);
     setInvalidPassword("");
 
-    // Check User ID uniqueness
-    try {
-      const usersRef = collection(db, "users");
-      const q = query(usersRef, where("userId", "==", userId));
-      const snapshot = await getDocs(q);
-      if (!snapshot.empty) {
-        setInvalidUserId(true);
-        setIsSubmitting(false);
-        return;
-      }
-    } catch (_err) {
-      // console.error("Error checking user ID:", err);
-      setIsSubmitting(false);
-      return;
-    }
-
     // Password check
     if (!password || password !== confirmPassword) {
       window.alert("Passwords do not match");
@@ -165,18 +152,40 @@ export default function SignUpConfirmPage() {
     }
 
     try {
-      await setDoc(doc(db, "users", user.uid), {
-        userId,
-        displayName,
-        imageUrl: "",
-        createdDate: new Date().toISOString(),
-        updatedDate: new Date().toISOString(),
+      const reservedRef = doc(db, "reservedUserIds", userId);
+      const userRef = doc(db, "users", user.uid);
+      await runTransaction(db, async (transaction: Transaction) => {
+        const reservedDoc = await transaction.get(reservedRef);
+        if (reservedDoc.exists()) {
+          throw "UserIDAlreadyExists";
+        }
+
+        transaction.set(reservedRef, {
+          createdAt: serverTimestamp(),
+          uid: user.uid,
+        } satisfies ReservedUserIdDoc);
+
+        transaction.set(userRef, {
+          uid: user.uid,
+          displayName,
+          bio: "",
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        } satisfies UserDoc);
       });
 
       window.localStorage.removeItem("emailForSignIn");
       // console.log("Registration completed successfully");
-    } catch (_err) {
-      // console.error("Error saving user data:", _err);
+    } catch (error: unknown) {
+      if (error === "UserIDAlreadyExists") {
+        setInvalidUserId(true);
+      } else {
+        window.alert(
+          "Failed to complete registration. Please try again later."
+        );
+      }
+      // console.error("Error completing registration:", error);
+
       setIsSubmitting(false);
       return;
     }

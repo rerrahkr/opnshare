@@ -1,10 +1,11 @@
 "use client";
 
 import { signOut } from "firebase/auth";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   FaBars,
   FaCog,
@@ -23,7 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { auth } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import { useAuthUser } from "@/stores/auth";
 
 export function Header() {
@@ -31,10 +32,33 @@ export function Header() {
 
   const pathname = usePathname();
   const router = useRouter();
-  const isLoggedIn = user !== null;
+  const isSignedIn = user !== null;
   const showSearchInHeader = pathname !== "/";
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [userId, setUserId] = useState<string>("");
+
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+
+    (async () => {
+      try {
+        const q = query(collection(db, "users"), where("uid", "==", user.uid));
+        const querySnapshot = await getDocs(q);
+        const id = querySnapshot.docs[0]?.id;
+        if (!id) {
+          router.push("/signup/confirm");
+          return;
+        }
+
+        setUserId(id);
+      } catch (_error: unknown) {
+        // console.error("Error fetching user ID:", _error);
+      }
+    })();
+  }, [user, router]);
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -89,7 +113,7 @@ export function Header() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-4">
-            {isLoggedIn ? (
+            {isSignedIn ? (
               <>
                 <Button variant="ghost" asChild>
                   <Link href="/upload">
@@ -108,7 +132,7 @@ export function Header() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-56" align="end">
                     <DropdownMenuItem asChild>
-                      <Link href="/user/johndoe">
+                      <Link href={`/user/${userId}`}>
                         <FaUser className="mr-2 h-4 w-4" />
                         My Page
                       </Link>
@@ -160,7 +184,7 @@ export function Header() {
                   </form>
                 )}
 
-                {isLoggedIn ? (
+                {isSignedIn ? (
                   <>
                     <Button variant="ghost" className="justify-start" asChild>
                       <Link href="/upload">
@@ -169,7 +193,7 @@ export function Header() {
                       </Link>
                     </Button>
                     <Button variant="ghost" className="justify-start" asChild>
-                      <Link href="/user/johndoe">
+                      <Link href={`/user/${userId}`}>
                         <FaUser className="h-4 w-4 mr-2" />
                         My Page
                       </Link>
