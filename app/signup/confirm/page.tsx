@@ -6,6 +6,7 @@ import {
   signInWithEmailLink,
   type User,
   updatePassword,
+  validatePassword,
 } from "firebase/auth";
 import {
   collection,
@@ -26,7 +27,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { auth, db, type ReservedUserIdDoc, type UserDoc } from "@/lib/firebase";
+import {
+  auth,
+  db,
+  type ReservedUserIdDoc,
+  type UserDoc,
+  userIdSchema,
+} from "@/lib/firebase";
 import { useAuthUser } from "@/stores/auth";
 
 export default function SignUpConfirmPage() {
@@ -35,7 +42,9 @@ export default function SignUpConfirmPage() {
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [displayName, setDisplayName] = useState<string>("");
   const [userId, setUserId] = useState<string>("");
-  const [invalidUserId, setInvalidUserId] = useState<boolean>(false);
+  const [invalidUserIdMessages, setInvalidUserIdMessages] = useState<string[]>(
+    []
+  );
   const [invalidPassword, setInvalidPassword] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
@@ -77,7 +86,10 @@ export default function SignUpConfirmPage() {
     })();
   }, [router, user]);
 
-  async function reauthenticate(user: User, emailToUse: string): Promise<void> {
+  async function reauthenticateAndUpdatePassword(
+    user: User,
+    emailToUse: string
+  ): Promise<void> {
     try {
       // Reauthenticate with email link.
 
@@ -108,12 +120,27 @@ export default function SignUpConfirmPage() {
     }
 
     setIsSubmitting(true);
-    setInvalidUserId(false);
+    setInvalidUserIdMessages([]);
     setInvalidPassword("");
+
+    // User ID check
+    const userIdValidation = userIdSchema.safeParse(userId);
+    if (!userIdValidation.success) {
+      setInvalidUserIdMessages(
+        userIdValidation.error.issues.map((e) => e.message)
+      );
+    }
 
     // Password check
     if (!password || password !== confirmPassword) {
       window.alert("Passwords do not match");
+      setIsSubmitting(false);
+      return;
+    }
+
+    const status = await validatePassword(auth, password);
+    if (!status.isValid) {
+      setInvalidPassword("Password must be at least 6 characters long.");
       setIsSubmitting(false);
       return;
     }
@@ -133,7 +160,7 @@ export default function SignUpConfirmPage() {
             try {
               const savedEmail = window.localStorage.getItem("emailForSignIn");
               const emailToUse = user.email || savedEmail || "";
-              await reauthenticate(user, emailToUse);
+              await reauthenticateAndUpdatePassword(user, emailToUse);
             } catch (err: unknown) {
               if (typeof err === "string") {
                 window.alert(err);
@@ -178,7 +205,9 @@ export default function SignUpConfirmPage() {
       // console.log("Registration completed successfully");
     } catch (error: unknown) {
       if (error === "UserIDAlreadyExists") {
-        setInvalidUserId(true);
+        setInvalidUserIdMessages([
+          "This user ID is already taken. Please choose another one.",
+        ]);
       } else {
         window.alert(
           "Failed to complete registration. Please try again later."
@@ -217,11 +246,19 @@ export default function SignUpConfirmPage() {
                 onChange={(e) => setUserId(e.target.value)}
               />
             </div>
-            {invalidUserId && (
+            {invalidUserIdMessages.length > 0 && (
               <Alert variant="destructive">
                 <LucideAlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  This user ID is already taken. Please choose another one.
+                  {invalidUserIdMessages.length === 1 ? (
+                    invalidUserIdMessages[0]
+                  ) : (
+                    <ul className="list-inside list-disc">
+                      {invalidUserIdMessages.map((msg) => (
+                        <li key={msg}>{msg}</li>
+                      ))}
+                    </ul>
+                  )}
                 </AlertDescription>
               </Alert>
             )}

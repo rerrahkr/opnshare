@@ -6,6 +6,7 @@ import {
   EmailAuthProvider,
   reauthenticateWithCredential,
   updatePassword,
+  validatePassword,
   verifyBeforeUpdateEmail,
 } from "firebase/auth";
 import {
@@ -49,7 +50,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { db } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import { useAuthUser } from "@/stores/auth";
 
 const emailSchema = z.string().email();
@@ -131,6 +132,12 @@ export default function SettingsPage() {
 
     setIsProcessing(true);
     try {
+      const status = await validatePassword(auth, newPassword);
+      if (!status.isValid) {
+        setFailedPasswordChange("Password must be at least 6 characters long.");
+        return;
+      }
+
       await updatePassword(user, newPassword);
 
       setPasswordDialogOpen(false);
