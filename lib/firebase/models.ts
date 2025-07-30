@@ -21,6 +21,6 @@ export const userIdSchema = z
     message:
       "User ID can only contain letters, numbers, underscores, and hyphens.",
   })
-  .refine((value) => !/[_-]*admin[_-]*/.test(value), {
+  .refine((value) => !/.*admin.*/.test(value), {
     message: "This user ID is not allowed.",
   });

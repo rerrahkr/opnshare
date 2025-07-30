@@ -180,7 +180,7 @@ export default function SignUpConfirmPage() {
 
     try {
       const reservedRef = doc(db, "reservedUserIds", userId);
-      const userRef = doc(db, "users", user.uid);
+      const userRef = doc(db, "users", userId);
       await runTransaction(db, async (transaction: Transaction) => {
         const reservedDoc = await transaction.get(reservedRef);
         if (reservedDoc.exists()) {
