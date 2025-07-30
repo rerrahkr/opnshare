@@ -1,7 +1,6 @@
 "use client";
 
 import { signOut } from "firebase/auth";
-import { collection, getDocs, query, where } from "firebase/firestore";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type React from "react";
@@ -24,11 +23,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { auth, db } from "@/lib/firebase";
-import { useAuthUser } from "@/stores/auth";
+import { auth } from "@/lib/firebase";
+import { useAuthUser, useAuthUserId } from "@/stores/auth";
 
 export function Header() {
   const user = useAuthUser();
+  const userId = useAuthUserId();
 
   const pathname = usePathname();
   const router = useRouter();
@@ -36,29 +36,12 @@ export function Header() {
   const showSearchInHeader = pathname !== "/";
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [userId, setUserId] = useState<string>("");
 
   useEffect(() => {
-    if (!user) {
-      return;
+    if (user && userId === "") {
+      router.push("/signup/confirm");
     }
-
-    (async () => {
-      try {
-        const q = query(collection(db, "users"), where("uid", "==", user.uid));
-        const querySnapshot = await getDocs(q);
-        const id = querySnapshot.docs[0]?.id;
-        if (!id) {
-          router.push("/signup/confirm");
-          return;
-        }
-
-        setUserId(id);
-      } catch (_error: unknown) {
-        // console.error("Error fetching user ID:", _error);
-      }
-    })();
-  }, [user, router]);
+  }, [user, userId, router]);
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();

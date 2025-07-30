@@ -1,34 +1,57 @@
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { create } from "zustand";
-import { auth } from "@/lib/firebase";
+import { immer } from "zustand/middleware/immer";
+import { auth, getUserId } from "@/lib/firebase";
 
 type AuthState = {
   user: User | null;
+  userId: string;
   hasInitialized: boolean;
 
   initialize: () => () => void;
+
+  setUserId: (userId: string) => void;
+  updateUserId: () => Promise<void>;
 };
 
-export const useAuthStore = create<AuthState>()((set) => ({
-  user: null,
-  hasInitialized: false,
+export const useAuthStore = create<AuthState>()(
+  immer((set, get) => ({
+    user: null,
+    userId: "",
+    hasInitialized: false,
 
-  initialize: () => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      set({
-        user,
-        hasInitialized: true,
+    initialize: () => {
+      const unsubscribe = onAuthStateChanged(auth, async (user) => {
+        set({
+          user,
+          userId: user ? await getUserId(user.uid) : "",
+          hasInitialized: true,
+        });
       });
-    });
 
-    return unsubscribe;
-  },
-}));
+      return unsubscribe;
+    },
+
+    setUserId: (userId: string) => {
+      set((state) => {
+        state.userId = userId;
+      });
+    },
+
+    updateUserId: async () => {
+      const user = get().user;
+      const userId = user ? await getUserId(user.uid) : "";
+      set((state) => {
+        state.userId = userId;
+      });
+    },
+  }))
+);
 
 export function useAuthUser() {
   return useAuthStore((state) => state.user);
 }
 
-export function useIsSignedIn() {
-  return useAuthStore((state) => state.user !== null);
+export function useAuthUserId() {
+  return useAuthStore((state) => state.userId);
 }

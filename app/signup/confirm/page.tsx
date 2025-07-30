@@ -34,7 +34,7 @@ import {
   type UserDoc,
   userIdSchema,
 } from "@/lib/firebase";
-import { useAuthUser } from "@/stores/auth";
+import { useAuthStore, useAuthUser } from "@/stores/auth";
 
 export default function SignUpConfirmPage() {
   const router = useRouter();
@@ -42,6 +42,7 @@ export default function SignUpConfirmPage() {
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [displayName, setDisplayName] = useState<string>("");
   const [userId, setUserId] = useState<string>("");
+  const setUserIdGlobal = useAuthStore((state) => state.setUserId);
   const [invalidUserIdMessages, setInvalidUserIdMessages] = useState<string[]>(
     []
   );
@@ -219,6 +220,7 @@ export default function SignUpConfirmPage() {
       return;
     }
 
+    setUserIdGlobal(userId);
     router.push("/");
   }
 
