@@ -30,6 +30,8 @@ import { Label } from "@/components/ui/label";
 import {
   auth,
   db,
+  type EditableUserDoc,
+  editableUserDocSchema,
   type ReservedUserIdDoc,
   type UserDoc,
   userIdSchema,
@@ -47,6 +49,7 @@ export default function SignUpConfirmPage() {
     []
   );
   const [invalidPassword, setInvalidPassword] = useState<string>("");
+  const [invalidDisplayName, setInvalidDisplayName] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const user = useAuthUser();
@@ -121,8 +124,27 @@ export default function SignUpConfirmPage() {
     }
 
     setIsSubmitting(true);
+    setInvalidDisplayName("");
     setInvalidUserIdMessages([]);
     setInvalidPassword("");
+
+    let checkIsPassed = true;
+
+    // User info check
+    const userInfo: EditableUserDoc = {
+      displayName: displayName,
+      bio: "",
+    };
+    const userInfoParse = editableUserDocSchema.safeParse(userInfo);
+    if (!userInfoParse.success) {
+      for (const issue of userInfoParse.error.issues) {
+        const field = issue.path[0];
+        if (field === "displayName") {
+          setInvalidDisplayName(issue.message);
+        }
+      }
+      checkIsPassed = false;
+    }
 
     // User ID check
     const userIdValidation = userIdSchema.safeParse(userId);
@@ -130,18 +152,22 @@ export default function SignUpConfirmPage() {
       setInvalidUserIdMessages(
         userIdValidation.error.issues.map((e) => e.message)
       );
+      checkIsPassed = false;
     }
 
     // Password check
     if (!password || password !== confirmPassword) {
-      window.alert("Passwords do not match");
-      setIsSubmitting(false);
-      return;
+      setInvalidPassword("Passwords do not match.");
+      checkIsPassed = false;
+    } else {
+      const status = await validatePassword(auth, password);
+      if (!status.isValid) {
+        setInvalidPassword("Password must be at least 6 characters long.");
+        checkIsPassed = false;
+      }
     }
 
-    const status = await validatePassword(auth, password);
-    if (!status.isValid) {
-      setInvalidPassword("Password must be at least 6 characters long.");
+    if (!checkIsPassed) {
       setIsSubmitting(false);
       return;
     }
@@ -275,6 +301,12 @@ export default function SignUpConfirmPage() {
                 onChange={(e) => setDisplayName(e.target.value)}
               />
             </div>
+            {invalidDisplayName !== "" && (
+              <Alert variant="destructive">
+                <LucideAlertCircle className="h-4 w-4" />
+                <AlertDescription>{invalidDisplayName}</AlertDescription>
+              </Alert>
+            )}
 
             {/* Password */}
             <div className="space-y-2">

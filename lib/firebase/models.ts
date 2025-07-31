@@ -1,10 +1,23 @@
 import type { FieldValue } from "firebase/firestore";
 import { z } from "zod";
 
-export type UserDoc = {
+export const editableUserDocSchema = z.object({
+  displayName: z
+    .string()
+    .min(1, { message: "Display name is required." })
+    .max(50, { message: "Display name must be at most 50 characters long." })
+    .refine((value) => value.trim() === value, {
+      message: "Display name cannot have leading or trailing spaces.",
+    }),
+  bio: z
+    .string()
+    .max(500, { message: "Bio must be at most 500 characters long." }),
+});
+
+export type EditableUserDoc = z.infer<typeof editableUserDocSchema>;
+
+export type UserDoc = EditableUserDoc & {
   uid: string;
-  displayName: string;
-  bio: string;
   createdAt: FieldValue;
   updatedAt: FieldValue;
 };
