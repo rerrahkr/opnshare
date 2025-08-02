@@ -1,5 +1,7 @@
-import type { FieldValue } from "firebase/firestore";
+import type { FieldValue, Timestamp } from "firebase/firestore";
 import { z } from "zod";
+
+type Time = Timestamp | FieldValue;
 
 export const editableUserDocSchema = z.object({
   displayName: z
@@ -18,13 +20,13 @@ export type EditableUserDoc = z.infer<typeof editableUserDocSchema>;
 
 export type UserDoc = EditableUserDoc & {
   uid: string;
-  createdAt: FieldValue;
-  updatedAt: FieldValue;
+  createdAt: Time;
+  updatedAt: Time;
 };
 
 export type ReservedUserIdDoc = {
   uid: string;
-  createdAt: FieldValue;
+  createdAt: Time;
 };
 
 export const userIdSchema = z

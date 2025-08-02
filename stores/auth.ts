@@ -22,9 +22,15 @@ export const useAuthStore = create<AuthState>()(
 
     initialize: () => {
       const unsubscribe = onAuthStateChanged(auth, async (user) => {
+        let userId: string;
+        try {
+          userId = user ? await getUserId(user.uid) : "";
+        } catch {
+          userId = "";
+        }
         set({
           user,
-          userId: user ? await getUserId(user.uid) : "",
+          userId,
           hasInitialized: true,
         });
       });
@@ -40,7 +46,12 @@ export const useAuthStore = create<AuthState>()(
 
     updateUserId: async () => {
       const user = get().user;
-      const userId = user ? await getUserId(user.uid) : "";
+      let userId: string;
+      try {
+        userId = user ? await getUserId(user.uid) : "";
+      } catch {
+        userId = "";
+      }
       set((state) => {
         state.userId = userId;
       });
