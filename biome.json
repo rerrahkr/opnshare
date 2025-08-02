@@ -14,7 +14,8 @@
 			"hooks/**/*",
 			"lib/**/*",
 			"styles/**/*",
-			"stores/**/*"
+			"stores/**/*",
+			"utils/**/*"
 		]
 	},
 	"formatter": {
