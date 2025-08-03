@@ -113,34 +113,18 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Rankings */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Download Ranking */}
-          <section>
-            <div className="flex items-center gap-2 mb-6">
-              <FaDownload className="h-5 w-5" />
-              <h2 className="text-2xl font-bold">Download Ranking</h2>
-            </div>
-            <div className="space-y-3">
-              {[1, 2, 3, 4, 5].map((rank) => (
-                <RankingItem key={rank} rank={rank} type="download" />
-              ))}
-            </div>
-          </section>
-
-          {/* Like Ranking */}
-          <section>
-            <div className="flex items-center gap-2 mb-6">
-              <FaHeart className="h-5 w-5" />
-              <h2 className="text-2xl font-bold">Like Ranking</h2>
-            </div>
-            <div className="space-y-3">
-              {[1, 2, 3, 4, 5].map((rank) => (
-                <RankingItem key={rank} rank={rank} type="like" />
-              ))}
-            </div>
-          </section>
-        </div>
+        {/* Like Ranking */}
+        <section>
+          <div className="flex items-center gap-2 mb-6">
+            <FaHeart className="h-5 w-5" />
+            <h2 className="text-2xl font-bold">Like Ranking</h2>
+          </div>
+          <div className="space-y-3">
+            {[1, 2, 3, 4, 5].map((rank) => (
+              <RankingItem key={rank} rank={rank} type="like" />
+            ))}
+          </div>
+        </section>
 
         {/* Popular Tags */}
         <section>
@@ -207,10 +191,6 @@ function TimbreCard() {
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1">
-                <FaDownload className="h-3 w-3" />
-                245
-              </span>
-              <span className="flex items-center gap-1">
                 <FaHeart className="h-3 w-3" />
                 89
               </span>
@@ -269,3 +249,5 @@ function RankingItem({
     </Card>
   );
 }
+
+// TODO: reuse instrument card in user page

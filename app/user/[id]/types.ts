@@ -3,7 +3,6 @@ export type InstrumentMetaInfo = {
   title: string;
   author: string;
   tags: string[];
-  downloads: number;
   likes: number;
   dateIso: string;
 };

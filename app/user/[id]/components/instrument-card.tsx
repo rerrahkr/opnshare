@@ -1,5 +1,5 @@
 import { useRouter } from "next/navigation";
-import { FaDownload, FaHeart } from "react-icons/fa";
+import { FaHeart } from "react-icons/fa";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { isoStringToLocaleString } from "@/utils/date";
@@ -10,7 +10,7 @@ type InstrumentCardProps = {
 };
 
 export function InstrumentCard({
-  info: { id, title, author, tags, downloads, likes, dateIso },
+  info: { id, title, author, tags, likes, dateIso },
 }: InstrumentCardProps): React.JSX.Element {
   const router = useRouter();
 
@@ -40,10 +40,6 @@ export function InstrumentCard({
           </div>
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex items-center gap-4">
-              <span className="flex items-center gap-1">
-                <FaDownload className="h-3 w-3" />
-                {downloads}
-              </span>
               <span className="flex items-center gap-1">
                 <FaHeart className="h-3 w-3" />
                 {likes}
