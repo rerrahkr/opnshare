@@ -109,6 +109,7 @@ export default function ResetPasswordPage() {
                 type="email"
                 placeholder="example@email.com"
                 value={email}
+                disabled={requestState === "requesting"}
                 onChange={(e) => {
                   setEmail(e.target.value);
 

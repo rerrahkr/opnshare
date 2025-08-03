@@ -273,7 +273,7 @@ export default function SignUpConfirmPage() {
             {/* User ID */}
             <div className="space-y-2">
               <Label>User ID</Label>
-              <Input {...register("userId")} />
+              <Input {...register("userId")} disabled={isSubmitting} />
             </div>
             {invalidUserIdMessages.length > 0 && (
               <Alert variant="destructive">
@@ -295,7 +295,7 @@ export default function SignUpConfirmPage() {
             {/* Display Name */}
             <div className="space-y-2">
               <Label>Display Name</Label>
-              <Input {...register("displayName")} />
+              <Input {...register("displayName")} disabled={isSubmitting} />
             </div>
             {invalidDisplayName !== "" && (
               <Alert variant="destructive">
@@ -307,13 +307,21 @@ export default function SignUpConfirmPage() {
             {/* Password */}
             <div className="space-y-2">
               <Label>Password</Label>
-              <Input {...register("password")} type="password" />
+              <Input
+                {...register("password")}
+                type="password"
+                disabled={isSubmitting}
+              />
             </div>
 
             {/* Confirm Password */}
             <div className="space-y-2">
               <Label>Confirm Password</Label>
-              <Input {...register("confirmPassword")} type="password" />
+              <Input
+                {...register("confirmPassword")}
+                type="password"
+                disabled={isSubmitting}
+              />
             </div>
             {invalidPassword !== "" && (
               <Alert variant="destructive">

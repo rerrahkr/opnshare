@@ -99,6 +99,7 @@ export default function SignUpPage() {
               <Input
                 id="email"
                 type="email"
+                disabled={requestState === "requesting"}
                 placeholder="example@email.com"
                 value={email}
                 onChange={(e) => {

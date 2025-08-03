@@ -75,6 +75,7 @@ export default function SignInPage() {
               <Input
                 id="email"
                 type="email"
+                disabled={isSubmitting}
                 placeholder="example@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -86,6 +87,7 @@ export default function SignInPage() {
               <Input
                 id="password"
                 type="password"
+                disabled={isSubmitting}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />

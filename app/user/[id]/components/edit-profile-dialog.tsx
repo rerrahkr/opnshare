@@ -95,7 +95,7 @@ export function EditProfileDialog({
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>Display Name</Label>
-              <Input {...register("displayName")} />
+              <Input {...register("displayName")} disabled={isSubmitting} />
             </div>
             {invalidDisplayName !== "" && (
               <Alert variant="destructive">
@@ -105,7 +105,7 @@ export function EditProfileDialog({
             )}
             <div className="space-y-2">
               <Label>Bio</Label>
-              <Textarea {...register("bio")} rows={4} />
+              <Textarea {...register("bio")} disabled={isSubmitting} rows={4} />
             </div>
             {invalidBio !== "" && (
               <Alert variant="destructive">
