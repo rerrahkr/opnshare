@@ -1,7 +1,8 @@
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
-import { auth, getUserId } from "@/lib/firebase";
+import { getUserId } from "@/features/user/api";
+import { auth } from "@/lib/firebase";
 
 type AuthState = {
   user: User | null;

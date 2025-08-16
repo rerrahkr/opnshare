@@ -20,13 +20,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  auth,
   createUserDocWithUserIdCheck,
+  testUserDocExistsByUid,
+} from "@/features/user/api";
+import {
   type EditableUserDoc,
   editableUserDocSchema,
-  testUserDocExistsByUid,
   userIdSchema,
-} from "@/lib/firebase";
+} from "@/features/user/models";
+import { auth } from "@/lib/firebase";
 import { useAuthStore, useAuthUser } from "@/stores/auth";
 
 async function reauthenticateAndUpdatePassword(

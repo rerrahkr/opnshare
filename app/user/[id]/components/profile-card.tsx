@@ -12,7 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { EditableUserDoc } from "@/lib/firebase";
+import type { EditableUserDoc } from "@/features/user/models";
 import { useAuthUserId } from "@/stores/auth";
 import { isoStringToLocaleString } from "@/utils/date";
 import { EditProfileDialog } from "./edit-profile-dialog";

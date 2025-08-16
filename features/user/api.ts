@@ -10,11 +10,11 @@ import {
   where,
 } from "firebase/firestore";
 import {
-  db,
   type EditableUserDoc,
   type ReservedUserIdDoc,
   type UserDoc,
-} from "@/lib/firebase";
+} from "./models";
+import { db } from "@/lib/firebase";
 
 export async function getUserId(uid: string): Promise<string> {
   const q = query(collection(db, "users"), where("uid", "==", uid));

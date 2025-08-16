@@ -3,6 +3,7 @@ import { z } from "zod";
 
 type Time = Timestamp | FieldValue;
 
+// "users" collection
 export const editableUserDocSchema = z.object({
   displayName: z
     .string()
@@ -24,6 +25,7 @@ export type UserDoc = EditableUserDoc & {
   updatedAt: Time;
 };
 
+// "reservedUserIds" collection
 export type ReservedUserIdDoc = {
   uid: string;
   createdAt: Time;

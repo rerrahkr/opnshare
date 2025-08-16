@@ -1,7 +1,8 @@
 import type { Timestamp } from "firebase/firestore";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { getUserDoc, type UserDoc } from "@/lib/firebase";
+import { getUserDoc } from "@/features/user/api";
+import type { UserDoc } from "@/features/user/models";
 import { InstrumentTabs } from "./components/instrument-tabs";
 import { ProfileCard } from "./components/profile-card";
 import type { InstrumentMetaInfo } from "./types";
