@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": ["DOM", "DOM.Iterable", "ESNext", "ES2020"],
     "allowJs": true,
-    "target": "ES6",
+    "target": "es2020",
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
@@ -20,7 +20,8 @@
     ],
     "paths": {
       "@/*": ["./*"]
-    }
+    },
+    "types": ["vitest/globals"]
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]

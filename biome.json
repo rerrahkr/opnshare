@@ -15,7 +15,8 @@
 			"lib/**/*",
 			"styles/**/*",
 			"stores/**/*",
-			"utils/**/*"
+			"utils/**/*",
+			"features/**/*"
 		]
 	},
 	"formatter": {
