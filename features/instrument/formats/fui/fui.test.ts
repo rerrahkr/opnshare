@@ -71,7 +71,7 @@ describe(".fui file handler", () => {
 
     const savedData = save(instrument, "test");
 
-    const [loadedInstrument, name] = await load(savedData);
+    const [loadedInstrument, name] = load(savedData);
 
     expect(name).toEqual("test");
     expect(loadedInstrument).toEqual(instrument);
@@ -144,7 +144,7 @@ describe(".fui file handler", () => {
       ],
     };
 
-    const [loaded, name] = await load(buffer);
+    const [loaded, name] = load(buffer);
     expect(loaded).toEqual(expected);
 
     const saved = save(loaded, name);

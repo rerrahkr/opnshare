@@ -148,9 +148,7 @@ function loadNewFormat(view: DataView): [FmInstrument, string] {
   return [partialInstrument as FmInstrument, name];
 }
 
-export async function load(
-  buffer: ArrayBufferLike
-): Promise<[FmInstrument, string]> {
+export function load(buffer: ArrayBufferLike): [FmInstrument, string] {
   const view = new DataView(buffer);
 
   const magic = new TextDecoder().decode(buffer.slice(0, 16));

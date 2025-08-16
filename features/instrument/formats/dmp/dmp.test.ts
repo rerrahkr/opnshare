@@ -70,7 +70,7 @@ describe(".dmp file handler", () => {
 
     const savedData = save(instrument);
 
-    const [loadedInstrument] = await load(savedData);
+    const [loadedInstrument] = load(savedData);
 
     expect(loadedInstrument).toEqual(instrument);
   });
@@ -143,7 +143,7 @@ describe(".dmp file handler", () => {
       ],
     };
 
-    const [loaded] = await load(buffer);
+    const [loaded] = load(buffer);
     expect(loaded).toEqual(expected);
 
     const saved = save(loaded);

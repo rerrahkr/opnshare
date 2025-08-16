@@ -1,4 +1,4 @@
-import { getFileExtension, getFileExtensionFromName } from "./utils";
+import { getFileExtension, getFileExtensionFromName } from "./file";
 
 test("getFileExtensionFromName", () => {
   expect(getFileExtensionFromName("example.txt")).toBe(".txt");

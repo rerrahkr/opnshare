@@ -71,7 +71,7 @@ describe(".bti file handler", () => {
     const expectedName = "test";
     const savedData = save(instrument, expectedName);
 
-    const [loadedInstrument] = await load(savedData);
+    const [loadedInstrument] = load(savedData);
 
     expect(loadedInstrument).toEqual(instrument);
   });
@@ -142,7 +142,7 @@ describe(".bti file handler", () => {
       ],
     };
 
-    const [loaded, name] = await load(buffer);
+    const [loaded, name] = load(buffer);
     expect(loaded).toEqual(expected);
 
     const saved = save(loaded, name);

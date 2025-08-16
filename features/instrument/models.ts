@@ -19,6 +19,15 @@ export type InstrumentDoc = EditableInstrumentMetaInfo & {
   isDeleted: boolean;
 };
 
+export const recommendedChipSchema = z.union([
+  z.literal("OPN"),
+  z.literal("OPNA"),
+  z.literal("OPNB"),
+  z.literal("OPN2"),
+]);
+
+export type RecommendedChip = z.infer<typeof recommendedChipSchema>;
+
 export const instrumentTagSchema = z
   .string()
   .min(1, { message: "Tag must be at least 1 character long." })
@@ -44,6 +53,7 @@ export const editableInstrumentMetaInfoSchema = z.object({
   tags: z.array(instrumentTagSchema).max(MAX_TAGS, {
     message: `You can add up to ${MAX_TAGS} tags.`,
   }),
+  chip: recommendedChipSchema,
 });
 
 export type EditableInstrumentMetaInfo = z.infer<

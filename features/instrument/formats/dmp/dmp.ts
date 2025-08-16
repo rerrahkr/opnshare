@@ -1,9 +1,7 @@
 import type { FmInstrument, FmOperator, FmOperators } from "../../types";
 import { DataCorruptionError, UnsupportedFormatError } from "../errors";
 
-export async function load(
-  buffer: ArrayBufferLike
-): Promise<[FmInstrument, ""]> {
+export function load(buffer: ArrayBufferLike): [FmInstrument, ""] {
   const view = new DataView(buffer);
 
   let csr = 0;

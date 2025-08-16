@@ -2,9 +2,7 @@ import type { FmInstrument, FmOperator, FmOperators } from "../../types";
 import { DataCorruptionError, InvalidFormatError } from "../errors";
 import { readNullTerminatedString } from "../utils";
 
-export async function load(
-  buffer: ArrayBufferLike
-): Promise<[FmInstrument, string]> {
+export function load(buffer: ArrayBufferLike): [FmInstrument, string] {
   const view = new DataView(buffer);
   const textDecoder = new TextDecoder();
 
