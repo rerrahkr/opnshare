@@ -14,3 +14,8 @@ export function readNullTerminatedString(
   }
   return { text, length: i };
 }
+
+export const createSpacedNumberFormatter = (space: number) => (n: number) =>
+  String(n).padStart(space, " ");
+export const formatNumber2 = createSpacedNumberFormatter(2);
+export const formatNumber3 = createSpacedNumberFormatter(3);

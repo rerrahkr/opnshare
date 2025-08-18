@@ -28,3 +28,9 @@ export class UnsupportedInstrumentTypeError extends InstrumentFormatError {
     super(`Unsupported instrument type${message ? `: ${message}` : ""}`);
   }
 }
+
+export class TextParseError extends InstrumentFormatError {
+  constructor(message?: string) {
+    super(`Text parse error${message ? `: ${message}` : ""}`);
+  }
+}

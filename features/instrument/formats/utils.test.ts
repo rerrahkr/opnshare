@@ -1,4 +1,4 @@
-import { readNullTerminatedString } from "./utils";
+import { createSpacedNumberFormatter, readNullTerminatedString } from "./utils";
 
 describe("readNullTerminatedString", () => {
   it("should match a text", () => {
@@ -25,5 +25,14 @@ describe("readNullTerminatedString", () => {
       text: "",
       length: 1,
     });
+  });
+});
+
+describe("SpacedNumberFormatter", () => {
+  it("should match texts", () => {
+    expect(createSpacedNumberFormatter(2)(2)).toBe(" 2");
+    expect(createSpacedNumberFormatter(4)(21)).toBe("  21");
+    expect(createSpacedNumberFormatter(2)(100)).toBe("100");
+    expect(createSpacedNumberFormatter(3)(-4)).toBe(" -4");
   });
 });

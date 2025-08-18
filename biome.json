@@ -16,7 +16,8 @@
 			"styles/**/*",
 			"stores/**/*",
 			"utils/**/*",
-			"features/**/*"
+			"features/**/*",
+			"!features/instrument/format/**/grammar.cjs"
 		]
 	},
 	"formatter": {
