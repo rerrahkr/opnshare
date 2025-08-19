@@ -46,6 +46,8 @@ import {
   type RecommendedChip,
 } from "@/features/instrument/models";
 import type { FmInstrument } from "@/features/instrument/types";
+import { useAuthUser } from "@/stores/auth";
+import { TagInput } from "./components/tag-input";
 
 type UploadMethod = "file" | "text";
 type ImportStatus = UploadMethod | "none";
@@ -59,6 +61,7 @@ const RECOMMENDED_CHIP_SELECTION: RecommendedChip[] = [
 
 export default function UploadPage() {
   const router = useRouter();
+  // const user = useAuthUser();
 
   const [instName, setInstName] = useState<string>("");
   const [invalidName, setInvalidName] = useState<string>("");
@@ -94,6 +97,13 @@ export default function UploadPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+
+  // TODO: uncomment
+  // useEffect(() => {
+  //   if (!user) {
+  //     router.push("/signin");
+  //   }
+  // }, [router, user]);
 
   function addTag() {
     if (
@@ -284,40 +294,13 @@ export default function UploadPage() {
               <Label className="text-sm font-medium">
                 Tags (max {MAX_TAGS} tags)
               </Label>
-              <div className="flex gap-2 mb-2">
-                <Input
-                  placeholder="Enter tag"
-                  value={newTag}
-                  onChange={(e) => setNewTag(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      addTag();
-                    }
-                  }}
-                  disabled={isSubmitting}
-                />
-                <Button
-                  onClick={addTag}
-                  disabled={tags.length >= 5 || isSubmitting}
-                >
-                  Add
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {tags.map((tag) => (
-                  <Badge
-                    key={tag}
-                    variant="secondary"
-                    className="cursor-pointer"
-                  >
-                    {tag}
-                    <FaTimes
-                      className="h-3 w-3 ml-1"
-                      onClick={() => !isSubmitting && removeTag(tag)}
-                    />
-                  </Badge>
-                ))}
-              </div>
+              <TagInput
+                values={tags}
+                maxCount={MAX_TAGS}
+                onChange={setTags}
+                validator={(tag) => instrumentTagSchema.safeParse(tag).success}
+                disabled={isSubmitting}
+              />
             </div>
             {invalidTags.length > 0 && (
               <Alert variant="destructive" className="w-full">
