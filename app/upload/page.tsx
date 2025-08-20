@@ -13,7 +13,6 @@ import {
   FaUpload,
 } from "react-icons/fa";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -69,7 +68,6 @@ export default function UploadPage() {
     undefined
   );
   const [tags, setTags] = useState<string[]>([]);
-  const [newTag, setNewTag] = useState<string>("");
   const [invalidTags, setInvalidTags] = useState<string[]>([]);
   const [description, setDescription] = useState<string>("");
   const [invalidDescription, setInvalidDescription] = useState<string>("");
@@ -104,21 +102,6 @@ export default function UploadPage() {
   //     router.push("/signin");
   //   }
   // }, [router, user]);
-
-  function addTag() {
-    if (
-      instrumentTagSchema.safeParse(newTag).success &&
-      tags.length < MAX_TAGS &&
-      !tags.includes(newTag)
-    ) {
-      setTags((prevTags) => [...prevTags, newTag]);
-      setNewTag("");
-    }
-  }
-
-  function removeTag(tag: string) {
-    setTags((prevTags) => prevTags.filter((t) => t !== tag));
-  }
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const selectedFile = e.target.files?.[0];
