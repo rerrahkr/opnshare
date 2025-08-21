@@ -44,6 +44,11 @@ import {
   MAX_TAGS,
   type RecommendedChip,
 } from "@/features/instrument/models";
+import {
+  getInstrumentParser,
+  SUPPORTED_TEXT_FORMATS,
+  type TextFormat,
+} from "@/features/instrument/parser";
 import type { FmInstrument } from "@/features/instrument/types";
 import { useAuthUser } from "@/stores/auth";
 import { TagInput } from "./components/tag-input";
@@ -83,15 +88,11 @@ export default function UploadPage() {
   const supportedFileExtensions = READABLE_FILE_EXTENSIONS;
 
   const [textDialogOpen, setTextDialogOpen] = useState(false);
-  const [selectedDriver, setSelectedDriver] = useState("");
+  const [selectedTextFormat, setSelectedTextFormat] = useState<
+    TextFormat | undefined
+  >(undefined);
   const [textInput, setTextInput] = useState("");
   const [textImportError, setTextImportError] = useState<string>("");
-  const driverChipMap: Record<string, string[]> = {
-    PMD: ["OPN", "OPNA", "OPM"],
-    FMP: ["OPN", "OPNA"],
-    BambooTracker: ["OPN2", "OPL3"],
-    Furnace: ["OPN", "OPN2", "OPL3", "OPM"],
-  };
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -112,9 +113,9 @@ export default function UploadPage() {
     try {
       const instrumentLoader = getInstrumentLoader(selectedFile);
       const buffer = await selectedFile.arrayBuffer();
-      const [instrument] = instrumentLoader(buffer);
+      const [loadedInstrument] = instrumentLoader(buffer);
 
-      setInstrument(instrument);
+      setInstrument(loadedInstrument);
       setBinFile(selectedFile);
       setFileLoadError("");
       setImportStatus("file");
@@ -125,23 +126,31 @@ export default function UploadPage() {
     }
   }
 
-  const handleTextImport = () => {
-    // テキスト検証（仮実装：「1234」のみ許可）
-    if (textInput.trim() === "1234") {
+  function handleTextImport() {
+    if (!selectedTextFormat) {
+      return;
+    }
+
+    const parser = getInstrumentParser(selectedTextFormat);
+    try {
+      const parsedInstrument = parser(textInput.trim());
+
+      setInstrument(parsedInstrument);
       setTextImportError("");
       setImportStatus("text");
+      setBinFile(undefined);
       setTextDialogOpen(false);
-    } else {
+    } catch {
       setTextImportError(
         "Invalid instrument data. Please enter in correct format."
       );
     }
-  };
+  }
 
-  const handleTextDialogClose = () => {
+  function handleTextDialogClose() {
     setTextDialogOpen(false);
     setTextImportError("");
-  };
+  }
 
   async function handleSubmit() {
     setIsSubmitting(true);
@@ -423,22 +432,24 @@ export default function UploadPage() {
                       <DialogTitle>Instrument Data Input</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4">
-                      {/* Driver Selection */}
+                      {/* Text Format Selection */}
                       <div className="space-y-2">
                         <Label className="text-sm font-medium">
-                          Sound Driver *
+                          Text Format *
                         </Label>
                         <Select
-                          value={selectedDriver}
-                          onValueChange={setSelectedDriver}
+                          value={selectedTextFormat}
+                          onValueChange={(format) =>
+                            setSelectedTextFormat(format as TextFormat)
+                          }
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder="Select driver" />
+                            <SelectValue placeholder="Select text format" />
                           </SelectTrigger>
                           <SelectContent>
-                            {Object.keys(driverChipMap).map((driver) => (
-                              <SelectItem key={driver} value={driver}>
-                                {driver}
+                            {SUPPORTED_TEXT_FORMATS.map((format) => (
+                              <SelectItem key={format} value={format}>
+                                {format}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -469,7 +480,7 @@ export default function UploadPage() {
                         </Button>
                         <Button
                           onClick={handleTextImport}
-                          disabled={!selectedDriver || !textInput.trim()}
+                          disabled={!selectedTextFormat || !textInput.trim()}
                         >
                           Import
                         </Button>
@@ -481,8 +492,7 @@ export default function UploadPage() {
                 {importStatus === "text" && (
                   <div className="p-3 bg-muted rounded-lg">
                     <p className="text-sm text-muted-foreground">
-                      Text data imported successfully ({selectedDriver} -{" "}
-                      {selectedChip})
+                      Text data imported successfully ({selectedTextFormat})
                     </p>
                   </div>
                 )}

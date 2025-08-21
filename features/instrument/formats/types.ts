@@ -3,3 +3,7 @@ export type FileConfig = {
   readonly readable: boolean;
   readonly writable: boolean;
 };
+
+export type TextConfig = {
+  readonly type: string;
+};

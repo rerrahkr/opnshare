@@ -1,7 +1,7 @@
 import type { FmInstrument } from "../../types";
 import { parse } from "./parser";
 
-describe("FMP7 prase", () => {
+describe("FMP7 parse", () => {
   it('should parse "F" format', () => {
     const instrument: FmInstrument = {
       al: 4,
