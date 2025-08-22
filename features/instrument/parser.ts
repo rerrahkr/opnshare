@@ -1,7 +1,9 @@
+import { config as configFmp, parse as parseFmp } from "./formats/fmp";
 import { config as configFmp7, parse as parseFmp7 } from "./formats/fmp7";
 import type { FmInstrument } from "./types";
 
 const formatParsers = {
+  [configFmp.type]: parseFmp,
   [configFmp7.type]: parseFmp7,
 } as const;
 
