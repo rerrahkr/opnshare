@@ -133,7 +133,7 @@ export default function UploadPage() {
 
     const parser = getInstrumentParser(selectedTextFormat);
     try {
-      const parsedInstrument = parser(textInput.trim());
+      const parsedInstrument = parser(textInput);
 
       setInstrument(parsedInstrument);
       setTextImportError("");
