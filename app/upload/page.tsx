@@ -4,7 +4,6 @@ import { LucideAlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
 import {
   FaFileAlt,
   FaMemory,
@@ -15,13 +14,6 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -44,14 +36,10 @@ import {
   MAX_TAGS,
   type RecommendedChip,
 } from "@/features/instrument/models";
-import {
-  getInstrumentParser,
-  SUPPORTED_TEXT_FORMATS,
-  type TextFormat,
-} from "@/features/instrument/parser";
 import type { FmInstrument } from "@/features/instrument/types";
 import { useAuthUser } from "@/stores/auth";
 import { TagInput } from "./components/tag-input";
+import { TextInputDialogButton } from "./components/text-input-dialog-button";
 
 type UploadMethod = "file" | "text";
 type ImportStatus = UploadMethod | "none";
@@ -65,7 +53,7 @@ const RECOMMENDED_CHIP_SELECTION: RecommendedChip[] = [
 
 export default function UploadPage() {
   const router = useRouter();
-  // const user = useAuthUser();
+  const user = useAuthUser();
 
   const [instName, setInstName] = useState<string>("");
   const [invalidName, setInvalidName] = useState<string>("");
@@ -87,22 +75,14 @@ export default function UploadPage() {
   const [fileLoadError, setFileLoadError] = useState<string>("");
   const supportedFileExtensions = READABLE_FILE_EXTENSIONS;
 
-  const [textDialogOpen, setTextDialogOpen] = useState(false);
-  const [selectedTextFormat, setSelectedTextFormat] = useState<
-    TextFormat | undefined
-  >(undefined);
-  const [textInput, setTextInput] = useState("");
-  const [textImportError, setTextImportError] = useState<string>("");
-
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
-  // TODO: uncomment
-  // useEffect(() => {
-  //   if (!user) {
-  //     router.push("/signin");
-  //   }
-  // }, [router, user]);
+  useEffect(() => {
+    if (!user) {
+      router.push("/signin");
+    }
+  }, [router, user]);
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const selectedFile = e.target.files?.[0];
@@ -124,32 +104,6 @@ export default function UploadPage() {
       setBinFile(undefined);
       setFileLoadError("Unsupported file format.");
     }
-  }
-
-  function handleTextImport() {
-    if (!selectedTextFormat) {
-      return;
-    }
-
-    const parser = getInstrumentParser(selectedTextFormat);
-    try {
-      const parsedInstrument = parser(textInput);
-
-      setInstrument(parsedInstrument);
-      setTextImportError("");
-      setImportStatus("text");
-      setBinFile(undefined);
-      setTextDialogOpen(false);
-    } catch {
-      setTextImportError(
-        "Invalid instrument data. Please enter in correct format."
-      );
-    }
-  }
-
-  function handleTextDialogClose() {
-    setTextDialogOpen(false);
-    setTextImportError("");
   }
 
   async function handleSubmit() {
@@ -416,83 +370,19 @@ export default function UploadPage() {
             {/* Text Input */}
             {uploadMethod === "text" && (
               <div className="space-y-4">
-                <Dialog open={textDialogOpen} onOpenChange={setTextDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full bg-transparent"
-                      disabled={isSubmitting}
-                    >
-                      <FaFileAlt className="h-4 w-4 mr-2" />
-                      Input as Text
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
-                    <DialogHeader>
-                      <DialogTitle>Instrument Data Input</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      {/* Text Format Selection */}
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium">
-                          Text Format *
-                        </Label>
-                        <Select
-                          value={selectedTextFormat}
-                          onValueChange={(format) =>
-                            setSelectedTextFormat(format as TextFormat)
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select text format" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {SUPPORTED_TEXT_FORMATS.map((format) => (
-                              <SelectItem key={format} value={format}>
-                                {format}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <Textarea
-                        placeholder="Paste instrument data... (For testing: enter 1234)"
-                        value={textInput}
-                        onChange={(e) => setTextInput(e.target.value)}
-                        rows={10}
-                        className="font-mono text-sm"
-                      />
-
-                      {textImportError && (
-                        <Alert variant="destructive">
-                          <LucideAlertCircle className="h-4 w-4" />
-                          <AlertDescription>{textImportError}</AlertDescription>
-                        </Alert>
-                      )}
-
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          onClick={handleTextDialogClose}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          onClick={handleTextImport}
-                          disabled={!selectedTextFormat || !textInput.trim()}
-                        >
-                          Import
-                        </Button>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
+                <TextInputDialogButton
+                  disabled={isSubmitting}
+                  onImported={(newInstrument) => {
+                    setInstrument(newInstrument);
+                    setImportStatus("text");
+                    setBinFile(undefined);
+                  }}
+                />
 
                 {importStatus === "text" && (
                   <div className="p-3 bg-muted rounded-lg">
                     <p className="text-sm text-muted-foreground">
-                      Text data imported successfully ({selectedTextFormat})
+                      Text data imported successfully
                     </p>
                   </div>
                 )}
