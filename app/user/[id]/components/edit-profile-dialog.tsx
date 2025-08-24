@@ -23,13 +23,13 @@ import {
 } from "@/features/user/models";
 
 type EditProfileDialogProps = {
-  userId: string;
+  uid: string;
   editableProfile: EditableUserDoc;
   setEditableProfile: (editedProfile: EditableUserDoc) => void;
 };
 
 export function EditProfileDialog({
-  userId,
+  uid,
   editableProfile,
   setEditableProfile,
 }: EditProfileDialogProps): React.JSX.Element {
@@ -64,7 +64,7 @@ export function EditProfileDialog({
       }
 
       try {
-        await updateUserDoc(userId, data);
+        await updateUserDoc(uid, data);
         setEditableProfile(data);
         setProfileEditOpen(false);
       } catch (_error) {

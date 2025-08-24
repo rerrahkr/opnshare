@@ -20,7 +20,7 @@ export const editableUserDocSchema = z.object({
 export type EditableUserDoc = z.infer<typeof editableUserDocSchema>;
 
 export type UserDoc = EditableUserDoc & {
-  uid: string;
+  userId: string;
   createdAt: Time;
   updatedAt: Time;
 };

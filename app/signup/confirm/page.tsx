@@ -5,6 +5,7 @@ import {
   type Auth,
   isSignInWithEmailLink,
   signInWithEmailLink,
+  signOut,
   type User,
   updatePassword,
   validatePassword,
@@ -106,9 +107,15 @@ export default function SignUpConfirmPage() {
     (async () => {
       // Check if user information is fulfilled.
       if (user) {
-        if (await testUserDocExistsByUid(user.uid)) {
-          // No need to confirm again if user already exists.
-          router.push("/");
+        if (
+          user.metadata.creationTime === user.metadata.lastSignInTime &&
+          (await testUserDocExistsByUid(user.uid))
+        ) {
+          await signOut(auth);
+          window.alert(
+            "This email address is already registered. Redirecting to the sign-in page."
+          );
+          router.push("/signin");
         }
 
         // If some data is not completed, stay on this page.

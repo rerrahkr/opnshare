@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { EditableUserDoc } from "@/features/user/models";
-import { useAuthUserId } from "@/stores/auth";
+import { useAuthUser, useAuthUserId } from "@/stores/auth";
 import { isoStringToLocaleString } from "@/utils/date";
 import { EditProfileDialog } from "./edit-profile-dialog";
 
@@ -34,6 +34,7 @@ export function ProfileCard({
   numPosts,
   receivedLikes,
 }: ProfileProps): React.JSX.Element {
+  const authUserUid = useAuthUser()?.uid ?? "";
   const authUserId = useAuthUserId();
   const isOwnProfile = authUserId === userId;
 
@@ -81,7 +82,7 @@ export function ProfileCard({
               {isOwnProfile && (
                 <>
                   <EditProfileDialog
-                    userId={userId}
+                    uid={authUserUid}
                     editableProfile={profile}
                     setEditableProfile={setProfile}
                   />

@@ -1,18 +1,24 @@
 import type { Timestamp } from "firebase/firestore";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { getUserDoc } from "@/features/user/api";
+import { getUserDocByUserId } from "@/features/user/api";
 import type { UserDoc } from "@/features/user/models";
 import { InstrumentTabs } from "./components/instrument-tabs";
 import { ProfileCard } from "./components/profile-card";
 import type { InstrumentMetaInfo } from "./types";
 
-export default async function UserPage({ params }: { params: { id: string } }) {
-  const { id } = await params;
+type UserPageParams = {
+  params: {
+    id: string;
+  };
+};
+
+export default async function UserPage({ params }: UserPageParams) {
+  const { id: userId } = await params;
 
   let userDoc: UserDoc | undefined;
   try {
-    userDoc = await getUserDoc(id);
+    userDoc = await getUserDocByUserId(userId);
   } catch {}
   if (userDoc === undefined) {
     notFound();
@@ -59,7 +65,7 @@ export default async function UserPage({ params }: { params: { id: string } }) {
       <div className="space-y-8">
         <Suspense fallback={<div>Loading...</div>}>
           <ProfileCard
-            userId={id}
+            userId={userId}
             displayName={userDoc.displayName}
             bio={userDoc.bio}
             joinedDateIso={joinedDateIso}

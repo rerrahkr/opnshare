@@ -12,28 +12,34 @@ import {
 import { collectionUsers, db, docUsers } from "@/lib/firebase";
 import type { EditableUserDoc, ReservedUserIdDoc, UserDoc } from "./models";
 
-const UID_DATA_NAME = "uid";
+const USER_ID_DATA_NAME = "userId";
 const RESERVED_USER_IDS_COLLECTION_NAME = "reservedUserIds";
 
-function whereUidEquals(uid: string) {
-  return where(UID_DATA_NAME, "==", uid);
+function whereUserIdEquals(userId: string) {
+  return where(USER_ID_DATA_NAME, "==", userId);
 }
 
 export async function getUserId(uid: string): Promise<string> {
-  const q = query(collectionUsers(), whereUidEquals(uid));
-  const querySnapshot = await getDocs(q);
-  return querySnapshot.docs[0]?.id ?? "";
+  const userDoc = await getUserDoc(uid);
+  return userDoc?.userId ?? "";
 }
 
 export async function testUserDocExistsByUid(uid: string): Promise<boolean> {
-  const q = query(collectionUsers(), whereUidEquals(uid));
-  const querySnapshot = await getDocs(q);
-  return !querySnapshot.empty;
+  return (await getUserDoc(uid)) !== undefined;
 }
 
-export async function getUserDoc(userId: string): Promise<UserDoc | undefined> {
-  const docSnapshot = await getDoc(docUsers(userId));
+export async function getUserDoc(uid: string): Promise<UserDoc | undefined> {
+  const docSnapshot = await getDoc(docUsers(uid));
   return docSnapshot.exists() ? (docSnapshot.data() as UserDoc) : undefined;
+}
+
+export async function getUserDocByUserId(
+  userId: string
+): Promise<UserDoc | undefined> {
+  const q = query(collectionUsers(), whereUserIdEquals(userId));
+  const querySnapshot = await getDocs(q);
+  const data = querySnapshot.docs[0]?.data();
+  return data ? (data as UserDoc) : undefined;
 }
 
 /**
@@ -45,7 +51,7 @@ export async function createUserDocWithUserIdCheck(
   userDoc: EditableUserDoc
 ) {
   const reservedRef = doc(db, RESERVED_USER_IDS_COLLECTION_NAME, userId);
-  const userRef = docUsers(userId);
+  const userRef = docUsers(uid);
   await runTransaction(db, async (transaction) => {
     const reservedDoc = await transaction.get(reservedRef);
     if (reservedDoc.exists()) {
@@ -59,25 +65,20 @@ export async function createUserDocWithUserIdCheck(
 
     transaction.set(userRef, {
       ...userDoc,
-      uid,
+      userId,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     } satisfies UserDoc);
   });
 }
 
-export async function updateUserDoc(userId: string, userDoc: EditableUserDoc) {
-  await updateDoc(docUsers(userId), {
+export async function updateUserDoc(uid: string, userDoc: EditableUserDoc) {
+  await updateDoc(docUsers(uid), {
     ...userDoc,
     updatedAt: serverTimestamp(),
   } satisfies Partial<UserDoc>);
 }
 
 export async function deleteUserDoc(uid: string) {
-  const q = query(collectionUsers(), whereUidEquals(uid));
-  const querySnapshot = await getDocs(q);
-  const userDoc = querySnapshot.docs[0];
-  if (userDoc) {
-    await deleteDoc(userDoc.ref);
-  }
+  await deleteDoc(docUsers(uid));
 }

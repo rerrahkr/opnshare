@@ -9,13 +9,6 @@ import {
   validatePassword,
   verifyBeforeUpdateEmail,
 } from "firebase/auth";
-import {
-  collection,
-  deleteDoc,
-  getDocs,
-  query,
-  where,
-} from "firebase/firestore";
 import { LucideAlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -51,7 +44,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { deleteUserDoc } from "@/features/user/api";
-import { auth, db } from "@/lib/firebase";
+import { auth } from "@/lib/firebase";
 import { useAuthUser } from "@/stores/auth";
 
 const emailSchema = z.string().email();

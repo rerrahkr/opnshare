@@ -7,6 +7,6 @@ export function collectionUsers() {
   return collection(db, USERS_COLLECTION_NAME);
 }
 
-export function docUsers(userId: string) {
-  return doc(db, USERS_COLLECTION_NAME, userId);
+export function docUsers(uid: string) {
+  return doc(db, USERS_COLLECTION_NAME, uid);
 }
