@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { createInstrumentDoc } from "@/features/instrument/api";
 import {
   getInstrumentLoader,
   READABLE_FILE_EXTENSIONS,
@@ -54,6 +55,7 @@ const RECOMMENDED_CHIP_SELECTION: RecommendedChip[] = [
 export default function UploadPage() {
   const router = useRouter();
   const user = useAuthUser();
+  const userUid = user?.uid ?? "";
 
   const [instName, setInstName] = useState<string>("");
   const [invalidName, setInvalidName] = useState<string>("");
@@ -114,7 +116,7 @@ export default function UploadPage() {
     setSubmitError("");
 
     try {
-      if (selectedChip === undefined) {
+      if (selectedChip === undefined || instrument === undefined) {
         return;
       }
 
@@ -156,26 +158,12 @@ export default function UploadPage() {
       }
 
       try {
-        // 仮の投稿処理（mp3ファイルの場合は失敗）
-        await new Promise((resolve) => setTimeout(resolve, 2000)); // 2秒待機
+        await createInstrumentDoc(userUid, instrument, metaInfo);
 
-        if (uploadMethod === "file" && binFile) {
-          const fileExtension = binFile.name.split(".").pop()?.toLowerCase();
-          if (fileExtension === "mp3") {
-            throw new Error(
-              "An error occurred while processing the mp3 file. Please try a different file format."
-            );
-          }
-        }
-
-        // 投稿成功 - 完了ページに遷移
         router.push("/upload/success");
-      } catch (error) {
-        setSubmitError(
-          error instanceof Error
-            ? error.message
-            : "An error occurred during upload."
-        );
+      } catch (error: unknown) {
+        console.log(error);
+        setSubmitError("An error occurred during upload.");
       }
     } finally {
       setIsSubmitting(false);

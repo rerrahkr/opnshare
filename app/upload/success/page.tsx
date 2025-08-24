@@ -1,9 +1,14 @@
-import Link from "next/link"
-import { FaCheckCircle, FaUpload, FaUser } from "react-icons/fa"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+"use client";
+
+import Link from "next/link";
+import { FaCheckCircle, FaUpload, FaUser } from "react-icons/fa";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuthUserId } from "@/stores/auth";
 
 export default function UploadSuccessPage() {
+  const userId = useAuthUserId();
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/20 px-4">
       <Card className="w-full max-w-md text-center">
@@ -15,7 +20,8 @@ export default function UploadSuccessPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-muted-foreground">
-            Your instrument has been uploaded successfully. Other users can now discover your instrument.
+            Your instrument has been uploaded successfully. Other users can now
+            discover your instrument.
           </p>
 
           <div className="space-y-3 pt-4">
@@ -27,7 +33,7 @@ export default function UploadSuccessPage() {
             </Button>
 
             <Button variant="outline" asChild className="w-full bg-transparent">
-              <Link href="/mypage">
+              <Link href={`/user/${userId}`}>
                 <FaUser className="h-4 w-4 mr-2" />
                 Back to my page
               </Link>
@@ -36,5 +42,5 @@ export default function UploadSuccessPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

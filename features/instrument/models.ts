@@ -4,16 +4,15 @@ import type { Time } from "@/lib/firebase";
 
 // "likedInstruments" collection
 export type LikedInstrumentDoc = {
-  id: string;
+  instrumentId: string;
   likedAt: Time;
 };
 
 // "instruments" collection
 export type InstrumentDoc = EditableInstrumentMetaInfo & {
-  authorId: string;
+  authorUid: string;
   likeCount: number;
   data: FmInstrument;
-  originalFileUrl: string;
   createdAt: Time;
   updatedAt: Time;
   isDeleted: boolean;
