@@ -33,13 +33,16 @@ export async function getUserDoc(uid: string): Promise<UserDoc | undefined> {
   return docSnapshot.exists() ? (docSnapshot.data() as UserDoc) : undefined;
 }
 
-export async function getUserDocByUserId(
+export async function getUserDocAndUidByUserId(
   userId: string
-): Promise<UserDoc | undefined> {
+): Promise<[UserDoc, string] | undefined> {
   const q = query(collectionUsers(), whereUserIdEquals(userId));
   const querySnapshot = await getDocs(q);
-  const data = querySnapshot.docs[0]?.data();
-  return data ? (data as UserDoc) : undefined;
+  const targetDoc = querySnapshot.docs[0];
+  if (!targetDoc) {
+    return undefined;
+  }
+  return [targetDoc.data() as UserDoc, targetDoc.id];
 }
 
 /**

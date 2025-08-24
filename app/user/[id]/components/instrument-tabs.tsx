@@ -7,10 +7,13 @@ import { InstrumentCard } from "./instrument-card";
 
 type InstrumentTabsProps = {
   posts: InstrumentMetaInfo[];
-  likedInsts: InstrumentMetaInfo[];
+  likes: InstrumentMetaInfo[];
 };
 
-export function InstrumentTabs(props: InstrumentTabsProps): React.JSX.Element {
+export function InstrumentTabs({
+  posts,
+  likes,
+}: InstrumentTabsProps): React.JSX.Element {
   return (
     <Tabs defaultValue="posts">
       <TabsList className="grid w-full grid-cols-2">
@@ -20,7 +23,7 @@ export function InstrumentTabs(props: InstrumentTabsProps): React.JSX.Element {
 
       <TabsContent value="posts" className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {props.posts.map((post) => (
+          {posts.map((post) => (
             <InstrumentCard key={post.id} info={post} />
           ))}
         </div>
@@ -28,7 +31,7 @@ export function InstrumentTabs(props: InstrumentTabsProps): React.JSX.Element {
 
       <TabsContent value="likes" className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {props.likedInsts.map((inst) => (
+          {likes.map((inst) => (
             <InstrumentCard key={inst.id} info={inst} />
           ))}
         </div>

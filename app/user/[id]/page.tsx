@@ -1,8 +1,8 @@
 import type { Timestamp } from "firebase/firestore";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { getUserDocByUserId } from "@/features/user/api";
-import type { UserDoc } from "@/features/user/models";
+import { getInstrumentDocsAndIdsByAuthor } from "@/features/instrument/api";
+import { getUserDocAndUidByUserId } from "@/features/user/api";
 import { InstrumentTabs } from "./components/instrument-tabs";
 import { ProfileCard } from "./components/profile-card";
 import type { InstrumentMetaInfo } from "./types";
@@ -16,38 +16,44 @@ type UserPageParams = {
 export default async function UserPage({ params }: UserPageParams) {
   const { id: userId } = await params;
 
-  let userDoc: UserDoc | undefined;
-  try {
-    userDoc = await getUserDocByUserId(userId);
-  } catch {}
-  if (userDoc === undefined) {
+  const [userDoc, userUid] = await (async () => {
+    try {
+      const result = await getUserDocAndUidByUserId(userId);
+      if (result) {
+        return result;
+      }
+    } catch {}
     notFound();
-  }
+  })();
 
+  const userName = userDoc.displayName;
   const createdAt = userDoc.createdAt as Timestamp;
   const joinedDateIso = createdAt.toDate().toISOString();
 
+  const instrumentDocsAndIds = await (async () => {
+    try {
+      return await getInstrumentDocsAndIdsByAuthor(userUid, {
+        order: "latest",
+      });
+    } catch {
+      return [];
+    }
+  })();
+
+  const posts: InstrumentMetaInfo[] = instrumentDocsAndIds.map(
+    ([doc, id]) =>
+      ({
+        id,
+        title: doc.name,
+        author: userName,
+        tags: doc.tags,
+        likes: doc.likeCount,
+        dateIso: (doc.createdAt as Timestamp).toDate().toISOString(),
+      }) satisfies InstrumentMetaInfo
+  );
+
   // TODO: fetch
-  const posts: InstrumentMetaInfo[] = [
-    {
-      id: "1",
-      title: "Awesome Lead",
-      author: userDoc.displayName,
-      tags: ["synth", "lead", "clear"],
-      likes: 2,
-      dateIso: "2023-10-23T12:00:00Z",
-    },
-    {
-      id: "3",
-      title: "Awesome Bass",
-      author: userDoc.displayName,
-      tags: ["bass", "clear"],
-      likes: 4,
-      dateIso: "2025-07-12T12:00:00Z",
-    },
-  ];
-  // TODO: fetch
-  const likedInsts: InstrumentMetaInfo[] = [
+  const likes: InstrumentMetaInfo[] = [
     {
       id: "2",
       title: "Epic Lead",
@@ -72,7 +78,7 @@ export default async function UserPage({ params }: UserPageParams) {
             numPosts={posts.length}
             receivedLikes={receivedLikes}
           />
-          <InstrumentTabs posts={posts} likedInsts={likedInsts} />
+          <InstrumentTabs posts={posts} likes={likes} />
         </Suspense>
       </div>
     </div>
