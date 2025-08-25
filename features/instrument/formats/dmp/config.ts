@@ -1,7 +1,8 @@
 import type { FileConfig } from "../types";
 
-export const config: FileConfig = {
+export const config = {
+  type: "DefleMask",
   extensions: [".dmp"],
   readable: true,
   writable: true,
-} as const;
+} as const satisfies FileConfig;

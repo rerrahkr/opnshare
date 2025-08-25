@@ -1,7 +1,8 @@
 import type { FileConfig } from "../types";
 
-export const config: FileConfig = {
+export const config = {
+  type: "VGM Music Maker",
   extensions: [".vgi"],
   readable: true,
   writable: true,
-} as const;
+} as const satisfies FileConfig;

@@ -7,20 +7,20 @@ import {
 import { config as configPmd, parse as parsePmd } from "./formats/pmd";
 import type { FmInstrument } from "./types";
 
-const formatParsers = {
+const FORMAT_PARSERS = {
   [configFmp.type]: parseFmp,
   [configFmp7.type]: parseFmp7,
   [configMucom88.type]: parseMucom88,
   [configPmd.type]: parsePmd,
 } as const;
 
-export type TextFormat = keyof typeof formatParsers;
+export type TextFormat = keyof typeof FORMAT_PARSERS;
 type InstrumentParser = (text: string) => FmInstrument;
 
 export const SUPPORTED_TEXT_FORMATS = Object.keys(
-  formatParsers
+  FORMAT_PARSERS
 ) as TextFormat[];
 
 export function getInstrumentParser(format: TextFormat): InstrumentParser {
-  return formatParsers[format];
+  return FORMAT_PARSERS[format];
 }

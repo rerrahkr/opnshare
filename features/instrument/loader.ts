@@ -7,7 +7,7 @@ import { config as configTfi, load as loadTfi } from "./formats/tfi";
 import { config as configVgi, load as loadVgi } from "./formats/vgi";
 import type { FmInstrument } from "./types";
 
-const formatLoaders = [
+const FORMAT_LOADERS = [
   { config: configBti, loader: loadBti },
   { config: configDmp, loader: loadDmp },
   { config: configFui, loader: loadFui },
@@ -17,13 +17,15 @@ const formatLoaders = [
 ] as const;
 
 export const READABLE_FILE_EXTENSIONS: readonly string[] =
-  formatLoaders.flatMap((pair) => pair.config.extensions);
+  FORMAT_LOADERS.flatMap((pair) => pair.config.extensions);
 
 type InstrumentLoader = (buffer: ArrayBufferLike) => [FmInstrument, string];
 
 export function getInstrumentLoader(file: File): InstrumentLoader {
   const ext = getFileExtension(file).toLowerCase();
-  const format = formatLoaders.find((f) => f.config.extensions.includes(ext));
+  const format = FORMAT_LOADERS.find((f) =>
+    (f.config.extensions as string[]).includes(ext)
+  );
 
   if (!format) {
     throw new Error("Not loadable file");
