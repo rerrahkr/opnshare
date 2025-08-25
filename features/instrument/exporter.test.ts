@@ -19,16 +19,20 @@ import { config as configVgi, save as saveVgi } from "./formats/vgi";
 describe("getInstrumentExporter", () => {
   it("should get an exporter", () => {
     const filePairs = [
-      [configBti.type, saveBti],
-      [configDmp.type, saveDmp],
-      [configFui.type, saveFui],
-      [configIns.type, saveIns],
-      [configTfi.type, saveTfi],
-      [configVgi.type, saveVgi],
+      [configBti.type, saveBti, configBti.extensions[0]],
+      [configDmp.type, saveDmp, configDmp.extensions[0]],
+      [configFui.type, saveFui, configFui.extensions[0]],
+      [configIns.type, saveIns, configIns.extensions[0]],
+      [configTfi.type, saveTfi, configTfi.extensions[0]],
+      [configVgi.type, saveVgi, configVgi.extensions[0]],
     ] as const;
 
-    for (const [format, exporter] of filePairs) {
-      expect(getInstrumentExporter(format)).toEqual({ type: "file", exporter });
+    for (const [format, exporter, extension] of filePairs) {
+      expect(getInstrumentExporter(format)).toEqual({
+        type: "file",
+        exporter,
+        extension,
+      });
     }
 
     const textPairs = [

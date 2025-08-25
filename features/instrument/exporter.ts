@@ -20,6 +20,7 @@ type InstrumentExporter =
   | {
       exporter: (instrument: FmInstrument, name: string) => ArrayBuffer;
       type: "file";
+      extension: string;
     }
   | {
       exporter: (instrument: FmInstrument) => string;
@@ -27,16 +28,40 @@ type InstrumentExporter =
     };
 
 const EXPORTERS = {
-  [configBti.type]: { exporter: saveBti, type: "file" },
-  [configDmp.type]: { exporter: saveDmp, type: "file" },
+  [configBti.type]: {
+    exporter: saveBti,
+    type: "file",
+    extension: configBti.extensions[0],
+  },
+  [configDmp.type]: {
+    exporter: saveDmp,
+    type: "file",
+    extension: configDmp.extensions[0],
+  },
   [configFmp.type]: { exporter: stringifyFmp, type: "text" },
   [configFmp7.type]: { exporter: stringifyFmp7, type: "text" },
-  [configFui.type]: { exporter: saveFui, type: "file" },
+  [configFui.type]: {
+    exporter: saveFui,
+    type: "file",
+    extension: configFui.extensions[0],
+  },
   [configMucom88.type]: { exporter: stringifyMucom88, type: "text" },
-  [configIns.type]: { exporter: saveIns, type: "file" },
+  [configIns.type]: {
+    exporter: saveIns,
+    type: "file",
+    extension: configIns.extensions[0],
+  },
   [configPmd.type]: { exporter: stringifyPmd, type: "text" },
-  [configTfi.type]: { exporter: saveTfi, type: "file" },
-  [configVgi.type]: { exporter: saveVgi, type: "file" },
+  [configTfi.type]: {
+    exporter: saveTfi,
+    type: "file",
+    extension: configTfi.extensions[0],
+  },
+  [configVgi.type]: {
+    exporter: saveVgi,
+    type: "file",
+    extension: configVgi.extensions[0],
+  },
 } as const satisfies {
   [key: string]: InstrumentExporter;
 };
