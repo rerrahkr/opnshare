@@ -9,8 +9,20 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { collectionUsers, db, docUsers } from "@/lib/firebase";
-import type { EditableUserDoc, ReservedUserIdDoc, UserDoc } from "./models";
+import {
+  collectionLikes,
+  collectionUsers,
+  db,
+  docUsers,
+  type NewDoc,
+  type UpdatedDoc,
+} from "@/lib/firebase";
+import type {
+  EditableUserDoc,
+  LikedInstrumentDoc,
+  ReservedUserIdDoc,
+  UserDoc,
+} from "./models";
 
 const USER_ID_DATA_NAME = "userId";
 const RESERVED_USER_IDS_COLLECTION_NAME = "reservedUserIds";
@@ -64,14 +76,14 @@ export async function createUserDocWithUserIdCheck(
     transaction.set(reservedRef, {
       createdAt: serverTimestamp(),
       uid,
-    } satisfies ReservedUserIdDoc);
+    } satisfies NewDoc<ReservedUserIdDoc>);
 
     transaction.set(userRef, {
       ...userDoc,
       userId,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
-    } satisfies UserDoc);
+    } satisfies NewDoc<UserDoc>);
   });
 }
 
@@ -79,9 +91,20 @@ export async function updateUserDoc(uid: string, userDoc: EditableUserDoc) {
   await updateDoc(docUsers(uid), {
     ...userDoc,
     updatedAt: serverTimestamp(),
-  } satisfies Partial<UserDoc>);
+  } satisfies UpdatedDoc<UserDoc>);
 }
 
 export async function deleteUserDoc(uid: string) {
   await deleteDoc(docUsers(uid));
+}
+
+export async function getUserLikedInstrumentDocs(
+  uid: string
+): Promise<[LikedInstrumentDoc, string][]> {
+  const q = query(collectionLikes(uid));
+  const querySnapshot = await getDocs(q);
+  return querySnapshot.docs.map((doc) => [
+    doc.data() as LikedInstrumentDoc,
+    doc.id,
+  ]);
 }

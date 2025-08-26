@@ -4,13 +4,16 @@ import {
   doc,
   getDoc,
   getDocs,
+  increment,
   orderBy,
   query,
+  runTransaction,
   serverTimestamp,
   updateDoc,
   where,
 } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { db, docLikes, type NewDoc, type UpdatedDoc } from "@/lib/firebase";
+import type { LikedInstrumentDoc } from "../user/models";
 import type { EditableInstrumentMetaInfo, InstrumentDoc } from "./models";
 import type { FmInstrument } from "./types";
 
@@ -21,7 +24,7 @@ function collectionInstruments() {
 }
 
 function docInstruments(instrumentId: string) {
-  return doc(db, INSTRUMENTS_COLLECTION_NAME, instrumentId);
+  return doc(collectionInstruments(), instrumentId);
 }
 
 export async function createInstrumentDoc(
@@ -37,7 +40,7 @@ export async function createInstrumentDoc(
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
     isDeleted: false,
-  } satisfies InstrumentDoc;
+  } satisfies NewDoc<InstrumentDoc>;
 
   // Assign unique document id as instrument id automatically.
   await addDoc(collectionInstruments(), newDoc);
@@ -93,11 +96,49 @@ export async function updateInstrumentDoc(
   await updateDoc(docInstruments(instrumentId), {
     ...metaInfo,
     updatedAt: serverTimestamp(),
-  } satisfies Partial<InstrumentDoc>);
+  } satisfies UpdatedDoc<InstrumentDoc>);
 }
 
 export async function softDeleteInstrumentDoc(instrumentId: string) {
   await updateDoc(docInstruments(instrumentId), {
     isDeleted: true,
-  } satisfies Partial<InstrumentDoc>);
+  } satisfies UpdatedDoc<InstrumentDoc>);
+}
+
+export async function likeInstrument(instrumentId: string, uid: string) {
+  const instrumentDocRef = docInstruments(instrumentId);
+  const likesDoc = docLikes(uid, instrumentId);
+  console.log(uid, instrumentId);
+  await runTransaction(db, async (transaction) => {
+    transaction.update(instrumentDocRef, {
+      likeCount: increment(1),
+    } satisfies UpdatedDoc<InstrumentDoc>);
+
+    transaction.set(likesDoc, {
+      likedAt: serverTimestamp(),
+    } satisfies NewDoc<LikedInstrumentDoc>);
+  });
+}
+
+export async function unlikeInstrument(instrumentId: string, uid: string) {
+  const instrumentDocRef = docInstruments(instrumentId);
+  const likesDoc = docLikes(uid, instrumentId);
+
+  await runTransaction(db, async (transaction) => {
+    transaction.update(instrumentDocRef, {
+      likeCount: increment(-1),
+    } satisfies UpdatedDoc<InstrumentDoc>);
+
+    transaction.delete(likesDoc);
+  });
+}
+
+export async function isLikedInstrument(
+  instrumentId: string,
+  uid: string
+): Promise<boolean> {
+  const docRef = docLikes(uid, instrumentId);
+  console.log(docRef.path, "aaaa");
+  const snapshot = await getDoc(docRef);
+  return snapshot.exists();
 }

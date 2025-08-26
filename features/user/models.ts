@@ -1,7 +1,5 @@
-import type { FieldValue, Timestamp } from "firebase/firestore";
+import type { Timestamp } from "firebase/firestore";
 import { z } from "zod";
-
-type Time = Timestamp | FieldValue;
 
 // "users" collection
 export const editableUserDocSchema = z.object({
@@ -21,14 +19,14 @@ export type EditableUserDoc = z.infer<typeof editableUserDocSchema>;
 
 export type UserDoc = EditableUserDoc & {
   userId: string;
-  createdAt: Time;
-  updatedAt: Time;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
 };
 
 // "reservedUserIds" collection
 export type ReservedUserIdDoc = {
   uid: string;
-  createdAt: Time;
+  createdAt: Timestamp;
 };
 
 export const userIdSchema = z
@@ -41,3 +39,8 @@ export const userIdSchema = z
   .refine((value) => !/.*admin.*/.test(value), {
     message: "This user ID is not allowed.",
   });
+
+// "likedInstruments" collection
+export type LikedInstrumentDoc = {
+  likedAt: Timestamp;
+};

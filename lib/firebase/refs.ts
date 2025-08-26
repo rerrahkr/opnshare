@@ -9,9 +9,13 @@ export function collectionUsers() {
 }
 
 export function docUsers(uid: string) {
-  return doc(db, USERS_COLLECTION_NAME, uid);
+  return doc(collectionUsers(), uid);
 }
 
-export function collectionLikes(userId: string) {
-  return collection(docUsers(userId), LIKES_SUB_COLLECTION_NAME);
+export function collectionLikes(uid: string) {
+  return collection(docUsers(uid), LIKES_SUB_COLLECTION_NAME);
+}
+
+export function docLikes(uid: string, instrumentId: string) {
+  return doc(collectionLikes(uid), instrumentId);
 }

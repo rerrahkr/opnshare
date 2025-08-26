@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import {
-  FaArrowLeft,
   FaDownload,
   FaEdit,
   FaEllipsisV,
@@ -30,11 +29,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -57,12 +51,18 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  isLikedInstrument,
+  likeInstrument,
+  unlikeInstrument,
+} from "@/features/instrument/api";
+import {
   EXPORTABLE_FORMATS,
   type ExportableFormat,
   getInstrumentExporter,
 } from "@/features/instrument/exporter";
 import type { RecommendedChip } from "@/features/instrument/models";
 import type { FmInstrument, FmOperator } from "@/features/instrument/types";
+import { useAuthUser, useAuthUserId } from "@/stores/auth";
 import { isoStringToLocaleString } from "@/utils/date";
 import { TextExportDialog } from "./text-export-dialog";
 
@@ -107,6 +107,11 @@ type InstrumentDetailContentProps = {
   data: FmInstrument;
 };
 
+type LikeState = {
+  isLiked: boolean;
+  likeCount: number;
+};
+
 export function InstrumentDetailContent({
   id,
   name,
@@ -120,9 +125,15 @@ export function InstrumentDetailContent({
   data: instrument,
 }: InstrumentDetailContentProps) {
   const router = useRouter();
+  const authedUser = useAuthUser();
+  const authedUserId = useAuthUserId();
 
-  const [isLiked, setIsLiked] = useState<boolean>(false);
-  const [likeCountSnapshot, setLikeCountSnapshot] = useState<number>(likeCount);
+  const [isPending, startTransition] = useTransition();
+
+  const [likeState, setLikeState] = useState<LikeState>({
+    isLiked: false,
+    likeCount,
+  });
 
   const exportTargets = EXPORTABLE_FORMATS;
   const [exportTarget, setExportTarget] = useState<ExportableFormat>("Furnace");
@@ -141,9 +152,18 @@ export function InstrumentDetailContent({
   const [editTags, setEditTags] = useState<string[]>(tags);
   const [newTag, setNewTag] = useState("");
 
-  const currentUser = "johndoe"; // Current user
-  const instrumentAuthor = "johndoe"; // Author of this instrument
-  const isOwnInstrument = currentUser === instrumentAuthor;
+  const isOwnInstrument = authedUserId === authorUserId;
+
+  useEffect(() => {
+    if (!authedUser) {
+      setLikeState((prev) => ({ ...prev, isLiked: false }));
+    } else {
+      (async () => {
+        const isLiked = await isLikedInstrument(id, authedUser.uid);
+        setLikeState((prev) => ({ ...prev, isLiked }));
+      })();
+    }
+  }, [authedUser, id]);
 
   function handleExport() {
     const exporter = getInstrumentExporter(exportTarget);
@@ -216,14 +236,29 @@ export function InstrumentDetailContent({
     router.push(`/search?chip=${encodeURIComponent(recommendedChip)}`);
   };
 
-  const handleLikeToggle = () => {
-    if (isLiked) {
-      setLikeCountSnapshot((prev) => prev - 1);
-    } else {
-      setLikeCountSnapshot((prev) => prev + 1);
+  async function handleLikeToggle() {
+    if (isPending || !authedUser) {
+      return;
     }
-    setIsLiked((state) => !state);
-  };
+
+    startTransition(async () => {
+      try {
+        if (likeState.isLiked) {
+          await unlikeInstrument(id, authedUser.uid);
+          setLikeState((prev) => ({
+            isLiked: !prev.isLiked,
+            likeCount: prev.likeCount - 1,
+          }));
+        } else {
+          await likeInstrument(id, authedUser.uid);
+          setLikeState((prev) => ({
+            isLiked: !prev.isLiked,
+            likeCount: prev.likeCount + 1,
+          }));
+        }
+      } catch {}
+    });
+  }
 
   const [shareUrl, setShareUrl] = useState<string>("");
   useEffect(() => {
@@ -253,15 +288,16 @@ export function InstrumentDetailContent({
             </div>
             <div className="flex items-center gap-2">
               <Button
-                variant={isLiked ? "default" : "outline"}
+                variant={likeState.isLiked ? "default" : "outline"}
                 onClick={handleLikeToggle}
                 className="flex items-center gap-2"
+                disabled={!authedUser}
               >
                 <FaHeart
-                  className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`}
+                  className={`h-4 w-4 ${likeState.isLiked ? "fill-current" : ""}`}
                 />
-                {isLiked ? "Liked" : "Like"}
-                <span className="text-sm">{likeCountSnapshot}</span>
+                {likeState.isLiked ? "Liked" : "Like"}
+                <span className="text-sm">{likeState.likeCount}</span>
               </Button>
 
               <DropdownMenu open={shareOpen} onOpenChange={setShareOpen}>

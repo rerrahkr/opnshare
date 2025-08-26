@@ -1,20 +1,14 @@
+import type { Timestamp } from "firebase/firestore";
 import { z } from "zod";
 import type { FmInstrument } from "@/features/instrument/types";
-import type { Time } from "@/lib/firebase";
-
-// "likedInstruments" collection
-export type LikedInstrumentDoc = {
-  instrumentId: string;
-  likedAt: Time;
-};
 
 // "instruments" collection
 export type InstrumentDoc = EditableInstrumentMetaInfo & {
   authorUid: string;
   likeCount: number;
   data: FmInstrument;
-  createdAt: Time;
-  updatedAt: Time;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
   isDeleted: boolean;
 };
 

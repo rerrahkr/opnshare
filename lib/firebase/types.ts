@@ -1,3 +1,7 @@
-import type { FieldValue, Timestamp } from "firebase/firestore";
+import type { FieldValue } from "firebase/firestore";
 
-export type Time = Timestamp | FieldValue;
+export type NewDoc<T> = {
+  [K in keyof T]: T[K] | FieldValue;
+};
+
+export type UpdatedDoc<T> = Partial<NewDoc<T>>;
