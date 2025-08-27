@@ -108,7 +108,6 @@ export async function softDeleteInstrumentDoc(instrumentId: string) {
 export async function likeInstrument(instrumentId: string, uid: string) {
   const instrumentDocRef = docInstruments(instrumentId);
   const likesDoc = docLikes(uid, instrumentId);
-  console.log(uid, instrumentId);
   await runTransaction(db, async (transaction) => {
     transaction.update(instrumentDocRef, {
       likeCount: increment(1),
@@ -138,7 +137,6 @@ export async function isLikedInstrument(
   uid: string
 ): Promise<boolean> {
   const docRef = docLikes(uid, instrumentId);
-  console.log(docRef.path, "aaaa");
   const snapshot = await getDoc(docRef);
   return snapshot.exists();
 }
