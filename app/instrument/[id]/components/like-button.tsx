@@ -1,5 +1,5 @@
 import type React from "react";
-import { useEffect, useState, useTransition } from "react";
+import { startTransition, useEffect, useOptimistic, useState } from "react";
 import { FaHeart } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,7 +32,10 @@ export function LikeButton({
     disabled: true,
   });
 
-  const [isPending, startTransition] = useTransition();
+  const [optimistic, addOptimistic] = useOptimistic(
+    likeState,
+    (_, newState: LikeState) => newState
+  );
 
   useEffect(() => {
     if (!currentUser) {
@@ -54,43 +57,42 @@ export function LikeButton({
   }, [currentUser, instrumentId]);
 
   async function handleLikeToggle() {
-    if (isPending || !currentUser || likeState.disabled) {
+    if (!currentUser || likeState.disabled) {
       return;
     }
 
+    const newState: LikeState = {
+      isLiked: !optimistic.isLiked,
+      likeCount: optimistic.likeCount + (optimistic.isLiked ? -1 : 1),
+      disabled: optimistic.disabled,
+    };
+
     startTransition(async () => {
+      addOptimistic(newState);
+
       try {
-        if (likeState.isLiked) {
+        if (optimistic.isLiked) {
           await unlikeInstrument(instrumentId, currentUser.uid);
-          setLikeState((prev) => ({
-            ...prev,
-            isLiked: !prev.isLiked,
-            likeCount: prev.likeCount - 1,
-          }));
         } else {
           await likeInstrument(instrumentId, currentUser.uid);
-          setLikeState((prev) => ({
-            ...prev,
-            isLiked: !prev.isLiked,
-            likeCount: prev.likeCount + 1,
-          }));
         }
+        setLikeState(newState);
       } catch {}
     });
   }
 
   return (
     <Button
-      variant={likeState.isLiked ? "default" : "outline"}
+      variant={optimistic.isLiked ? "default" : "outline"}
       onClick={handleLikeToggle}
       className="flex items-center gap-2"
-      disabled={likeState.disabled}
+      disabled={optimistic.disabled}
     >
       <FaHeart
-        className={`h-4 w-4 ${likeState.isLiked ? "fill-current" : ""}`}
+        className={`h-4 w-4 ${optimistic.isLiked ? "fill-current" : ""}`}
       />
-      {likeState.isLiked ? "Liked" : "Like"}
-      <span className="text-sm">{likeState.likeCount}</span>
+      {optimistic.isLiked ? "Liked" : "Like"}
+      <span className="text-sm">{optimistic.likeCount}</span>
     </Button>
   );
 }
