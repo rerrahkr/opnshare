@@ -23,8 +23,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { createInstrumentDoc } from "@/features/instrument/api";
+import { DescriptionTextarea } from "@/features/instrument/components/description-textarea";
+import { TagInput } from "@/features/instrument/components/tag-input";
 import {
   getInstrumentLoader,
   READABLE_FILE_EXTENSIONS,
@@ -35,22 +36,15 @@ import {
   instrumentTagSchema,
   MAX_DESCRIPTION_LENGTH,
   MAX_TAGS,
+  RECOMMENDED_CHIPS,
   type RecommendedChip,
 } from "@/features/instrument/models";
 import type { FmInstrument } from "@/features/instrument/types";
 import { useAuthUser } from "@/stores/auth";
-import { TagInput } from "./components/tag-input";
 import { TextInputDialogButton } from "./components/text-input-dialog-button";
 
 type UploadMethod = "file" | "text";
 type ImportStatus = UploadMethod | "none";
-
-const RECOMMENDED_CHIP_SELECTION: RecommendedChip[] = [
-  "OPN",
-  "OPNA",
-  "OPNB",
-  "OPN2",
-];
 
 export default function UploadPage() {
   const router = useRouter();
@@ -77,8 +71,8 @@ export default function UploadPage() {
   const [fileLoadError, setFileLoadError] = useState<string>("");
   const supportedFileExtensions = READABLE_FILE_EXTENSIONS;
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [submitError, setSubmitError] = useState<string>("");
 
   useEffect(() => {
     if (!user) {
@@ -161,8 +155,7 @@ export default function UploadPage() {
         await createInstrumentDoc(userUid, instrument, metaInfo);
 
         router.push("/upload/success");
-      } catch (error: unknown) {
-        console.log(error);
+      } catch {
         setSubmitError("An error occurred during upload.");
       }
     } finally {
@@ -209,12 +202,13 @@ export default function UploadPage() {
                 onValueChange={(value) =>
                   setSelectedChip(value as RecommendedChip)
                 }
+                disabled={isSubmitting}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select chip" />
                 </SelectTrigger>
                 <SelectContent>
-                  {RECOMMENDED_CHIP_SELECTION.map((chip) => (
+                  {RECOMMENDED_CHIPS.map((chip) => (
                     <SelectItem key={chip} value={chip}>
                       {chip}
                     </SelectItem>
@@ -258,17 +252,12 @@ export default function UploadPage() {
               <Label className="text-sm font-medium">
                 Description (max {MAX_DESCRIPTION_LENGTH} characters)
               </Label>
-              <Textarea
+              <DescriptionTextarea
                 placeholder="Describe the characteristics and usage of this instrument..."
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                maxLength={MAX_DESCRIPTION_LENGTH}
-                rows={4}
+                onChange={setDescription}
                 disabled={isSubmitting}
               />
-              <div className="text-xs text-muted-foreground text-right">
-                {description.length}/{MAX_DESCRIPTION_LENGTH}
-              </div>
             </div>
             {invalidDescription !== "" && (
               <Alert variant="destructive" className="w-full">

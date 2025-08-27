@@ -9,7 +9,6 @@ import {
   FaEllipsisV,
   FaExclamationCircle,
   FaSpinner,
-  FaTimes,
   FaUser,
 } from "react-icons/fa";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -27,18 +26,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -48,16 +40,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ShareDropdownMenu } from "@/components/ui/share-dropdown-menu";
-import { Textarea } from "@/components/ui/textarea";
 import {
   EXPORTABLE_FORMATS,
   type ExportableFormat,
   getInstrumentExporter,
 } from "@/features/instrument/exporter";
-import type { RecommendedChip } from "@/features/instrument/models";
+import type {
+  EditableInstrumentMetaInfo,
+  RecommendedChip,
+} from "@/features/instrument/models";
 import type { FmInstrument, FmOperator } from "@/features/instrument/types";
 import { useAuthUserId } from "@/stores/auth";
 import { isoStringToLocaleString } from "@/utils/date";
+import { InfoEditDialog } from "./info-edit-dialog";
 import { LikeButton } from "./like-button";
 import { TextExportDialog } from "./text-export-dialog";
 
@@ -115,24 +110,25 @@ export function InstrumentDetailContent({
   data: instrument,
 }: InstrumentDetailContentProps) {
   const router = useRouter();
-
   const authedUserId = useAuthUserId();
+
+  const [metaInfo, setMetaInfo] = useState<EditableInstrumentMetaInfo>({
+    name,
+    description,
+    chip: recommendedChip,
+    tags,
+  });
 
   const exportTargets = EXPORTABLE_FORMATS;
   const [exportTarget, setExportTarget] = useState<ExportableFormat>("Furnace");
   const [textExportOpen, setTextExportOpen] = useState<boolean>(false);
   const [exportedText, setExportedText] = useState<string>("");
 
-  const [editOpen, setEditOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState<boolean>(false);
+
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
-
-  // Edit state
-  const [editInstrumentName, setEditInstrumentName] = useState<string>(name);
-  const [editDescription, setEditDescription] = useState<string>(description);
-  const [editTags, setEditTags] = useState<string[]>(tags);
-  const [newTag, setNewTag] = useState("");
 
   const isOwnInstrument = authedUserId === authorUserId;
 
@@ -140,8 +136,11 @@ export function InstrumentDetailContent({
     const exporter = getInstrumentExporter(exportTarget);
     if (exporter.type === "file") {
       try {
-        const buffer = exporter.exporter(instrument, name);
-        const file = new File([buffer], `${name}${exporter.extension}`);
+        const buffer = exporter.exporter(instrument, metaInfo.name);
+        const file = new File(
+          [buffer],
+          `${metaInfo.name}${exporter.extension}`
+        );
         downloadFile(file);
       } catch {
         console.error("File export is failed.");
@@ -155,22 +154,6 @@ export function InstrumentDetailContent({
       }
     }
   }
-
-  const addTag = () => {
-    if (newTag && editTags.length < 5 && !editTags.includes(newTag)) {
-      setEditTags([...editTags, newTag]);
-      setNewTag("");
-    }
-  };
-
-  const removeTag = (tagToRemove: string) => {
-    setEditTags(editTags.filter((tag) => tag !== tagToRemove));
-  };
-
-  const handleEdit = () => {
-    // Edit processing
-    setEditOpen(false);
-  };
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -199,13 +182,13 @@ export function InstrumentDetailContent({
     }
   };
 
-  const handleTagClick = (tag: string) => {
+  function handleTagClick(tag: string) {
     router.push(`/search?tag=${encodeURIComponent(tag)}`);
-  };
+  }
 
-  const handleChipClick = () => {
-    router.push(`/search?chip=${encodeURIComponent(recommendedChip)}`);
-  };
+  function handleChipClick() {
+    router.push(`/search?chip=${encodeURIComponent(metaInfo.chip)}`);
+  }
 
   const [sharedUrl, setSharedUrl] = useState<string>("");
   useEffect(() => {
@@ -220,7 +203,7 @@ export function InstrumentDetailContent({
         <div className="space-y-4">
           <div className="flex items-start justify-between">
             <div className="space-y-2">
-              <h1 className="text-3xl font-bold">{name}</h1>
+              <h1 className="text-3xl font-bold">{metaInfo.name}</h1>
               <div className="flex items-center gap-4 text-muted-foreground">
                 <Link
                   href={`/user/${authorUserId}`}
@@ -238,7 +221,7 @@ export function InstrumentDetailContent({
 
               <ShareDropdownMenu
                 sharedUrl={sharedUrl}
-                messageX={`Check out ${name} by ${authorName}!`}
+                messageX={`Check out ${metaInfo.name} by ${authorName}!`}
               />
 
               {isOwnInstrument && (
@@ -271,7 +254,7 @@ export function InstrumentDetailContent({
           {/* Tags and Recommended Chip */}
           <div className="space-y-3">
             <div className="flex flex-wrap gap-2">
-              {tags.map((tag) => (
+              {metaInfo.tags.map((tag) => (
                 <Badge
                   key={tag}
                   variant="secondary"
@@ -289,7 +272,7 @@ export function InstrumentDetailContent({
                 className="px-3 py-1 cursor-pointer hover:bg-accent transition-colors"
                 onClick={handleChipClick}
               >
-                {recommendedChip}
+                {metaInfo.chip}
               </Badge>
             </div>
           </div>
@@ -303,7 +286,7 @@ export function InstrumentDetailContent({
           <CardContent>
             <div className="p-0 h-auto font-normal text-left w-full">
               <div className="whitespace-pre-wrap break-words word-break-break-all">
-                {description}
+                {metaInfo.description}
               </div>
             </div>
           </CardContent>
@@ -365,76 +348,13 @@ export function InstrumentDetailContent({
       </div>
 
       {/* Edit Modal */}
-      <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Edit Instrument</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Instrument Name *</Label>
-              <Input
-                value={editInstrumentName}
-                onChange={(e) => setEditInstrumentName(e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Tags (max 5)</Label>
-              <div className="flex gap-2 mb-2">
-                <Input
-                  placeholder="Enter tag"
-                  value={newTag}
-                  onChange={(e) => setNewTag(e.target.value)}
-                  onKeyPress={(e) =>
-                    e.key === "Enter" && (e.preventDefault(), addTag())
-                  }
-                />
-                <Button onClick={addTag} disabled={editTags.length >= 5}>
-                  Add
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {editTags.map((tag) => (
-                  <Badge
-                    key={tag}
-                    variant="secondary"
-                    className="cursor-pointer"
-                  >
-                    {tag}
-                    <FaTimes
-                      className="h-3 w-3 ml-1"
-                      onClick={() => removeTag(tag)}
-                    />
-                  </Badge>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">
-                Description (max 500 characters)
-              </Label>
-              <Textarea
-                value={editDescription}
-                onChange={(e) => setEditDescription(e.target.value)}
-                maxLength={500}
-                rows={4}
-              />
-              <div className="text-xs text-muted-foreground text-right">
-                {editDescription.length}/500
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setEditOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleEdit}>Save</Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <InfoEditDialog
+        open={editOpen}
+        setOpen={setEditOpen}
+        id={id}
+        metaInfo={metaInfo}
+        setMetaInfo={setMetaInfo}
+      />
 
       {/* Delete Confirmation Modal */}
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>

@@ -20,6 +20,12 @@ export const recommendedChipSchema = z.union([
 ]);
 
 export type RecommendedChip = z.infer<typeof recommendedChipSchema>;
+export const RECOMMENDED_CHIPS = [
+  "OPN",
+  "OPNA",
+  "OPNB",
+  "OPN2",
+] as const satisfies RecommendedChip[];
 
 export const instrumentTagSchema = z
   .string()
