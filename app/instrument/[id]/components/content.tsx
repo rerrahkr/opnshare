@@ -8,7 +8,6 @@ import {
   FaEdit,
   FaEllipsisV,
   FaExclamationCircle,
-  FaShare,
   FaSpinner,
   FaTimes,
   FaUser,
@@ -48,6 +47,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ShareDropdownMenu } from "@/components/ui/share-dropdown-menu";
 import { Textarea } from "@/components/ui/textarea";
 import {
   EXPORTABLE_FORMATS,
@@ -123,7 +123,6 @@ export function InstrumentDetailContent({
   const [textExportOpen, setTextExportOpen] = useState<boolean>(false);
   const [exportedText, setExportedText] = useState<string>("");
 
-  const [shareOpen, setShareOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -208,9 +207,9 @@ export function InstrumentDetailContent({
     router.push(`/search?chip=${encodeURIComponent(recommendedChip)}`);
   };
 
-  const [shareUrl, setShareUrl] = useState<string>("");
+  const [sharedUrl, setSharedUrl] = useState<string>("");
   useEffect(() => {
-    setShareUrl(`${window.location.origin}/instrument/${id}`);
+    setSharedUrl(`${window.location.origin}/instrument/${id}`);
   }, [id]);
 
   return (
@@ -237,30 +236,10 @@ export function InstrumentDetailContent({
             <div className="flex items-center gap-2">
               <LikeButton instrumentId={id} likeCount={likeCount} />
 
-              <DropdownMenu open={shareOpen} onOpenChange={setShareOpen}>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline">
-                    <FaShare className="h-4 w-4 mr-2" />
-                    Share
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem
-                    onClick={() =>
-                      window.open(
-                        `https://twitter.com/intent/tweet?text=${encodeURIComponent("Check out Epic Lead Sound!")}&url=${encodeURIComponent(shareUrl)}`
-                      )
-                    }
-                  >
-                    Share on Twitter
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => navigator.clipboard.writeText(shareUrl)}
-                  >
-                    Copy Link
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <ShareDropdownMenu
+                sharedUrl={sharedUrl}
+                messageX={`Check out ${name} by ${authorName}!`}
+              />
 
               {isOwnInstrument && (
                 <>

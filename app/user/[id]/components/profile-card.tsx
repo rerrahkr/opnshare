@@ -3,15 +3,10 @@
 import Link from "next/link";
 import type React from "react";
 import { useEffect, useState } from "react";
-import { FaCalendar, FaCog, FaHeart, FaMusic, FaShare } from "react-icons/fa";
+import { FaCalendar, FaCog, FaHeart, FaMusic } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { ShareDropdownMenu } from "@/components/ui/share-dropdown-menu";
 import type { EditableUserDoc } from "@/features/user/models";
 import { useAuthUser, useAuthUserId } from "@/stores/auth";
 import { isoStringToLocaleString } from "@/utils/date";
@@ -38,17 +33,15 @@ export function ProfileCard({
   const authUserId = useAuthUserId();
   const isOwnProfile = authUserId === userId;
 
-  const [shareOpen, setShareOpen] = useState<boolean>(false);
-
   const [profile, setProfile] = useState<EditableUserDoc>({
     displayName,
     bio,
   });
 
-  const [shareUrl, setShareUrl] = useState<string>("");
+  const [sharedUrl, setSharedUrl] = useState<string>("");
   useEffect(() => {
     // Update share URL asynchronously because it depend on window object.
-    setShareUrl(`${window.location.origin}/user/${userId}`);
+    setSharedUrl(`${window.location.origin}/user/${userId}`);
   }, [userId]);
 
   return (
@@ -79,6 +72,11 @@ export function ProfileCard({
             </div>
 
             <div className="flex gap-3 justify-center md:justify-start">
+              <ShareDropdownMenu
+                sharedUrl={sharedUrl}
+                messageX={`Check out ${profile.displayName}'s instruments!`}
+              />
+
               {isOwnProfile && (
                 <>
                   <EditProfileDialog
@@ -95,31 +93,6 @@ export function ProfileCard({
                   </Button>
                 </>
               )}
-
-              <DropdownMenu open={shareOpen} onOpenChange={setShareOpen}>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline">
-                    <FaShare className="h-4 w-4 mr-2" />
-                    Share
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem
-                    onClick={() =>
-                      window.open(
-                        `https://x.com/intent/post?text=${encodeURIComponent(`Check out ${profile.displayName}'s instruments!`)}&url=${encodeURIComponent(shareUrl)}`
-                      )
-                    }
-                  >
-                    Share on X
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => navigator.clipboard.writeText(shareUrl)}
-                  >
-                    Copy Link
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
             </div>
           </div>
         </div>
