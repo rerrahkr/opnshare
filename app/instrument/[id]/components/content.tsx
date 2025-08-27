@@ -3,25 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import {
-  FaDownload,
-  FaEdit,
-  FaEllipsisV,
-  FaExclamationCircle,
-  FaSpinner,
-  FaUser,
-} from "react-icons/fa";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { FaDownload, FaEdit, FaEllipsisV, FaUser } from "react-icons/fa";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -52,6 +34,7 @@ import type {
 import type { FmInstrument, FmOperator } from "@/features/instrument/types";
 import { useAuthUserId } from "@/stores/auth";
 import { isoStringToLocaleString } from "@/utils/date";
+import { DeleteDialog } from "./delete-dialog";
 import { InfoEditDialog } from "./info-edit-dialog";
 import { LikeButton } from "./like-button";
 import { TextExportDialog } from "./text-export-dialog";
@@ -125,10 +108,7 @@ export function InstrumentDetailContent({
   const [exportedText, setExportedText] = useState<string>("");
 
   const [editOpen, setEditOpen] = useState<boolean>(false);
-
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState("");
+  const [deleteOpen, setDeleteOpen] = useState<boolean>(false);
 
   const isOwnInstrument = authedUserId === authorUserId;
 
@@ -154,33 +134,6 @@ export function InstrumentDetailContent({
       }
     }
   }
-
-  const handleDelete = async () => {
-    setIsDeleting(true);
-    setDeleteError("");
-
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // Random failure (50% chance)
-      if (Math.random() < 0.5) {
-        throw new Error(
-          "An error occurred during deletion. Please try again later."
-        );
-      }
-
-      // On success, return to user page
-      router.push("/user/johndoe");
-    } catch (error) {
-      setDeleteError(
-        error instanceof Error
-          ? error.message
-          : "An error occurred during deletion."
-      );
-    } finally {
-      setIsDeleting(false);
-    }
-  };
 
   function handleTagClick(tag: string) {
     router.push(`/search?tag=${encodeURIComponent(tag)}`);
@@ -347,7 +300,6 @@ export function InstrumentDetailContent({
         </Card>
       </div>
 
-      {/* Edit Modal */}
       <InfoEditDialog
         open={editOpen}
         setOpen={setEditOpen}
@@ -356,48 +308,12 @@ export function InstrumentDetailContent({
         setMetaInfo={setMetaInfo}
       />
 
-      {/* Delete Confirmation Modal */}
-      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Instrument</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this instrument? This action
-              cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-
-          {deleteError && (
-            <Alert variant="destructive">
-              <FaExclamationCircle className="h-4 w-4" />
-              <AlertDescription>{deleteError}</AlertDescription>
-            </Alert>
-          )}
-
-          <AlertDialogFooter>
-            <AlertDialogCancel
-              disabled={isDeleting}
-              onClick={() => setDeleteOpen(false)}
-            >
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              disabled={isDeleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {isDeleting ? (
-                <>
-                  <FaSpinner className="h-4 w-4 mr-2 animate-spin" />
-                  Deleting...
-                </>
-              ) : (
-                "Delete"
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteDialog
+        open={deleteOpen}
+        setOpen={setDeleteOpen}
+        userId={authedUserId}
+        instrumentId={id}
+      />
 
       <TextExportDialog
         format={exportTarget}
