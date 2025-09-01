@@ -2,7 +2,11 @@ import type { Timestamp } from "firebase/firestore";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { getInstrumentDocsAndIdsByAuthor } from "@/features/instrument/api";
-import { getUserDocAndUidByUserId } from "@/features/user/api";
+import {
+  getUserDoc,
+  getUserDocAndUidByUserId,
+  getUserLikedInstrumentDocAndIds,
+} from "@/features/user/api";
 import { InstrumentTabs } from "./components/instrument-tabs";
 import { ProfileCard } from "./components/profile-card";
 import type { InstrumentMetaInfo } from "./types";
@@ -52,17 +56,34 @@ export default async function UserPage({ params }: UserPageParams) {
       }) satisfies InstrumentMetaInfo
   );
 
-  // TODO: fetch
-  const likes: InstrumentMetaInfo[] = [
-    {
-      id: "2",
-      title: "Epic Lead",
-      author: "John Doe",
-      tags: ["synth", "lead"],
-      likes: 50,
-      dateIso: "2024-08-02T12:00:00Z",
-    },
-  ];
+  const likes: InstrumentMetaInfo[] = await (async () => {
+    try {
+      const likeDocs = await getUserLikedInstrumentDocAndIds(userUid);
+
+      const likedAuthorUids = [
+        ...new Set(likeDocs.map(([doc]) => doc.authorUid)),
+      ];
+
+      const authorDocs = await Promise.all(
+        likedAuthorUids.map((uid) => getUserDoc(uid))
+      );
+      const userTable = Object.fromEntries(
+        likedAuthorUids.map((uid, i) => [uid, authorDocs[i]?.displayName ?? ""])
+      );
+
+      return likeDocs.map(([doc, id]) => ({
+        id,
+        author: userTable[doc.authorUid] ?? "",
+        tags: doc.tags,
+        title: doc.name,
+        likes: doc.likeCount,
+        dateIso: (doc.createdAt as Timestamp).toDate().toISOString(),
+      }));
+    } catch (error) {
+      console.error(error);
+      return [];
+    }
+  })();
 
   const receivedLikes = posts.reduce((acc, post) => acc + post.likes, 0);
 

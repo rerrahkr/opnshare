@@ -1,7 +1,5 @@
 import {
   addDoc,
-  collection,
-  doc,
   getDoc,
   getDocs,
   increment,
@@ -12,20 +10,17 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { db, docLikes, type NewDoc, type UpdatedDoc } from "@/lib/firebase";
+import {
+  collectionInstruments,
+  db,
+  docInstruments,
+  docLikes,
+  type NewDoc,
+  type UpdatedDoc,
+} from "@/lib/firebase";
 import type { LikedInstrumentDoc } from "../user/models";
 import type { EditableInstrumentMetaInfo, InstrumentDoc } from "./models";
 import type { FmInstrument } from "./types";
-
-const INSTRUMENTS_COLLECTION_NAME = "instruments";
-
-function collectionInstruments() {
-  return collection(db, INSTRUMENTS_COLLECTION_NAME);
-}
-
-function docInstruments(instrumentId: string) {
-  return doc(collectionInstruments(), instrumentId);
-}
 
 export async function createInstrumentDoc(
   authorUid: string,

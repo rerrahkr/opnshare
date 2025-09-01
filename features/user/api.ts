@@ -13,16 +13,13 @@ import {
   collectionLikes,
   collectionUsers,
   db,
+  docInstruments,
   docUsers,
   type NewDoc,
   type UpdatedDoc,
 } from "@/lib/firebase";
-import type {
-  EditableUserDoc,
-  LikedInstrumentDoc,
-  ReservedUserIdDoc,
-  UserDoc,
-} from "./models";
+import type { InstrumentDoc } from "../instrument/models";
+import type { EditableUserDoc, ReservedUserIdDoc, UserDoc } from "./models";
 
 const USER_ID_DATA_NAME = "userId";
 const RESERVED_USER_IDS_COLLECTION_NAME = "reservedUserIds";
@@ -98,13 +95,32 @@ export async function deleteUserDoc(uid: string) {
   await deleteDoc(docUsers(uid));
 }
 
-export async function getUserLikedInstrumentDocs(
+export async function getUserLikedInstrumentDocAndIds(
   uid: string
-): Promise<[LikedInstrumentDoc, string][]> {
+): Promise<[InstrumentDoc, string][]> {
   const q = query(collectionLikes(uid));
   const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map((doc) => [
-    doc.data() as LikedInstrumentDoc,
-    doc.id,
-  ]);
+  const ids = querySnapshot.docs.map((doc) => doc.id);
+
+  const result = await Promise.allSettled(
+    ids.map((id) => getDoc(docInstruments(id)))
+  );
+  // Skip errors which contain access to deleted instrument.
+  const allDocs = result
+    .filter((res) => res.status === "fulfilled")
+    .map((res) => res.value);
+
+  const docAndIds: [InstrumentDoc, string][] = [];
+  for (const docSnap of allDocs) {
+    if (!docSnap.exists()) {
+      continue;
+    }
+
+    const doc = docSnap.data() as InstrumentDoc;
+    if (!doc.isDeleted) {
+      docAndIds.push([doc, docSnap.id]);
+    }
+  }
+
+  return docAndIds;
 }
