@@ -3,13 +3,14 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { getInstrumentDocsAndIdsByAuthor } from "@/features/instrument/api";
 import {
+  getUidNameTable,
   getUserDoc,
   getUserDocAndUidByUserId,
   getUserLikedInstrumentDocAndIds,
 } from "@/features/user/api";
+import type { InstrumentMetaInfo } from "../../types";
 import { InstrumentTabs } from "./components/instrument-tabs";
 import { ProfileCard } from "./components/profile-card";
-import type { InstrumentMetaInfo } from "./types";
 
 type UserPageParams = {
   params: {
@@ -48,7 +49,7 @@ export default async function UserPage({ params }: UserPageParams) {
     ([doc, id]) =>
       ({
         id,
-        title: doc.name,
+        name: doc.name,
         author: userName,
         tags: doc.tags,
         likes: doc.likeCount,
@@ -64,23 +65,20 @@ export default async function UserPage({ params }: UserPageParams) {
         ...new Set(likeDocs.map(([doc]) => doc.authorUid)),
       ];
 
-      const authorDocs = await Promise.all(
-        likedAuthorUids.map((uid) => getUserDoc(uid))
-      );
-      const userTable = Object.fromEntries(
-        likedAuthorUids.map((uid, i) => [uid, authorDocs[i]?.displayName ?? ""])
-      );
+      const userTable = await getUidNameTable(likedAuthorUids);
 
-      return likeDocs.map(([doc, id]) => ({
-        id,
-        author: userTable[doc.authorUid] ?? "",
-        tags: doc.tags,
-        title: doc.name,
-        likes: doc.likeCount,
-        dateIso: (doc.createdAt as Timestamp).toDate().toISOString(),
-      }));
-    } catch (error) {
-      console.error(error);
+      return likeDocs.map(
+        ([doc, id]) =>
+          ({
+            id,
+            author: userTable[doc.authorUid] ?? "",
+            tags: doc.tags,
+            name: doc.name,
+            likes: doc.likeCount,
+            dateIso: (doc.createdAt as Timestamp).toDate().toISOString(),
+          }) satisfies InstrumentMetaInfo
+      );
+    } catch {
       return [];
     }
   })();

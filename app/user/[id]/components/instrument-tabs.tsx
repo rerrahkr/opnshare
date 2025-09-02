@@ -1,9 +1,9 @@
 "use client";
 
 import type React from "react";
+import { InstrumentCard } from "@/components/ui/instrument-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { InstrumentMetaInfo } from "../types";
-import { InstrumentCard } from "./instrument-card";
+import type { InstrumentMetaInfo } from "../../../types";
 
 type InstrumentTabsProps = {
   posts: InstrumentMetaInfo[];
@@ -24,7 +24,15 @@ export function InstrumentTabs({
       <TabsContent value="posts" className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {posts.map((post) => (
-            <InstrumentCard key={post.id} info={post} />
+            <InstrumentCard
+              key={post.id}
+              id={post.id}
+              title={post.name}
+              author={post.author}
+              likes={post.likes}
+              tags={post.tags}
+              dateIso={post.dateIso}
+            />
           ))}
         </div>
       </TabsContent>
@@ -32,7 +40,15 @@ export function InstrumentTabs({
       <TabsContent value="likes" className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {likes.map((inst) => (
-            <InstrumentCard key={inst.id} info={inst} />
+            <InstrumentCard
+              key={inst.id}
+              id={inst.id}
+              title={inst.name}
+              author={inst.author}
+              likes={inst.likes}
+              tags={inst.tags}
+              dateIso={inst.dateIso}
+            />
           ))}
         </div>
       </TabsContent>

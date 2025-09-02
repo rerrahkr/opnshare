@@ -3,6 +3,7 @@ import {
   getDoc,
   getDocs,
   increment,
+  limit,
   orderBy,
   query,
   runTransaction,
@@ -58,6 +59,10 @@ type InstrumentDocsByAuthorOption = {
   order?: "latest" | "liked" | undefined;
 };
 
+const whereIsNotDeleted = where("isDeleted", "==", false);
+const orderByLiked = orderBy("likeCount", "desc");
+const orderByNew = orderBy("createdAt", "desc");
+
 export async function getInstrumentDocsAndIdsByAuthor(
   authorUid: string,
   option?: InstrumentDocsByAuthorOption
@@ -66,20 +71,46 @@ export async function getInstrumentDocsAndIdsByAuthor(
 
   const constrainCommon = [
     where("authorUid", "==", authorUid),
-    where("isDeleted", "==", false),
+    whereIsNotDeleted,
   ];
   const constrains = (() => {
     switch (order) {
       case "latest":
-        return [...constrainCommon, orderBy("createdAt", "desc")];
+        return [...constrainCommon, orderByNew];
       case "liked":
-        return [...constrainCommon, orderBy("likeCount", "desc")];
+        return [...constrainCommon, orderByLiked];
       default:
         return constrainCommon;
     }
   })();
 
   const q = query(collectionInstruments(), ...constrains);
+  const querySnapshot = await getDocs(q);
+  return querySnapshot.docs.map((doc) => [doc.data() as InstrumentDoc, doc.id]);
+}
+
+export async function getInstrumentDocsAndIdsNewer(
+  limitCount: number
+): Promise<[InstrumentDoc, string][]> {
+  const q = query(
+    collectionInstruments(),
+    whereIsNotDeleted,
+    orderByNew,
+    limit(limitCount)
+  );
+  const querySnapshot = await getDocs(q);
+  return querySnapshot.docs.map((doc) => [doc.data() as InstrumentDoc, doc.id]);
+}
+
+export async function getInstrumentDocsAndIdsMostLiked(
+  limitCount: number
+): Promise<[InstrumentDoc, string][]> {
+  const q = query(
+    collectionInstruments(),
+    whereIsNotDeleted,
+    orderByLiked,
+    limit(limitCount)
+  );
   const querySnapshot = await getDocs(q);
   return querySnapshot.docs.map((doc) => [doc.data() as InstrumentDoc, doc.id]);
 }

@@ -1,253 +1,56 @@
-"use client";
-import { useRouter } from "next/navigation";
-import type React from "react";
-import { useState } from "react";
+import type { Timestamp } from "firebase/firestore";
 import {
-  FaDownload,
-  FaGithub,
-  FaHashtag,
-  FaHeart,
-  FaSearch,
-} from "react-icons/fa";
-import { FaShuffle } from "react-icons/fa6";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+  getInstrumentDocsAndIdsMostLiked,
+  getInstrumentDocsAndIdsNewer,
+} from "@/features/instrument/api";
+import { getUidNameTable } from "@/features/user/api";
+import { HomePageContent } from "./_components/content";
+import type { InstrumentMetaInfo } from "./types";
 
-export default function HomePage() {
-  const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState("");
+const NEW_INSTRUMENT_COUNT = 6;
+const LIKE_RANKING_COUNT = 5;
 
-  // useEffect(() => {
-  //   (async () => {
-  //     try {
-  //       const docRef = await addDoc(collection(db, "tests"), {
-  //         name: "Test",
-  //         date: new Date(),
-  //       });
-  //       console.log("Document written with ID: ", docRef.id);
-  //     } catch (err) {
-  //       console.error("Error adding document: ", err);
-  //     }
-  //   })();
-  // }, []);
+export default async function HomePage() {
+  const newers = await getInstrumentDocsAndIdsNewer(NEW_INSTRUMENT_COUNT);
+  const likes = await getInstrumentDocsAndIdsMostLiked(LIKE_RANKING_COUNT);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery("");
-    }
-  };
+  const authorUids = [
+    ...new Set([
+      ...newers.map(([doc]) => doc.authorUid),
+      ...likes.map(([doc]) => doc.authorUid),
+    ]),
+  ];
+
+  const authorTable = await getUidNameTable(authorUids);
+
+  const newerInfoList: InstrumentMetaInfo[] = newers.map(
+    ([doc, id]) =>
+      ({
+        id,
+        author: authorTable[doc.authorUid] ?? "",
+        tags: doc.tags,
+        name: doc.name,
+        likes: doc.likeCount,
+        dateIso: (doc.createdAt as Timestamp).toDate().toISOString(),
+      }) satisfies InstrumentMetaInfo
+  );
+
+  const likedInfoList: InstrumentMetaInfo[] = likes.map(
+    ([doc, id]) =>
+      ({
+        id,
+        author: authorTable[doc.authorUid] ?? "",
+        tags: doc.tags,
+        name: doc.name,
+        likes: doc.likeCount,
+        dateIso: (doc.createdAt as Timestamp).toDate().toISOString(),
+      }) satisfies InstrumentMetaInfo
+  );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
-      {/* Hero Section */}
-      <section className="container mx-auto px-4 py-16 text-center">
-        <div className="max-w-4xl mx-auto space-y-8">
-          <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-            Instrument Sharing Service
-          </h1>
-          <p className="text-lg text-muted-foreground">
-            Share FM synthesizer instruments and discover new sounds
-          </p>
-
-          {/* Search Bar */}
-          <div className="max-w-2xl mx-auto">
-            <form onSubmit={handleSearch} className="flex gap-2">
-              <div className="relative flex-1">
-                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <Input
-                  placeholder="Search instruments..."
-                  className="pl-10 h-12 text-lg"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-              <Button type="submit" size="lg" className="h-12 px-6">
-                Search
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="lg"
-                className="h-12 px-6 bg-transparent"
-                onClick={() => router.push("/instrument/random-id-789")}
-              >
-                <FaShuffle className="h-4 w-4 mr-2" />
-                Random
-              </Button>
-            </form>
-          </div>
-        </div>
-        <div className="mt-6">
-          <Button variant="outline" size="sm" asChild>
-            <a
-              href="https://github.com/your-org/instrument-sharing-service"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2"
-            >
-              <FaGithub className="h-4 w-4" />
-              GitHub
-            </a>
-          </Button>
-        </div>
-      </section>
-
-      {/* Content Sections */}
-      <div className="container mx-auto px-4 py-8 space-y-12">
-        {/* New Arrivals */}
-        <section>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold">New Instruments</h2>
-            <Button variant="ghost" onClick={() => router.push("/search")}>
-              View All
-            </Button>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <TimbreCard key={i} />
-            ))}
-          </div>
-        </section>
-
-        {/* Like Ranking */}
-        <section>
-          <div className="flex items-center gap-2 mb-6">
-            <FaHeart className="h-5 w-5" />
-            <h2 className="text-2xl font-bold">Like Ranking</h2>
-          </div>
-          <div className="space-y-3">
-            {[1, 2, 3, 4, 5].map((rank) => (
-              <RankingItem key={rank} rank={rank} type="like" />
-            ))}
-          </div>
-        </section>
-
-        {/* Popular Tags */}
-        <section>
-          <div className="flex items-center gap-2 mb-6">
-            <FaHashtag className="h-5 w-5" />
-            <h2 className="text-2xl font-bold">Popular Tags</h2>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            {[
-              "Bass",
-              "Lead",
-              "Pad",
-              "Pluck",
-              "Brass",
-              "Strings",
-              "FX",
-              "Drum",
-            ].map((tag) => (
-              <Badge
-                key={tag}
-                variant="secondary"
-                className="text-sm py-2 px-4 cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
-                onClick={() =>
-                  router.push(`/search?tag=${encodeURIComponent(tag)}`)
-                }
-              >
-                {tag}
-              </Badge>
-            ))}
-          </div>
-        </section>
-      </div>
-    </div>
+    <HomePageContent
+      newInstrumentInfoList={newerInfoList}
+      likeRankingInfoList={likedInfoList}
+    />
   );
 }
-
-function TimbreCard() {
-  const router = useRouter();
-  return (
-    <Card
-      className="hover:shadow-lg transition-shadow cursor-pointer"
-      onClick={() =>
-        router.push("/instrument/sample-id-" + Math.floor(Math.random() * 1000))
-      }
-    >
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div>
-            <CardTitle className="text-lg">Epic Lead</CardTitle>
-            <p className="text-sm text-muted-foreground">by SynthMaster</p>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          <div className="flex flex-wrap gap-1">
-            <Badge variant="outline" className="text-xs">
-              Lead
-            </Badge>
-            <Badge variant="outline" className="text-xs">
-              Epic
-            </Badge>
-          </div>
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <div className="flex items-center gap-4">
-              <span className="flex items-center gap-1">
-                <FaHeart className="h-3 w-3" />
-                89
-              </span>
-            </div>
-            <span>2024/01/15</span>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function RankingItem({
-  rank,
-  type,
-}: {
-  rank: number;
-  type: "download" | "like";
-}) {
-  const router = useRouter();
-  const icon = type === "download" ? FaDownload : FaHeart;
-  const Icon = icon;
-  const count = type === "download" ? 1250 - rank * 100 : 500 - rank * 50;
-
-  return (
-    <Card
-      className="p-4 hover:shadow-md transition-shadow cursor-pointer"
-      onClick={() => router.push("/instrument/ranking-id-" + rank)}
-    >
-      <div className="flex items-center gap-4">
-        <div
-          className={`
-          w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm
-          ${
-            rank === 1
-              ? "bg-yellow-500 text-white"
-              : rank === 2
-                ? "bg-gray-400 text-white"
-                : rank === 3
-                  ? "bg-amber-600 text-white"
-                  : "bg-muted text-muted-foreground"
-          }
-        `}
-        >
-          {rank}
-        </div>
-        <div className="flex-1">
-          <h3 className="font-medium">Amazing Bass Sound</h3>
-          <p className="text-sm text-muted-foreground">by BassGuru</p>
-        </div>
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <Icon className="h-4 w-4" />
-          {count}
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-// TODO: reuse instrument card in user page

@@ -124,3 +124,13 @@ export async function getUserLikedInstrumentDocAndIds(
 
   return docAndIds;
 }
+
+export async function getUidNameTable(
+  uids: string[]
+): Promise<Record<string, string>> {
+  const userDocs = await Promise.all(uids.map((uid) => getUserDoc(uid)));
+  const userTable = Object.fromEntries(
+    uids.map((uid, i) => [uid, userDocs[i]?.displayName ?? ""])
+  );
+  return userTable;
+}

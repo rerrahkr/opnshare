@@ -1,16 +1,27 @@
+"use client";
+
 import { useRouter } from "next/navigation";
 import { FaHeart } from "react-icons/fa";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { isoStringToLocaleString } from "@/utils/date";
-import type { InstrumentMetaInfo } from "../types";
 
 type InstrumentCardProps = {
-  info: InstrumentMetaInfo;
+  id: string;
+  title: string;
+  author: string;
+  tags: string[];
+  likes: number;
+  dateIso: string;
 };
 
 export function InstrumentCard({
-  info: { id, title, author, tags, likes, dateIso },
+  id,
+  title,
+  author,
+  tags,
+  likes,
+  dateIso,
 }: InstrumentCardProps): React.JSX.Element {
   const router = useRouter();
 
