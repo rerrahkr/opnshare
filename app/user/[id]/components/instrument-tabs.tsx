@@ -1,8 +1,8 @@
 "use client";
 
 import type React from "react";
-import { InstrumentCard } from "@/components/ui/instrument-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { InstrumentCard } from "@/features/instrument/components/instrument-card";
 import type { InstrumentMetaInfo } from "../../../types";
 
 type InstrumentTabsProps = {

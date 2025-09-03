@@ -33,7 +33,8 @@ export function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const isSignedIn = user !== null;
-  const showSearchInHeader = pathname !== "/";
+  const showSearchInHeader =
+    pathname !== "/" && !pathname.startsWith("/search");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 

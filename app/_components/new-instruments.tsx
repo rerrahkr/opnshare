@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { Button } from "@/components/ui/button";
-import { InstrumentCard } from "@/components/ui/instrument-card";
+import { InstrumentCard } from "@/features/instrument/components/instrument-card";
 import type { InstrumentMetaInfo } from "../types";
 
 type NewInstrumentSectionContentProps = {

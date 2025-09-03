@@ -11,6 +11,7 @@ type TagInputProps = {
   onChange: (values: string[]) => void;
   validator?: (text: string) => boolean;
   disabled?: boolean;
+  small?: boolean | undefined;
 };
 
 export function TagInput({
@@ -19,6 +20,7 @@ export function TagInput({
   onChange,
   validator = () => true,
   disabled = false,
+  small = false,
 }: TagInputProps): React.JSX.Element {
   const [newTag, setNewTag] = useState<string>("");
 
@@ -37,7 +39,7 @@ export function TagInput({
 
   return (
     <>
-      <div className="flex gap-2 mb-2">
+      <div className={`flex gap-2 ${small ? "" : "mb-2"}`}>
         <Input
           placeholder="Enter tag"
           value={newTag}
@@ -49,7 +51,11 @@ export function TagInput({
           }}
           disabled={disabled}
         />
-        <Button onClick={addTag} disabled={!canAdd || disabled}>
+        <Button
+          size={small ? "sm" : undefined}
+          onClick={addTag}
+          disabled={!canAdd || disabled}
+        >
           Add
         </Button>
       </div>
