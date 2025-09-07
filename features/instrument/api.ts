@@ -5,9 +5,11 @@ import {
   increment,
   limit,
   orderBy,
+  type QueryConstraint,
   query,
   runTransaction,
   serverTimestamp,
+  startAfter,
   updateDoc,
   where,
 } from "firebase/firestore";
@@ -165,4 +167,104 @@ export async function isLikedInstrument(
   const docRef = docLikes(uid, instrumentId);
   const snapshot = await getDoc(docRef);
   return snapshot.exists();
+}
+
+export type SearchInstrumentsOptions = {
+  searchQuery?: string;
+  sortBy: "newest" | "likes";
+  chips: string[];
+  tags: string[];
+  // likeRange: [number, number];
+  pageSize: number;
+  lastDoc?:
+    | {
+        id: string;
+        doc: InstrumentDoc;
+      }
+    | undefined;
+};
+
+export async function searchInstruments(
+  options: SearchInstrumentsOptions
+): Promise<{ docs: [InstrumentDoc, string][]; hasMore: boolean }> {
+  const {
+    searchQuery,
+    sortBy,
+    chips,
+    tags,
+    /* likeRange, */ lastDoc,
+    pageSize,
+  } = options;
+
+  const constraints: QueryConstraint[] = [whereIsNotDeleted];
+
+  if (searchQuery && searchQuery.length > 0) {
+    const endString =
+      searchQuery.slice(0, -1) +
+      String.fromCharCode(searchQuery.charCodeAt(searchQuery.length - 1) + 1);
+    constraints.push(where("name", ">=", searchQuery));
+    constraints.push(where("name", "<", endString));
+    constraints.push(orderBy("name"));
+  }
+
+  if (tags.length > 0) {
+    constraints.push(where("tags", "array-contains-any", tags));
+  }
+
+  if (chips.length > 0) {
+    constraints.push(where("chip", "in", chips));
+  }
+
+  // constraints.push(where("likeCount", ">=", likeRange[0]));
+  // if (likeRange[1] !== Infinity) {
+  //   constraints.push(where("likeCount", "<=", likeRange[1]));
+  // }
+
+  switch (sortBy) {
+    case "newest":
+      constraints.push(orderByNew);
+      break;
+
+    case "likes":
+      constraints.push(orderByLiked);
+      break;
+  }
+
+  // Sub constraint
+  constraints.push(orderBy("__name__", "desc"));
+
+  constraints.push(limit(pageSize + 1)); // Get one extra to check if there are more
+
+  let baseQuery = query(collectionInstruments(), ...constraints);
+
+  // If we have a last document, start after it
+  if (lastDoc) {
+    switch (sortBy) {
+      case "newest":
+        baseQuery = query(
+          baseQuery,
+          startAfter(lastDoc.doc.createdAt, lastDoc.id)
+        );
+        break;
+
+      case "likes":
+        baseQuery = query(
+          baseQuery,
+          startAfter(lastDoc.doc.likeCount, lastDoc.id)
+        );
+        break;
+    }
+  }
+
+  const querySnapshot = await getDocs(baseQuery);
+  const docs: [InstrumentDoc, string][] = querySnapshot.docs
+    .slice(0, pageSize)
+    .map((doc) => [doc.data() as InstrumentDoc, doc.id]);
+
+  // TODO: Implement full-text search for `searchQuery` if needed
+
+  return {
+    docs,
+    hasMore: querySnapshot.docs.length > pageSize,
+  };
 }

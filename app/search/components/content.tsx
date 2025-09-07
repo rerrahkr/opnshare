@@ -2,22 +2,12 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import type React from "react";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { FaFilter, FaList, FaSearch, FaTh } from "react-icons/fa";
-import { z } from "zod";
 import type { InstrumentMetaInfo } from "@/app/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 import {
   Select,
   SelectContent,
@@ -32,115 +22,37 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { searchInstruments } from "@/features/instrument/api";
 import { InstrumentCard } from "@/features/instrument/components/instrument-card";
-import {
-  type RecommendedChip,
-  recommendedChipSchema,
+import type {
+  InstrumentDoc,
+  RecommendedChip,
 } from "@/features/instrument/models";
-import { MAX_LIKE_COUNT } from "../defines";
-import { FilterPanel } from "./filter-panel";
-
-// TODO: Load actual data
-const infoList: InstrumentMetaInfo[] = [
-  {
-    id: "aaaaa",
-    author: "abc",
-    name: "qc",
-    likes: 12,
-    tags: ["aa", "bb"],
-    dateIso: new Date().toISOString(),
-  },
-  {
-    id: "ANBC",
-    author: "SIV",
-    name: "ewvf",
-    likes: 3,
-    tags: ["bb"],
-    dateIso: new Date().toISOString(),
-  },
-  {
-    id: "vdwww",
-    author: "eee",
-    name: "2vr23",
-    likes: 1,
-    tags: ["cc"],
-    dateIso: new Date().toISOString(),
-  },
-  {
-    id: "vwewa",
-    author: "abc",
-    name: "BHCI",
-    likes: 13,
-    tags: ["aa", "cc"],
-    dateIso: new Date().toISOString(),
-  },
-];
-
+import { getUidNameTable } from "@/features/user/api";
 import { useSearchStore } from "@/stores/search";
+import { PAGE_SIZE } from "../defines";
+import { type SearchParams, type SortBy, searchParamsSchema } from "../types";
+import { FilterPanel } from "./filter-panel";
 import { InstrumentListItem } from "./instrument-list-item";
 
-const searchParamsSchema = z.object({
-  q: z.preprocess(
-    (val) => (typeof val === "string" ? val : undefined),
-    z.string().min(1).max(100).optional()
-  ),
-
-  sort: z.preprocess(
-    (val) => (typeof val === "string" ? val : undefined),
-    z
-      .union([
-        z.literal("newest"),
-        z.literal("popular"),
-        z.literal("downloads"),
-        z.literal("likes"),
-      ])
-      .default("newest")
-  ),
-
-  page: z.preprocess((val) => {
-    if (typeof val === "string") {
-      const n = Number(val);
-      return Number.isNaN(n) ? undefined : n;
-    }
-    return undefined;
-  }, z.number().min(1).default(1)),
-
-  chips: z.preprocess((val) => {
-    if (typeof val === "string") {
-      return val
-        .split(",")
-        .map((v) => v.trim())
-        .filter((v) => v.length > 0);
-    }
-    return undefined;
-  }, z.array(recommendedChipSchema).default([])),
-
-  tags: z.preprocess((val) => {
-    if (typeof val === "string") {
-      return val
-        .split(",")
-        .map((v) => v.trim())
-        .filter((v) => v.length > 0);
-    }
-    return undefined;
-  }, z.array(z.string()).default([])),
-
-  likes: z.preprocess(
-    (val) => {
-      if (typeof val === "string") {
-        const nums = val.split("-").map((v) => Number(v));
-        return nums.some((n) => Number.isNaN(n)) ? undefined : nums;
+type SearchResultDisplayState = {
+  infoList: InstrumentMetaInfo[];
+  hasMore: boolean;
+  page: number;
+  lastDoc:
+    | {
+        id: string;
+        doc: InstrumentDoc;
       }
-      return undefined;
-    },
-    z.tuple([z.number().min(0), z.number().min(0)]).default([0, MAX_LIKE_COUNT])
-  ),
-});
+    | undefined;
+};
 
-type SearchParams = z.infer<typeof searchParamsSchema>;
-type SortBy = SearchParams["sort"];
-
-const ITEMS_PER_PAGE = 9;
+const INIT_SEARCH_RESULT_STATE: SearchResultDisplayState = {
+  infoList: [],
+  hasMore: true,
+  page: 0,
+  lastDoc: undefined,
+} as const;
 
 export function SearchPageContent() {
   const router = useRouter();
@@ -156,20 +68,101 @@ export function SearchPageContent() {
     parsedSearchParams.q || ""
   );
   const [sortBy, setSortBy] = useState<SortBy>(parsedSearchParams.sort);
-  const currentPage = parsedSearchParams.page;
-
   // Initialize filter conditions from URL
   const [selectedChips, setSelectedChips] = useState<RecommendedChip[]>(
-    parsedSearchParams.chips
+    parsedSearchParams.chip
   );
   const [filterTags, setFilterTags] = useState<string[]>(
-    parsedSearchParams.tags
+    parsedSearchParams.tag
   );
-  const [likeRange, setLikeRange] = useState<[number, number]>(
-    parsedSearchParams.likes
-  );
+  // const [likeRange, setLikeRange] = useState<[number, number]>(
+  //   parsedSearchParams.likes
+  // );
 
-  // Function to update URL
+  // Infinite scroll states
+  const [isPending, startTransition] = useTransition();
+  const [searchResultState, setSearchResultState] =
+    useState<SearchResultDisplayState>(INIT_SEARCH_RESULT_STATE);
+
+  function clearSearchResultState() {
+    setSearchResultState(INIT_SEARCH_RESULT_STATE);
+  }
+
+  const observerTarget = useRef<HTMLDivElement>(null);
+
+  const loadSearchResults = useCallback(async () => {
+    if (isPending || !searchResultState.hasMore) return;
+
+    startTransition(async () => {
+      try {
+        const { docs, hasMore } = await searchInstruments({
+          searchQuery: searchQuery,
+          sortBy: sortBy,
+          chips: selectedChips,
+          tags: filterTags,
+          // likeRange: likeRange,
+          pageSize: PAGE_SIZE,
+          lastDoc: searchResultState.lastDoc,
+        });
+
+        const authorUids = [...new Set(docs.map(([doc]) => doc.authorUid))];
+        const userTable = await getUidNameTable(authorUids);
+
+        const infoList = docs.map(([doc, id]) => ({
+          id,
+          name: doc.name,
+          author: userTable[doc.authorUid] ?? "",
+          tags: doc.tags,
+          likes: doc.likeCount,
+          dateIso: doc.createdAt.toDate().toISOString(),
+        }));
+
+        setSearchResultState((prev) => ({
+          infoList: [...prev.infoList, ...infoList],
+          hasMore,
+          page: prev.page + 1,
+          lastDoc: docs[docs.length - 1]
+            ? {
+                id: docs[docs.length - 1][1],
+                doc: docs[docs.length - 1][0],
+              }
+            : prev.lastDoc,
+        }));
+      } catch (e) {
+        console.error(e);
+        setSearchResultState((prev) => ({
+          ...prev,
+          hasMore: false,
+        }));
+      }
+    });
+  }, [
+    isPending,
+    searchResultState,
+    searchQuery,
+    sortBy,
+    selectedChips,
+    filterTags,
+    // likeRange,
+  ]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadSearchResults();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => observer.disconnect();
+  }, [loadSearchResults]);
+
   function updateURL(updates: Partial<SearchParams>) {
     const params = new URLSearchParams(searchParams.toString());
 
@@ -183,7 +176,7 @@ export function SearchPageContent() {
       } else if (Array.isArray(value)) {
         if (key === "likes" && value.length === 2) {
           params.set(key, value.join("-"));
-        } else if (key === "chips" || key === "tags") {
+        } else if (key === "chip" || key === "tag") {
           params.set(key, value.join(","));
         }
       } else {
@@ -196,13 +189,21 @@ export function SearchPageContent() {
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
-    updateURL({ q: searchQuery, page: 1 });
+    startTransition(() => {
+      clearSearchResultState();
+      updateURL({ q: searchQuery });
+      loadSearchResults();
+    });
   }
 
   function handleSortChange(value: string) {
     const method = value as SortBy;
     setSortBy(method);
-    updateURL({ sort: method, page: 1 });
+    startTransition(() => {
+      clearSearchResultState();
+      updateURL({ sort: method });
+      loadSearchResults();
+    });
   }
 
   function handleChipChange(chip: RecommendedChip, checked: boolean) {
@@ -210,40 +211,47 @@ export function SearchPageContent() {
       ? [...selectedChips, chip]
       : selectedChips.filter((c) => c !== chip);
     setSelectedChips(newChips);
-    updateURL({ chips: newChips });
+    startTransition(() => {
+      clearSearchResultState();
+      updateURL({ chip: newChips });
+      loadSearchResults();
+    });
   }
 
   function handleChangeTags(tags: string[]) {
     setFilterTags(tags);
-    updateURL({ tags });
+    startTransition(() => {
+      clearSearchResultState();
+      updateURL({ tag: tags });
+      loadSearchResults();
+    });
   }
 
-  function handleLikeRangeChange(range: [number, number]) {
-    setLikeRange(range);
-    updateURL({ likes: range });
-  }
-
-  const resultCount = infoList.length;
+  // function handleLikeRangeChange(range: [number, number]) {
+  //   setLikeRange(range);
+  //   startTransition(() => {
+  //     clearSearchResultState();
+  //     updateURL({ likes: range });
+  //     loadSearchResults();
+  //   });
+  // }
 
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Search Header */}
       <div className="mb-8">
-        <div className="flex gap-4 mb-4">
+        <form className="flex gap-4 mb-4" onSubmit={handleSearch}>
           <div className="relative flex-1">
             <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               placeholder="Search instruments..."
               className="pl-10"
               value={searchQuery}
-              onChange={(e) => {
-                console.log(e.target.value);
-                setSearchQuery(e.target.value);
-              }}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <Button onClick={handleSearch}>Search</Button>
-        </div>
+          <Button type="submit">Search</Button>
+        </form>
 
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-4">
@@ -264,8 +272,8 @@ export function SearchPageContent() {
                   onChipChange={handleChipChange}
                   filterTags={filterTags}
                   onChangeTags={handleChangeTags}
-                  likeRange={likeRange}
-                  onLikeRangeChange={handleLikeRangeChange}
+                  // likeRange={likeRange}
+                  // onLikeRangeChange={handleLikeRangeChange}
                 />
               </SheetContent>
             </Sheet>
@@ -277,8 +285,6 @@ export function SearchPageContent() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="newest">Newest</SelectItem>
-                <SelectItem value="popular">Popular</SelectItem>
-                <SelectItem value="downloads">Downloads</SelectItem>
                 <SelectItem value="likes">Likes</SelectItem>
               </SelectContent>
             </Select>
@@ -314,8 +320,8 @@ export function SearchPageContent() {
                 onChipChange={handleChipChange}
                 filterTags={filterTags}
                 onChangeTags={handleChangeTags}
-                likeRange={likeRange}
-                onLikeRangeChange={handleLikeRangeChange}
+                // likeRange={likeRange}
+                // onLikeRangeChange={handleLikeRangeChange}
               />
             </CardContent>
           </Card>
@@ -324,12 +330,12 @@ export function SearchPageContent() {
         {/* Results */}
         <div className="flex-1">
           <div className="mb-4 text-sm text-muted-foreground">
-            Search results: {resultCount} items
+            Search Results: {searchResultState.infoList.length} items
           </div>
 
           {viewMode === "grid" ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {infoList.map((info) => (
+              {searchResultState.infoList.map((info) => (
                 <InstrumentCard
                   key={info.id}
                   id={info.id}
@@ -343,7 +349,7 @@ export function SearchPageContent() {
             </div>
           ) : (
             <div className="space-y-4">
-              {infoList.map((info) => (
+              {searchResultState.infoList.map((info) => (
                 <InstrumentListItem
                   key={info.id}
                   id={info.id}
@@ -357,66 +363,31 @@ export function SearchPageContent() {
             </div>
           )}
 
-          <div className="mt-8">
-            <Pagination>
-              <PaginationContent>
-                {currentPage > 1 && (
-                  <PaginationItem>
-                    <PaginationPrevious
-                      href={`/search?${new URLSearchParams({
-                        ...Object.fromEntries(searchParams.entries()),
-                        page: (currentPage - 1).toString(),
-                      })}`}
-                    />
-                  </PaginationItem>
-                )}
-                {Array.from({
-                  length: Math.ceil(resultCount / ITEMS_PER_PAGE),
-                }).map((_, i) => {
-                  const pageNumber = i + 1;
-                  if (
-                    pageNumber === 1 ||
-                    pageNumber === Math.ceil(resultCount / ITEMS_PER_PAGE) ||
-                    (pageNumber >= currentPage - 1 &&
-                      pageNumber <= currentPage + 1)
-                  ) {
-                    return (
-                      <PaginationItem key={`page-${pageNumber}`}>
-                        <PaginationLink
-                          href={`/search?${new URLSearchParams({
-                            ...Object.fromEntries(searchParams.entries()),
-                            page: pageNumber.toString(),
-                          })}`}
-                          isActive={currentPage === pageNumber}
-                        >
-                          {pageNumber}
-                        </PaginationLink>
-                      </PaginationItem>
-                    );
-                  } else if (
-                    pageNumber === currentPage - 2 ||
-                    pageNumber === currentPage + 2
-                  ) {
-                    return (
-                      <PaginationItem key={`ellipsis-${pageNumber}`}>
-                        <PaginationEllipsis />
-                      </PaginationItem>
-                    );
-                  }
-                  return null;
-                })}
-                {currentPage < Math.ceil(resultCount / ITEMS_PER_PAGE) && (
-                  <PaginationItem>
-                    <PaginationNext
-                      href={`/search?${new URLSearchParams({
-                        ...Object.fromEntries(searchParams.entries()),
-                        page: (currentPage + 1).toString(),
-                      })}`}
-                    />
-                  </PaginationItem>
-                )}
-              </PaginationContent>
-            </Pagination>
+          {/* Intersection Observer Target */}
+          <div
+            ref={observerTarget}
+            className="h-10 flex items-center justify-center mt-8"
+          >
+            {isPending ? (
+              <div className="flex items-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                <span className="text-sm text-muted-foreground">
+                  Loading...
+                </span>
+              </div>
+            ) : searchResultState.hasMore ? (
+              <span className="text-sm text-muted-foreground">
+                Scroll down to load more
+              </span>
+            ) : searchResultState.infoList.length > 0 ? (
+              <span className="text-sm text-muted-foreground">
+                All results loaded
+              </span>
+            ) : (
+              <span className="text-sm text-muted-foreground">
+                No results found
+              </span>
+            )}
           </div>
         </div>
       </div>

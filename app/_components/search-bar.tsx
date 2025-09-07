@@ -14,10 +14,11 @@ export function SearchBar(): React.JSX.Element {
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery("");
-    }
+    const queryText = searchQuery.trim();
+    router.push(
+      `/search${searchQuery ? `?q=${encodeURIComponent(queryText)}` : ""}`
+    );
+    setSearchQuery("");
   }
 
   return (

@@ -1,7 +1,7 @@
-import type React from "react";
-import { useEffect, useState } from "react";
+// import type React from "react";
+// import { useEffect, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
+// import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TagInput } from "@/features/instrument/components/tag-input";
 import {
@@ -9,15 +9,16 @@ import {
   RECOMMENDED_CHIPS,
   type RecommendedChip,
 } from "@/features/instrument/models";
-import { MAX_LIKE_COUNT } from "../defines";
+
+// import { MAX_LIKE_COUNT } from "../defines";
 
 type FilterPanelProps = {
   selectedChips: string[];
   onChipChange: (chip: RecommendedChip, checked: boolean) => void;
   filterTags: string[];
   onChangeTags: (tags: string[]) => void;
-  likeRange: number[];
-  onLikeRangeChange: (range: [number, number]) => void;
+  // likeRange: number[];
+  // onLikeRangeChange: (range: [number, number]) => void;
 };
 
 export function FilterPanel({
@@ -25,48 +26,48 @@ export function FilterPanel({
   onChipChange,
   filterTags,
   onChangeTags,
-  likeRange,
-  onLikeRangeChange,
+  // likeRange,
+  // onLikeRangeChange,
 }: FilterPanelProps) {
   const chips = RECOMMENDED_CHIPS;
 
   // State for numeric inputs
-  const [likeMin, setLikeMin] = useState<number>(likeRange[0]);
-  const [likeMax, setLikeMax] = useState<number>(likeRange[1]);
+  // const [likeMin, setLikeMin] = useState<number>(likeRange[0]);
+  // const [likeMax, setLikeMax] = useState<number>(likeRange[1]);
 
   // Update input fields when likeRange changes
-  useEffect(() => {
-    setLikeMin(likeRange[0]);
-    setLikeMax(likeRange[1]);
-  }, [likeRange]);
+  // useEffect(() => {
+  //   setLikeMin(likeRange[0]);
+  //   setLikeMax(likeRange[1]);
+  // }, [likeRange]);
 
   // Correct and update like range
-  function handleLikeRangeUpdate() {
-    // Range correction
-    let min = Math.max(0, Math.min(likeMin, MAX_LIKE_COUNT));
-    let max = Math.max(0, Math.min(likeMax, MAX_LIKE_COUNT));
+  // function handleLikeRangeUpdate() {
+  //   // Range correction
+  //   let min = Math.max(0, Math.min(likeMin, MAX_LIKE_COUNT));
+  //   let max = Math.max(0, Math.min(likeMax, MAX_LIKE_COUNT));
 
-    // Swap if min > max
-    if (min > max) {
-      [min, max] = [max, min];
-    }
+  //   // Swap if min > max
+  //   if (min > max) {
+  //     [min, max] = [max, min];
+  //   }
 
-    // Update input fields with corrected values
-    setLikeMin(min);
-    setLikeMax(max);
+  //   // Update input fields with corrected values
+  //   setLikeMin(min);
+  //   setLikeMax(max);
 
-    // Notify parent component
-    onLikeRangeChange([min, max]);
-  }
+  //   // Notify parent component
+  //   onLikeRangeChange([min, max]);
+  // }
 
-  function getHandleChange(set: React.Dispatch<React.SetStateAction<number>>) {
-    return (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = parseInt(e.target.value);
-      if (value !== undefined) {
-        set(value);
-      }
-    };
-  }
+  // function getHandleChange(set: React.Dispatch<React.SetStateAction<number>>) {
+  //   return (e: React.ChangeEvent<HTMLInputElement>) => {
+  //     const value = parseInt(e.target.value);
+  //     if (value !== undefined) {
+  //       set(value);
+  //     }
+  //   };
+  // }
 
   return (
     <div className="space-y-6">
@@ -110,7 +111,7 @@ export function FilterPanel({
         </div>
       </div>
 
-      <div>
+      {/* <div>
         <h3 className="font-medium mb-3">Likes</h3>
         <div className="space-y-2">
           <div className="grid grid-cols-2 gap-2">
@@ -153,7 +154,7 @@ export function FilterPanel({
             Range: 0-{MAX_LIKE_COUNT}
           </p>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }
