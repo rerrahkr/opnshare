@@ -11,19 +11,19 @@ const NEW_INSTRUMENT_COUNT = 6;
 const LIKE_RANKING_COUNT = 5;
 
 export default async function HomePage() {
-  const newers = await getInstrumentDocsAndIdsNewer(NEW_INSTRUMENT_COUNT);
+  const newest = await getInstrumentDocsAndIdsNewer(NEW_INSTRUMENT_COUNT);
   const likes = await getInstrumentDocsAndIdsMostLiked(LIKE_RANKING_COUNT);
 
   const authorUids = [
     ...new Set([
-      ...newers.map(([doc]) => doc.authorUid),
+      ...newest.map(([doc]) => doc.authorUid),
       ...likes.map(([doc]) => doc.authorUid),
     ]),
   ];
 
   const authorTable = await getUidNameTable(authorUids);
 
-  const newerInfoList: InstrumentMetaInfo[] = newers.map(
+  const newerInfoList: InstrumentMetaInfo[] = newest.map(
     ([doc, id]) =>
       ({
         id,

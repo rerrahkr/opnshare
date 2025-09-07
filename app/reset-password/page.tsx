@@ -36,7 +36,6 @@ export default function ResetPasswordPage() {
 
     try {
       const actionCodeSettings: ActionCodeSettings = {
-        // url: `${window.location.origin}/reset-password/confirm`,
         url: `${window.location.origin}/signin`,
         handleCodeInApp: true,
       };
