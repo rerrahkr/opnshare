@@ -9,9 +9,9 @@ import { ThemeProvider } from "@/components/theme-provider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Instrument Sharing Service",
-  description: "Share FM synthesizer instruments and discover new sounds",
-  generator: "v0.dev",
+  title: "OPNShare",
+  description:
+    "Explore and share FM sound instruments for OPN-series chips used in retro game music and chiptunes",
 };
 
 export default function RootLayout({

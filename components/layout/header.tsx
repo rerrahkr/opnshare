@@ -72,9 +72,7 @@ export function Header() {
             <div className="h-8 w-8 rounded bg-primary flex items-center justify-center">
               <span className="text-primary-foreground font-bold">I</span>
             </div>
-            <span className="font-bold text-xl hidden sm:inline">
-              InstrumentShare
-            </span>
+            <span className="font-bold text-xl hidden sm:inline">OPNShare</span>
           </Link>
 
           {/* Search Bar (desktop, not on home page) */}
@@ -194,7 +192,7 @@ export function Header() {
                       onClick={handleSignOut}
                     >
                       <FaSignOutAlt className="h-4 w-4 mr-2" />
-                      Logout
+                      Sign Out
                     </Button>
                   </>
                 ) : (

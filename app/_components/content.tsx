@@ -20,10 +20,11 @@ export function HomePageContent({
       <section className="container mx-auto px-4 py-16 text-center">
         <div className="max-w-4xl mx-auto space-y-8">
           <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-            Instrument Sharing Service
+            OPNShare
           </h1>
           <p className="text-lg text-muted-foreground">
-            Share FM synthesizer instruments and discover new sounds
+            Explore and share FM sound instruments for OPN-series chips used in
+            retro game music and chiptunes
           </p>
 
           {/* Search Bar */}
@@ -34,7 +35,7 @@ export function HomePageContent({
         <div className="mt-6">
           <Button variant="outline" size="sm" asChild>
             <a
-              href="https://github.com/rerrahkr/share-insts"
+              href="https://github.com/rerrahkr/opnshare"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2"
