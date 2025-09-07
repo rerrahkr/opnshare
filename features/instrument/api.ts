@@ -1,20 +1,25 @@
 import {
   addDoc,
+  type DocumentData,
+  type DocumentSnapshot,
+  deleteDoc,
   getDoc,
   getDocs,
-  increment,
   limit,
   orderBy,
   type QueryConstraint,
+  type QuerySnapshot,
   query,
   runTransaction,
   serverTimestamp,
   startAfter,
+  type Transaction,
   updateDoc,
   where,
 } from "firebase/firestore";
 import {
   collectionInstruments,
+  collectionLikes,
   db,
   docInstruments,
   docLikes,
@@ -37,7 +42,6 @@ export async function createInstrumentDoc(
     data: instrument,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
-    isDeleted: false,
   } satisfies NewDoc<InstrumentDoc>;
 
   // Assign unique document id as instrument id automatically.
@@ -53,15 +57,19 @@ export async function getInstrumentDoc(
     return undefined;
   }
 
-  const instrumentDoc = docSnapshot.data() as InstrumentDoc;
-  return instrumentDoc.isDeleted ? undefined : instrumentDoc;
+  return docSnapshot.data() as InstrumentDoc;
+}
+
+export async function getInstrumentDocsSnapshotByAuthorUid(authorUid: string) {
+  const q = query(collectionInstruments(), whereAuthorUid(authorUid));
+  return getDocs(q);
 }
 
 type InstrumentDocsByAuthorOption = {
   order?: "latest" | "liked" | undefined;
 };
 
-const whereIsNotDeleted = where("isDeleted", "==", false);
+const whereAuthorUid = (uid: string) => where("authorUid", "==", uid);
 const orderByLiked = orderBy("likeCount", "desc");
 const orderByNew = orderBy("createdAt", "desc");
 
@@ -71,10 +79,7 @@ export async function getInstrumentDocsAndIdsByAuthor(
 ): Promise<[InstrumentDoc, string][]> {
   const { order = undefined } = option || {};
 
-  const constrainCommon = [
-    where("authorUid", "==", authorUid),
-    whereIsNotDeleted,
-  ];
+  const constrainCommon = [whereAuthorUid(authorUid)];
   const constrains = (() => {
     switch (order) {
       case "latest":
@@ -94,12 +99,7 @@ export async function getInstrumentDocsAndIdsByAuthor(
 export async function getInstrumentDocsAndIdsNewer(
   limitCount: number
 ): Promise<[InstrumentDoc, string][]> {
-  const q = query(
-    collectionInstruments(),
-    whereIsNotDeleted,
-    orderByNew,
-    limit(limitCount)
-  );
+  const q = query(collectionInstruments(), orderByNew, limit(limitCount));
   const querySnapshot = await getDocs(q);
   return querySnapshot.docs.map((doc) => [doc.data() as InstrumentDoc, doc.id]);
 }
@@ -107,12 +107,7 @@ export async function getInstrumentDocsAndIdsNewer(
 export async function getInstrumentDocsAndIdsMostLiked(
   limitCount: number
 ): Promise<[InstrumentDoc, string][]> {
-  const q = query(
-    collectionInstruments(),
-    whereIsNotDeleted,
-    orderByLiked,
-    limit(limitCount)
-  );
+  const q = query(collectionInstruments(), orderByLiked, limit(limitCount));
   const querySnapshot = await getDocs(q);
   return querySnapshot.docs.map((doc) => [doc.data() as InstrumentDoc, doc.id]);
 }
@@ -127,23 +122,35 @@ export async function updateInstrumentDoc(
   } satisfies UpdatedDoc<InstrumentDoc>);
 }
 
-export async function softDeleteInstrumentDoc(instrumentId: string) {
-  await updateDoc(docInstruments(instrumentId), {
-    isDeleted: true,
-  } satisfies UpdatedDoc<InstrumentDoc>);
+export async function deleteInstrumentDoc(instrumentId: string) {
+  await deleteDoc(docInstruments(instrumentId));
+}
+
+export function deleteInstrumentDocsFromSnapshot(
+  snapshot: QuerySnapshot<DocumentData, DocumentData>,
+  transaction: Transaction
+) {
+  snapshot.docs.forEach((doc) => {
+    transaction.delete(doc.ref);
+  });
 }
 
 export async function likeInstrument(instrumentId: string, uid: string) {
   const instrumentDocRef = docInstruments(instrumentId);
   const likesDoc = docLikes(uid, instrumentId);
   await runTransaction(db, async (transaction) => {
+    const doc = await transaction.get(instrumentDocRef);
     transaction.update(instrumentDocRef, {
-      likeCount: increment(1),
+      likeCount: (doc.data() as InstrumentDoc).likeCount + 1,
     } satisfies UpdatedDoc<InstrumentDoc>);
 
-    transaction.set(likesDoc, {
-      likedAt: serverTimestamp(),
-    } satisfies NewDoc<LikedInstrumentDoc>);
+    transaction.set(
+      likesDoc,
+      {
+        likedAt: serverTimestamp(),
+      } satisfies NewDoc<LikedInstrumentDoc>,
+      { merge: true }
+    );
   });
 }
 
@@ -152,12 +159,39 @@ export async function unlikeInstrument(instrumentId: string, uid: string) {
   const likesDoc = docLikes(uid, instrumentId);
 
   await runTransaction(db, async (transaction) => {
+    const doc = await transaction.get(instrumentDocRef);
     transaction.update(instrumentDocRef, {
-      likeCount: increment(-1),
+      likeCount: (doc.data() as InstrumentDoc).likeCount - 1,
     } satisfies UpdatedDoc<InstrumentDoc>);
 
     transaction.delete(likesDoc);
   });
+}
+
+export async function getLikesDocSnapshots(uid: string) {
+  const likesSnapshot = await getDocs(collectionLikes(uid));
+  const instruments = await Promise.all(
+    likesSnapshot.docs.map((doc) => getDoc(docInstruments(doc.id)))
+  );
+  return { likesSnapshot, instruments };
+}
+
+export function unlikeAllInstrument(
+  {
+    likesSnapshot,
+    instruments,
+  }: {
+    likesSnapshot: QuerySnapshot<DocumentData, DocumentData>;
+    instruments: DocumentSnapshot<DocumentData, DocumentData>[];
+  },
+  transaction: Transaction
+) {
+  likesSnapshot.docs.forEach((doc) => transaction.delete(doc.ref));
+  instruments.forEach((doc) =>
+    transaction.update(doc.ref, {
+      likeCount: (doc.data() as InstrumentDoc).likeCount - 1,
+    } satisfies UpdatedDoc<InstrumentDoc>)
+  );
 }
 
 export async function isLikedInstrument(
@@ -196,7 +230,7 @@ export async function searchInstruments(
     pageSize,
   } = options;
 
-  const constraints: QueryConstraint[] = [whereIsNotDeleted];
+  const constraints: QueryConstraint[] = [];
 
   if (searchQuery && searchQuery.length > 0) {
     const endString =
@@ -260,8 +294,6 @@ export async function searchInstruments(
   const docs: [InstrumentDoc, string][] = querySnapshot.docs
     .slice(0, pageSize)
     .map((doc) => [doc.data() as InstrumentDoc, doc.id]);
-
-  // TODO: Implement full-text search for `searchQuery` if needed
 
   return {
     docs,

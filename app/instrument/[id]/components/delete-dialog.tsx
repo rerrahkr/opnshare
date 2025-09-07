@@ -13,7 +13,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { softDeleteInstrumentDoc } from "@/features/instrument/api";
+import { deleteInstrumentDoc } from "@/features/instrument/api";
 
 type DeleteDialogProps = {
   open: boolean;
@@ -38,7 +38,7 @@ export function DeleteDialog({
 
     startTransitionDelete(async () => {
       try {
-        await softDeleteInstrumentDoc(instrumentId);
+        await deleteInstrumentDoc(instrumentId);
 
         // On success, return to user page
         router.push(`/user/${userId}`);

@@ -128,8 +128,7 @@ export function SearchPageContent() {
               }
             : prev.lastDoc,
         }));
-      } catch (e) {
-        console.error(e);
+      } catch {
         setSearchResultState((prev) => ({
           ...prev,
           hasMore: false,

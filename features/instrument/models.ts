@@ -9,7 +9,6 @@ export type InstrumentDoc = EditableInstrumentMetaInfo & {
   data: FmInstrument;
   createdAt: Timestamp;
   updatedAt: Timestamp;
-  isDeleted: boolean;
 };
 
 export const recommendedChipSchema = z.union([

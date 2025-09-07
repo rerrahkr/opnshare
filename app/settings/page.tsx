@@ -9,9 +9,10 @@ import {
   validatePassword,
   verifyBeforeUpdateEmail,
 } from "firebase/auth";
+import { runTransaction } from "firebase/firestore";
 import { LucideAlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import {
   FaEnvelope,
   FaExclamationCircle,
@@ -43,8 +44,14 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  deleteInstrumentDocsFromSnapshot,
+  getInstrumentDocsSnapshotByAuthorUid,
+  getLikesDocSnapshots,
+  unlikeAllInstrument,
+} from "@/features/instrument/api";
 import { deleteUserDoc } from "@/features/user/api";
-import { auth } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import { useAuthUser } from "@/stores/auth";
 
 const emailSchema = z.string().email();
@@ -53,7 +60,7 @@ export default function SettingsPage() {
   const router = useRouter();
   const user = useAuthUser();
 
-  const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [isPending, startTransition] = useTransition();
 
   const [currentEmail, setCurrentEmail] = useState<string>(user?.email || "");
   const [emailDialogOpen, setEmailDialogOpen] = useState<boolean>(false);
@@ -83,162 +90,165 @@ export default function SettingsPage() {
     }
   }, [router, user]);
 
-  async function handleEmailChange() {
+  function handleEmailChange() {
     if (!user) {
       // console.error("User is not authenticated.");
       return;
     }
 
-    setIsProcessing(true);
     setFailedEmailChange(false);
 
-    try {
-      await verifyBeforeUpdateEmail(user, newEmail);
+    startTransition(async () => {
+      try {
+        await verifyBeforeUpdateEmail(user, newEmail);
 
-      setEmailDialogOpen(false);
-      setEmailChangeMessage(
-        `A confirmation email has been sent to ${newEmail}. Please check your email.`
-      );
-      setCurrentEmail(newEmail);
-      setNewEmail("");
-    } catch (error: unknown) {
-      if (
-        error instanceof FirebaseError &&
-        error.code === "auth/requires-recent-login"
-      ) {
-        // Open reauth dialog if reauthentication is required.
-        setPendingAction("email");
-        setReauthDialogOpen(true);
-        return;
+        setEmailDialogOpen(false);
+        setEmailChangeMessage(
+          `A confirmation email has been sent to ${newEmail}. Please check your email.`
+        );
+        setCurrentEmail(newEmail);
+        setNewEmail("");
+      } catch (error: unknown) {
+        if (
+          error instanceof FirebaseError &&
+          error.code === "auth/requires-recent-login"
+        ) {
+          // Open reauth dialog if reauthentication is required.
+          setPendingAction("email");
+          setReauthDialogOpen(true);
+          return;
+        }
+        // console.error("Email change error:", error);
+        setFailedEmailChange(true);
       }
-      // console.error("Email change error:", error);
-      setFailedEmailChange(true);
-    } finally {
-      setIsProcessing(false);
-    }
+    });
   }
 
-  async function handlePasswordChange() {
+  function handlePasswordChange() {
     if (!user) {
       // console.error("User is not authenticated.");
       return;
     }
 
-    setIsProcessing(true);
-    try {
-      const status = await validatePassword(auth, newPassword);
-      if (!status.isValid) {
-        setFailedPasswordChange("Password must be at least 6 characters long.");
-        return;
-      }
+    startTransition(async () => {
+      try {
+        const status = await validatePassword(auth, newPassword);
+        if (!status.isValid) {
+          setFailedPasswordChange(
+            "Password must be at least 6 characters long."
+          );
+          return;
+        }
 
-      await updatePassword(user, newPassword);
+        await updatePassword(user, newPassword);
 
-      setPasswordDialogOpen(false);
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-    } catch (error: unknown) {
-      if (
-        error instanceof FirebaseError &&
-        error.code === "auth/requires-recent-login"
-      ) {
-        // Open reauth dialog if reauthentication is required.
-        setPendingAction("password");
-        setReauthDialogOpen(true);
-        return;
+        setPasswordDialogOpen(false);
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+      } catch (error: unknown) {
+        if (
+          error instanceof FirebaseError &&
+          error.code === "auth/requires-recent-login"
+        ) {
+          // Open reauth dialog if reauthentication is required.
+          setPendingAction("password");
+          setReauthDialogOpen(true);
+          return;
+        }
+        // console.error("Password change error:", error);
+        setFailedPasswordChange("Failed to change password. Please try again.");
       }
-      // console.error("Password change error:", error);
-      setFailedPasswordChange("Failed to change password. Please try again.");
-    } finally {
-      setIsProcessing(false);
-    }
+    });
   }
 
-  async function handleAccountDelete() {
+  function handleAccountDelete() {
     if (!user) {
       // console.error("User is not authenticated.");
       return;
     }
-
-    setIsProcessing(true);
     setDeleteError("");
 
-    try {
-      await reauthenticateWithCredential(
-        user,
-        EmailAuthProvider.credential(user.email || "", passwordForDelete)
-      );
+    startTransition(async () => {
+      try {
+        await reauthenticateWithCredential(
+          user,
+          EmailAuthProvider.credential(user.email || "", passwordForDelete)
+        );
 
-      // Delete user info and account
-      await deleteUserDoc(user.uid);
-      await deleteUser(user);
+        // Delete user info and account
+        const instrumentsSnapshot = await getInstrumentDocsSnapshotByAuthorUid(
+          user.uid
+        );
+        const likesSnapshots = await getLikesDocSnapshots(user.uid);
+        await runTransaction(db, async (transaction) => {
+          unlikeAllInstrument(likesSnapshots, transaction);
+          deleteInstrumentDocsFromSnapshot(instrumentsSnapshot, transaction);
+          deleteUserDoc(user.uid, transaction);
+        });
+        await deleteUser(user);
 
-      setDeleteDialogOpen(false);
-      setPasswordForDelete("");
-
-      router.push("/");
-    } catch (_error: unknown) {
-      setDeleteError("An error occurred during account deletion.");
-    } finally {
-      setIsProcessing(false);
-    }
+        setPasswordForDelete("");
+        router.push("/");
+      } catch {
+        setDeleteError("An error occurred during account deletion.");
+      }
+    });
   }
 
-  async function handleReauth() {
+  function handleReauth() {
     if (!user) {
       // console.error("User is not authenticated.");
       return;
     }
 
-    setIsProcessing(true);
-    try {
-      await reauthenticateWithCredential(
-        user,
-        EmailAuthProvider.credential(user.email || "", reauthPassword)
-      );
+    startTransition(async () => {
+      try {
+        await reauthenticateWithCredential(
+          user,
+          EmailAuthProvider.credential(user.email || "", reauthPassword)
+        );
 
-      setReauthDialogOpen(false);
-      setReauthPassword("");
+        setReauthDialogOpen(false);
+        setReauthPassword("");
 
-      // Do the pending action
-      switch (pendingAction) {
-        case "email":
-          try {
-            await verifyBeforeUpdateEmail(user, newEmail);
+        // Do the pending action
+        switch (pendingAction) {
+          case "email":
+            try {
+              await verifyBeforeUpdateEmail(user, newEmail);
 
-            setEmailDialogOpen(false);
-            setEmailChangeMessage(
-              `A confirmation email has been sent to ${newEmail}. Please check your email.`
-            );
-            setCurrentEmail(newEmail);
-            setNewEmail("");
-          } catch (_error: unknown) {
-            setFailedEmailChange(true);
-          }
-          break;
-        case "password":
-          try {
-            await updatePassword(user, newPassword);
+              setEmailDialogOpen(false);
+              setEmailChangeMessage(
+                `A confirmation email has been sent to ${newEmail}. Please check your email.`
+              );
+              setCurrentEmail(newEmail);
+              setNewEmail("");
+            } catch (_error: unknown) {
+              setFailedEmailChange(true);
+            }
+            break;
+          case "password":
+            try {
+              await updatePassword(user, newPassword);
 
-            setPasswordDialogOpen(false);
-            setCurrentPassword("");
-            setNewPassword("");
-            setConfirmPassword("");
-          } catch (_error: unknown) {
-            setFailedPasswordChange(
-              "Failed to change password. Please try again."
-            );
-          }
-          break;
+              setPasswordDialogOpen(false);
+              setCurrentPassword("");
+              setNewPassword("");
+              setConfirmPassword("");
+            } catch (_error: unknown) {
+              setFailedPasswordChange(
+                "Failed to change password. Please try again."
+              );
+            }
+            break;
+        }
+
+        setPendingAction(null);
+      } catch (_error) {
+        // console.error("Reauth error:", _error);
       }
-
-      setPendingAction(null);
-    } catch (error) {
-      console.error("Reauth error:", error);
-    } finally {
-      setIsProcessing(false);
-    }
+    });
   }
 
   return (
@@ -300,17 +310,17 @@ export default function SettingsPage() {
                     <Button
                       variant="outline"
                       onClick={() => setEmailDialogOpen(false)}
-                      disabled={isProcessing}
+                      disabled={isPending}
                     >
                       Cancel
                     </Button>
                     <Button
                       onClick={handleEmailChange}
                       disabled={
-                        !emailSchema.safeParse(newEmail).success || isProcessing
+                        !emailSchema.safeParse(newEmail).success || isPending
                       }
                     >
-                      {isProcessing ? (
+                      {isPending ? (
                         <>
                           <FaSpinner className="h-4 w-4 mr-2 animate-spin" />
                           Changing...
@@ -388,7 +398,7 @@ export default function SettingsPage() {
                     <Button
                       variant="outline"
                       onClick={() => setPasswordDialogOpen(false)}
-                      disabled={isProcessing}
+                      disabled={isPending}
                     >
                       Cancel
                     </Button>
@@ -398,10 +408,10 @@ export default function SettingsPage() {
                         !currentPassword ||
                         !newPassword ||
                         newPassword !== confirmPassword ||
-                        isProcessing
+                        isPending
                       }
                     >
-                      {isProcessing ? (
+                      {isPending ? (
                         <>
                           <FaSpinner className="h-4 w-4 mr-2 animate-spin" />
                           Changing...
@@ -435,7 +445,13 @@ export default function SettingsPage() {
             </Alert>
             <AlertDialog
               open={deleteDialogOpen}
-              onOpenChange={setDeleteDialogOpen}
+              onOpenChange={(open) => {
+                // Deleteボタンが押された場合（open = false）で、処理中（isPending = true）の場合は
+                // ダイアログを閉じない
+                if (open || !isPending) {
+                  setDeleteDialogOpen(open);
+                }
+              }}
             >
               <AlertDialogTrigger asChild>
                 <Button variant="destructive">Delete Account</Button>
@@ -473,15 +489,18 @@ export default function SettingsPage() {
                 </div>
 
                 <AlertDialogFooter>
-                  <AlertDialogCancel disabled={isProcessing}>
+                  <AlertDialogCancel disabled={isPending}>
                     Cancel
                   </AlertDialogCancel>
                   <AlertDialogAction
-                    onClick={handleAccountDelete}
-                    disabled={!passwordForDelete || isProcessing}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleAccountDelete();
+                    }}
+                    disabled={!passwordForDelete || isPending}
                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   >
-                    {isProcessing ? (
+                    {isPending ? (
                       <>
                         <FaSpinner className="h-4 w-4 mr-2 animate-spin" />
                         Deleting...
@@ -525,15 +544,15 @@ export default function SettingsPage() {
               <Button
                 variant="outline"
                 onClick={() => setReauthDialogOpen(false)}
-                disabled={isProcessing}
+                disabled={isPending}
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleReauth}
-                disabled={!reauthPassword || isProcessing}
+                disabled={!reauthPassword || isPending}
               >
-                {isProcessing ? (
+                {isPending ? (
                   <>
                     <FaSpinner className="h-4 w-4 mr-2 animate-spin" />
                     Authenticating...

@@ -1,11 +1,12 @@
 import {
-  deleteDoc,
   doc,
   getDoc,
   getDocs,
+  orderBy,
   query,
   runTransaction,
   serverTimestamp,
+  type Transaction,
   updateDoc,
   where,
 } from "firebase/firestore";
@@ -91,14 +92,14 @@ export async function updateUserDoc(uid: string, userDoc: EditableUserDoc) {
   } satisfies UpdatedDoc<UserDoc>);
 }
 
-export async function deleteUserDoc(uid: string) {
-  await deleteDoc(docUsers(uid));
+export function deleteUserDoc(uid: string, transaction: Transaction) {
+  transaction.delete(docUsers(uid));
 }
 
 export async function getUserLikedInstrumentDocAndIds(
   uid: string
 ): Promise<[InstrumentDoc, string][]> {
-  const q = query(collectionLikes(uid));
+  const q = query(collectionLikes(uid), orderBy("likedAt", "desc"));
   const querySnapshot = await getDocs(q);
   const ids = querySnapshot.docs.map((doc) => doc.id);
 
@@ -117,9 +118,7 @@ export async function getUserLikedInstrumentDocAndIds(
     }
 
     const doc = docSnap.data() as InstrumentDoc;
-    if (!doc.isDeleted) {
-      docAndIds.push([doc, docSnap.id]);
-    }
+    docAndIds.push([doc, docSnap.id]);
   }
 
   return docAndIds;

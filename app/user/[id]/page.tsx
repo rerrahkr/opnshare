@@ -4,7 +4,6 @@ import { Suspense } from "react";
 import { getInstrumentDocsAndIdsByAuthor } from "@/features/instrument/api";
 import {
   getUidNameTable,
-  getUserDoc,
   getUserDocAndUidByUserId,
   getUserLikedInstrumentDocAndIds,
 } from "@/features/user/api";
