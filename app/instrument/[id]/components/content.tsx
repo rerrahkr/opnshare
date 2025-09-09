@@ -34,12 +34,11 @@ import type {
 import type { FmInstrument, FmOperator } from "@/features/instrument/types";
 import { useAuthUserId } from "@/stores/auth";
 import { isoStringToLocaleString } from "@/utils/date";
+import { AudioPreview } from "./audio-preview";
 import { DeleteDialog } from "./delete-dialog";
 import { InfoEditDialog } from "./info-edit-dialog";
 import { LikeButton } from "./like-button";
 import { TextExportDialog } from "./text-export-dialog";
-
-// import { AudioPreview } from "./components/audio-preview";
 
 function downloadFile(file: File) {
   const url = URL.createObjectURL(file);
@@ -283,7 +282,7 @@ export function InstrumentDetailContent({
         </Card>
 
         {/* Audio Player */}
-        {/* <AudioPreview /> */}
+        <AudioPreview />
 
         {/* Parameters Section */}
         <Card>
