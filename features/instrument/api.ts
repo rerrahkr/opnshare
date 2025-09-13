@@ -3,6 +3,7 @@ import {
   type DocumentData,
   type DocumentSnapshot,
   deleteDoc,
+  getCountFromServer,
   getDoc,
   getDocs,
   limit,
@@ -13,6 +14,7 @@ import {
   runTransaction,
   serverTimestamp,
   startAfter,
+  type Timestamp,
   type Transaction,
   updateDoc,
   where,
@@ -206,16 +208,17 @@ export async function isLikedInstrument(
 export type SearchInstrumentsOptions = {
   searchQuery?: string;
   sortBy: "newest" | "likes";
-  chips: string[];
-  tags: string[];
+  chips?: string[];
+  tags?: string[];
   // likeRange: [number, number];
   pageSize: number;
-  lastDoc?:
-    | {
-        id: string;
-        doc: InstrumentDoc;
-      }
-    | undefined;
+  lastDoc?: LastDocumentInfo | undefined;
+};
+
+export type LastDocumentInfo = {
+  id: string;
+  createdAt: Timestamp;
+  likeCount: number;
 };
 
 export async function searchInstruments(
@@ -224,8 +227,8 @@ export async function searchInstruments(
   const {
     searchQuery,
     sortBy,
-    chips,
-    tags,
+    chips = [],
+    tags = [],
     /* likeRange, */ lastDoc,
     pageSize,
   } = options;
@@ -275,17 +278,11 @@ export async function searchInstruments(
   if (lastDoc) {
     switch (sortBy) {
       case "newest":
-        baseQuery = query(
-          baseQuery,
-          startAfter(lastDoc.doc.createdAt, lastDoc.id)
-        );
+        baseQuery = query(baseQuery, startAfter(lastDoc.createdAt, lastDoc.id));
         break;
 
       case "likes":
-        baseQuery = query(
-          baseQuery,
-          startAfter(lastDoc.doc.likeCount, lastDoc.id)
-        );
+        baseQuery = query(baseQuery, startAfter(lastDoc.likeCount, lastDoc.id));
         break;
     }
   }
@@ -299,4 +296,9 @@ export async function searchInstruments(
     docs,
     hasMore: querySnapshot.docs.length > pageSize,
   };
+}
+
+export async function getTotalCountOfInstruments(): Promise<number> {
+  const snapshot = await getCountFromServer(collectionInstruments());
+  return snapshot.data().count;
 }

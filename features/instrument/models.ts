@@ -35,6 +35,10 @@ export const instrumentTagSchema = z
   });
 
 export const MAX_TAGS = 5;
+export const instrumentTagsSchema = z.array(instrumentTagSchema).max(MAX_TAGS, {
+  message: `You can add up to ${MAX_TAGS} tags.`,
+});
+
 export const MAX_DESCRIPTION_LENGTH = 500;
 
 export const editableInstrumentMetaInfoSchema = z.object({
@@ -48,9 +52,7 @@ export const editableInstrumentMetaInfoSchema = z.object({
   description: z.string().max(MAX_DESCRIPTION_LENGTH, {
     message: "Description must be at most 500 characters long.",
   }),
-  tags: z.array(instrumentTagSchema).max(MAX_TAGS, {
-    message: `You can add up to ${MAX_TAGS} tags.`,
-  }),
+  tags: instrumentTagsSchema,
   chip: recommendedChipSchema,
 });
 

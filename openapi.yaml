@@ -61,7 +61,7 @@ paths:
                     example: 123
                   nextPageToken:
                     type: string
-                    description: A token used in paging.
+                    description: A token used in paging. If the next page is none, this set empty.
                     example: snbdLIHjhbd28cVBYdio2562d
           links:
             GetInstruments:
@@ -117,7 +117,7 @@ components:
           example: Awesome Lead
         author:
           type: string
-          description: Author of the instrument.
+          description: User ID of the instrument's author.
           example: johnDoe
         recommendedChip:
           type: string
