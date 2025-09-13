@@ -159,7 +159,7 @@ components:
           type: integer
           description: Phase modulation sensitivity.
           example: 0
-        operators:
+        op:
           type: array
           description: FM operators. It should contain exactly 4 operators.
           items:
