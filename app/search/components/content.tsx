@@ -22,12 +22,12 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { searchInstruments } from "@/features/instrument/api";
+import {
+  type LastDocumentInfo,
+  searchInstruments,
+} from "@/features/instrument/api";
 import { InstrumentCard } from "@/features/instrument/components/instrument-card";
-import type {
-  InstrumentDoc,
-  RecommendedChip,
-} from "@/features/instrument/models";
+import type { RecommendedChip } from "@/features/instrument/models";
 import { getUidNameTable } from "@/features/user/api";
 import { useSearchStore } from "@/stores/search";
 import { PAGE_SIZE } from "../defines";
@@ -39,12 +39,7 @@ type SearchResultDisplayState = {
   infoList: InstrumentMetaInfo[];
   hasMore: boolean;
   page: number;
-  lastDoc:
-    | {
-        id: string;
-        doc: InstrumentDoc;
-      }
-    | undefined;
+  lastDoc: LastDocumentInfo | undefined;
 };
 
 const INIT_SEARCH_RESULT_STATE: SearchResultDisplayState = {
@@ -117,16 +112,23 @@ export function SearchPageContent() {
           dateIso: doc.createdAt.toDate().toISOString(),
         }));
 
+        const newLastDoc = (() => {
+          const [doc, id] = docs[docs.length - 1];
+          if (!doc) {
+            return undefined;
+          }
+          return {
+            id,
+            createdAt: doc.createdAt,
+            likeCount: doc.likeCount,
+          } satisfies LastDocumentInfo;
+        })();
+
         setSearchResultState((prev) => ({
           infoList: [...prev.infoList, ...infoList],
           hasMore,
           page: prev.page + 1,
-          lastDoc: docs[docs.length - 1]
-            ? {
-                id: docs[docs.length - 1][1],
-                doc: docs[docs.length - 1][0],
-              }
-            : prev.lastDoc,
+          lastDoc: newLastDoc ?? prev.lastDoc,
         }));
       } catch {
         setSearchResultState((prev) => ({

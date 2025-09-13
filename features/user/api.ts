@@ -124,12 +124,28 @@ export async function getUserLikedInstrumentDocAndIds(
   return docAndIds;
 }
 
+async function getUserDocsByUids(
+  uids: string[]
+): Promise<(UserDoc | undefined)[]> {
+  return Promise.all(uids.map((uid) => getUserDoc(uid)));
+}
+
 export async function getUidNameTable(
   uids: string[]
 ): Promise<Record<string, string>> {
-  const userDocs = await Promise.all(uids.map((uid) => getUserDoc(uid)));
+  const docs = await getUserDocsByUids(uids);
   const userTable = Object.fromEntries(
-    uids.map((uid, i) => [uid, userDocs[i]?.displayName ?? ""])
+    uids.map((uid, i) => [uid, docs[i]?.displayName ?? ""])
+  );
+  return userTable;
+}
+
+export async function getUidUserIdTable(
+  uids: string[]
+): Promise<Record<string, string>> {
+  const userDocs = await getUserDocsByUids(uids);
+  const userTable = Object.fromEntries(
+    uids.map((uid, i) => [uid, userDocs[i]?.userId ?? ""])
   );
   return userTable;
 }

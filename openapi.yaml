@@ -1,0 +1,248 @@
+openapi: 3.0.4
+
+info:
+  title: OPNShare API
+  description: API for getting OPN instruments.
+  version: 1.0.0
+
+servers:
+  - url: https://opnshare.vercel.app/api
+    description: API server for OPNShare.
+
+tags:
+  - name: instruments
+    description: Operations related to instruments.
+
+paths:
+  /instruments:
+    get:
+      summary: Get all instrument info.
+      operationId: getInstruments
+      tags:
+        - instruments
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          description: Maximum length of the response instrument list.
+          schema:
+            type: integer
+            default: 20
+        - name: nextPageToken
+          in: query
+          required: false
+          description: The `nextPageToken` obtained during the previous request for this request.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: A list of instruments.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    description: A list of instrument info.
+                    items:
+                      type: object
+                      allOf:
+                        - type: object
+                          properties:
+                            id:
+                              type: string
+                              description: Instrument ID.
+                              example: abcdefghijk0123
+                        - $ref: "#/components/schemas/InstrumentInfo"
+                  total:
+                    type: integer
+                    description: Total instrument count.
+                    example: 123
+                  nextPageToken:
+                    type: string
+                    description: A token used in paging. If the next page is none, this set empty.
+                    example: snbdLIHjhbd28cVBYdio2562d
+          links:
+            GetInstruments:
+              operationId: getInstruments
+              parameters:
+                nextPageToken: "$response.body#nextPageToken"
+              description: >
+                The `nextPageToken` value returned in the response of data can be used as the `nextPageToken` in `GET /instruments?nextPageToken={nextPageToken}`.
+            GetInstrumentById:
+              operationId: getInstrument
+              parameters:
+                id: "$response.body#/items/id"
+              description: >
+                The `id` value of each instrument in the response can be used as the `id` parameter in `GET /instruments/{id}`.
+
+  /instruments/{id}:
+    get:
+      summary: Get a specific instrument.
+      operationId: getInstrument
+      tags:
+        - instruments
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the instrument.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The requested instrument.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: "#/components/schemas/InstrumentInfo"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/FmInstrumentData"
+        "404":
+          description: Instrument not found.
+
+components:
+  schemas:
+    InstrumentInfo:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Instrument name.
+          example: Awesome Lead
+        author:
+          type: string
+          description: User ID of the instrument's author.
+          example: johnDoe
+        recommendedChip:
+          type: string
+          enum:
+            - OPN
+            - OPNA
+            - OPNB
+            - OPN2
+          description: Recommended chip.
+        tags:
+          type: array
+          description: Tags.
+          items:
+            type: string
+          example:
+            - lead
+            - pop
+
+    FmInstrumentData:
+      type: object
+      properties:
+        al:
+          type: integer
+          description: Algorithm.
+          example: 4
+        fb:
+          type: integer
+          description: Feedback.
+          example: 5
+        lfoFreq:
+          type: integer
+          description: LFO frequency.
+          example: 0
+        ams:
+          type:  integer
+          description: Amplitude modulation sensitivity.
+          example: 0
+        pms:
+          type: integer
+          description: Phase modulation sensitivity.
+          example: 0
+        op:
+          type: array
+          description: FM operators. It should contain exactly 4 operators.
+          items:
+            $ref: "#/components/schemas/FmOperator"
+          example:
+            - ar: 31
+              dr: 0
+              sr: 0
+              rr: 7
+              sl: 0
+              tl: 16
+              ks: 0
+              ml: 2
+              dt: 0
+              am: false
+              ssgEg: 0
+            - ar: 31
+              dr: 5
+              sr: 0
+              rr: 7
+              sl: 0
+              tl: 0
+              ks: 0
+              ml: 2
+              dt: 0
+              am: false
+              ssgEg: 0
+            - ar: 31
+              dr: 0
+              sr: 0
+              rr: 7
+              sl: 0
+              tl: 10
+              ks: 0
+              ml: 2
+              dt: 3
+              am: false
+              ssgEg: 0
+            - ar: 31
+              dr: 5
+              sr: 0
+              rr: 7
+              sl: 0
+              tl: 0
+              ks: 0
+              ml: 2
+              dt: 3
+              am: false
+              ssgEg: 0
+
+    FmOperator:
+      type: object
+      properties:
+        ar:
+          type: integer
+          description: Attack rate.
+        dr:
+          type: integer
+          description: Decay rate.
+        sr:
+          type: integer
+          description: Sustain rate.
+        rr:
+          type: integer
+          description: Release rate.
+        sl:
+          type: integer
+          description: Sustain level.
+        tl:
+          type: integer
+          description: Total level.
+        ks:
+          type: integer
+          description: Key scale.
+        ml:
+          type: integer
+          description: Multiple level.
+        dt:
+          type: integer
+          description: Detune.
+        am:
+          type: boolean
+          description: Amplitude modulation.
+        ssgEg:
+          type: integer
+          description: SSG-EG type.
