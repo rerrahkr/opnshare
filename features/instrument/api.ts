@@ -98,22 +98,6 @@ export async function getInstrumentDocsAndIdsByAuthor(
   return querySnapshot.docs.map((doc) => [doc.data() as InstrumentDoc, doc.id]);
 }
 
-export async function getInstrumentDocsAndIdsNewer(
-  limitCount: number
-): Promise<[InstrumentDoc, string][]> {
-  const q = query(collectionInstruments(), orderByNew, limit(limitCount));
-  const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map((doc) => [doc.data() as InstrumentDoc, doc.id]);
-}
-
-export async function getInstrumentDocsAndIdsMostLiked(
-  limitCount: number
-): Promise<[InstrumentDoc, string][]> {
-  const q = query(collectionInstruments(), orderByLiked, limit(limitCount));
-  const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map((doc) => [doc.data() as InstrumentDoc, doc.id]);
-}
-
 export async function updateInstrumentDoc(
   instrumentId: string,
   metaInfo: EditableInstrumentMetaInfo
