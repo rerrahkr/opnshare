@@ -1,8 +1,5 @@
 import type { Timestamp } from "firebase/firestore";
-import {
-  getInstrumentDocsAndIdsMostLiked,
-  getInstrumentDocsAndIdsNewer,
-} from "@/features/instrument/api";
+import { searchInstruments } from "@/features/instrument/api";
 import { getUidNameTable } from "@/features/user/api";
 import { HomePageContent } from "./_components/content";
 import type { InstrumentMetaInfo } from "./types";
@@ -11,8 +8,14 @@ const NEW_INSTRUMENT_COUNT = 6;
 const LIKE_RANKING_COUNT = 5;
 
 export default async function HomePage() {
-  const newest = await getInstrumentDocsAndIdsNewer(NEW_INSTRUMENT_COUNT);
-  const likes = await getInstrumentDocsAndIdsMostLiked(LIKE_RANKING_COUNT);
+  const { docs: newest } = await searchInstruments({
+    pageSize: NEW_INSTRUMENT_COUNT,
+    sortBy: "newest",
+  });
+  const { docs: likes } = await searchInstruments({
+    pageSize: LIKE_RANKING_COUNT,
+    sortBy: "likes",
+  });
 
   const authorUids = [
     ...new Set([
