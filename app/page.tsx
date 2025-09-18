@@ -7,6 +7,9 @@ import type { InstrumentMetaInfo } from "./types";
 const NEW_INSTRUMENT_COUNT = 6;
 const LIKE_RANKING_COUNT = 5;
 
+// Refresh cache per 5 minutes.
+export const revalidate = 300;
+
 export default async function HomePage() {
   const { docs: newest } = await searchInstruments({
     pageSize: NEW_INSTRUMENT_COUNT,
