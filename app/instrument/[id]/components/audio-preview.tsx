@@ -3,6 +3,7 @@
 import type React from "react";
 import { useRef, useState } from "react";
 import { FaVolumeUp } from "react-icons/fa";
+import { useFmSynthesizer } from "@/app/_provider/synth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -53,7 +54,31 @@ export function AudioPreview(): React.JSX.Element {
   // For pressed button color.
   const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set());
 
-  function handlePointerDown(
+  const synthContext = useFmSynthesizer();
+
+  async function noteOn(
+    octave: number,
+    noteInOctave: number,
+    pointerId: number
+  ) {
+    // TODO: Control note-on in AudioWorklet.
+    console.log(`Note On: ${octave}-${noteInOctave}, pointer=${pointerId}`);
+
+    await synthContext?.noteOn();
+  }
+
+  async function noteOff(
+    octave: number,
+    noteInOctave: number,
+    pointerId: number
+  ) {
+    // TODO: Control note-off in AudioWorklet.
+    console.log(`Note Off: ${octave}-${noteInOctave}, pointer=${pointerId}`);
+
+    await synthContext?.noteOff();
+  }
+
+  async function handlePointerDown(
     e: React.PointerEvent<HTMLButtonElement>,
     octave: number,
     indexInOctave: number,
@@ -66,13 +91,13 @@ export function AudioPreview(): React.JSX.Element {
 
     activeNotes.current.set(e.pointerId, { octave, indexInOctave, keyId });
     setPressedKeys((prev) => new Set(prev).add(keyId));
-    noteOn(octave, indexInOctave, e.pointerId);
+    await noteOn(octave, indexInOctave, e.pointerId);
   }
 
-  function handlePointerUp(e: React.PointerEvent<HTMLButtonElement>) {
+  async function handlePointerUp(e: React.PointerEvent<HTMLButtonElement>) {
     const active = activeNotes.current.get(e.pointerId);
     if (active) {
-      noteOff(active.octave, active.indexInOctave, e.pointerId);
+      await noteOff(active.octave, active.indexInOctave, e.pointerId);
       activeNotes.current.delete(e.pointerId);
       setPressedKeys((prev) => {
         const next = new Set(prev);
@@ -82,7 +107,7 @@ export function AudioPreview(): React.JSX.Element {
     }
   }
 
-  function handlePointerEnter(
+  async function handlePointerEnter(
     e: React.PointerEvent<HTMLButtonElement>,
     octave: number,
     indexInOctave: number,
@@ -95,7 +120,7 @@ export function AudioPreview(): React.JSX.Element {
       }
 
       // Note off previous pressed note.
-      noteOff(active.octave, active.indexInOctave, e.pointerId);
+      await noteOff(active.octave, active.indexInOctave, e.pointerId);
       setPressedKeys((prev) => {
         const next = new Set(prev);
         next.delete(active.keyId);
@@ -109,7 +134,7 @@ export function AudioPreview(): React.JSX.Element {
         indexInOctave: indexInOctave,
         keyId,
       });
-      noteOn(octave, indexInOctave, e.pointerId);
+      await noteOn(octave, indexInOctave, e.pointerId);
     }
   }
 
@@ -291,14 +316,4 @@ export function AudioPreview(): React.JSX.Element {
       </CardContent>
     </Card>
   );
-}
-
-function noteOn(octave: number, noteInOctave: number, pointerId: number) {
-  // TODO: Control note-on in AudioWorklet.
-  console.log(`Note On: ${octave}-${noteInOctave}, pointer=${pointerId}`);
-}
-
-function noteOff(octave: number, noteInOctave: number, pointerId: number) {
-  // TODO: Control note-off in AudioWorklet.
-  console.log(`Note Off: ${octave}-${noteInOctave}, pointer=${pointerId}`);
 }

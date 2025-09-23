@@ -5,6 +5,7 @@ import "./globals.css";
 import { AuthProvider } from "@/components/auth-provider";
 import { Header } from "@/components/layout/header";
 import { ThemeProvider } from "@/components/theme-provider";
+import { FmSynthesizerProvider } from "./_provider/synth";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -29,8 +30,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Header />
-          <main>{children}</main>
+          <FmSynthesizerProvider>
+            <Header />
+            <main>{children}</main>
+          </FmSynthesizerProvider>
         </ThemeProvider>
       </body>
     </html>
