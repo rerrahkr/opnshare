@@ -11,6 +11,7 @@
       "app/**/*",
       "components/**/*",
       "!components/ui/**/*",
+      "contexts/**/*",
       "hooks/**/*",
       "lib/**/*",
       "styles/**/*",

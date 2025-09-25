@@ -5,7 +5,7 @@ import "./globals.css";
 import { AuthProvider } from "@/components/auth-provider";
 import { Header } from "@/components/layout/header";
 import { ThemeProvider } from "@/components/theme-provider";
-import { FmSynthesizerProvider } from "./_provider/synth";
+import { FmSynthesizerProvider } from "@/contexts/synth";
 
 const inter = Inter({ subsets: ["latin"] });
 

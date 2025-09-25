@@ -3,7 +3,6 @@
 import type React from "react";
 import { useRef, useState } from "react";
 import { FaVolumeUp } from "react-icons/fa";
-import { useFmSynthesizer } from "@/app/_provider/synth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -14,33 +13,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useFmSynthesizer } from "@/contexts/synth";
 import { AVAILABLE_CHIPS } from "@/features/preview/consts";
 import { clampOctave, withinOctave } from "@/features/preview/octave";
+import { type Pitch, pitchToString } from "@/features/preview/pitch";
 import type { AvailableChip } from "@/features/preview/types";
 import { iota } from "@/utils/range";
 
 const DISPLAYED_OCTAVE_RANGE = 4;
 const DISPLAYED_WHITE_KEY_COUNT = 7 * DISPLAYED_OCTAVE_RANGE;
-const WHITE_NOTE_TABLE = [
-  ["C", 0],
-  ["D", 2],
-  ["E", 4],
-  ["F", 5],
-  ["G", 7],
-  ["A", 9],
-  ["B", 11],
-] as const;
-const BLACK_NOTE_NAME_MAP: ReadonlyMap<number, [string, number]> = new Map([
-  [0, ["C#", 1]],
-  [1, ["Eb", 3]],
-  [3, ["F#", 6]],
-  [4, ["G#", 8]],
-  [5, ["Bb", 10]],
+const WHITE_NOTE_TABLE = [0, 2, 4, 5, 7, 9, 11] as const;
+const BLACK_NOTE_NAME_MAP: ReadonlyMap<number, number> = new Map([
+  [0, 1],
+  [1, 3],
+  [3, 6],
+  [4, 8],
+  [5, 10],
 ]);
 
-type ActiveNote = {
-  octave: number;
-  indexInOctave: number;
+type ActiveKey = {
+  pitch: Pitch;
   keyId: string;
 };
 
@@ -49,39 +41,30 @@ export function AudioPreview(): React.JSX.Element {
   const [octaveOffset, setOctaveOffset] = useState<number>(3);
 
   // Key: pointerId, Value: ActiveNote
-  const activeNotes = useRef<Map<number, ActiveNote>>(new Map());
+  const activeNotes = useRef<Map<number, ActiveKey>>(new Map());
 
   // For pressed button color.
   const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set());
 
   const synthContext = useFmSynthesizer();
 
-  async function noteOn(
-    octave: number,
-    noteInOctave: number,
-    pointerId: number
-  ) {
+  async function noteOn(pitch: Pitch, pointerId: number) {
     // TODO: Control note-on in AudioWorklet.
-    console.log(`Note On: ${octave}-${noteInOctave}, pointer=${pointerId}`);
+    console.log(`Note On: ${pitchToString(pitch)}, pointer=${pointerId}`);
 
-    await synthContext?.noteOn();
+    await synthContext?.keyOn(pitch, pointerId);
   }
 
-  async function noteOff(
-    octave: number,
-    noteInOctave: number,
-    pointerId: number
-  ) {
+  async function noteOff(pitch: Pitch, pointerId: number) {
     // TODO: Control note-off in AudioWorklet.
-    console.log(`Note Off: ${octave}-${noteInOctave}, pointer=${pointerId}`);
+    console.log(`Note Off: ${pitchToString(pitch)}, pointer=${pointerId}`);
 
-    await synthContext?.noteOff();
+    await synthContext?.keyOff(pointerId);
   }
 
   async function handlePointerDown(
     e: React.PointerEvent<HTMLButtonElement>,
-    octave: number,
-    indexInOctave: number,
+    pitch: Pitch,
     keyId: string
   ) {
     if (e.pointerType === "mouse" && e.button !== 0) {
@@ -89,15 +72,15 @@ export function AudioPreview(): React.JSX.Element {
       return;
     }
 
-    activeNotes.current.set(e.pointerId, { octave, indexInOctave, keyId });
+    activeNotes.current.set(e.pointerId, { pitch, keyId });
     setPressedKeys((prev) => new Set(prev).add(keyId));
-    await noteOn(octave, indexInOctave, e.pointerId);
+    await noteOn(pitch, e.pointerId);
   }
 
   async function handlePointerUp(e: React.PointerEvent<HTMLButtonElement>) {
     const active = activeNotes.current.get(e.pointerId);
     if (active) {
-      await noteOff(active.octave, active.indexInOctave, e.pointerId);
+      await noteOff(active.pitch, e.pointerId);
       activeNotes.current.delete(e.pointerId);
       setPressedKeys((prev) => {
         const next = new Set(prev);
@@ -109,18 +92,20 @@ export function AudioPreview(): React.JSX.Element {
 
   async function handlePointerEnter(
     e: React.PointerEvent<HTMLButtonElement>,
-    octave: number,
-    indexInOctave: number,
+    pitch: Pitch,
     keyId: string
   ) {
     const active = activeNotes.current.get(e.pointerId);
     if (active) {
-      if (active.indexInOctave === indexInOctave && active.octave === octave) {
+      if (
+        active.pitch.octave === pitch.octave &&
+        active.pitch.semitone === pitch.semitone
+      ) {
         return;
       }
 
       // Note off previous pressed note.
-      await noteOff(active.octave, active.indexInOctave, e.pointerId);
+      await noteOff(active.pitch, e.pointerId);
       setPressedKeys((prev) => {
         const next = new Set(prev);
         next.delete(active.keyId);
@@ -130,11 +115,10 @@ export function AudioPreview(): React.JSX.Element {
 
       // Note on new one.
       activeNotes.current.set(e.pointerId, {
-        octave,
-        indexInOctave: indexInOctave,
+        pitch,
         keyId,
       });
-      await noteOn(octave, indexInOctave, e.pointerId);
+      await noteOn(pitch, e.pointerId);
     }
   }
 
@@ -215,11 +199,11 @@ export function AudioPreview(): React.JSX.Element {
                 <div className="flex">
                   {[...iota(DISPLAYED_WHITE_KEY_COUNT)].map((i) => {
                     const whiteKeyIndex = i % 7;
-                    const octave = Math.floor(i / 7);
-                    const actualOctave = octave + octaveOffset;
-                    const [noteName, noteNumber] =
-                      WHITE_NOTE_TABLE[whiteKeyIndex];
-                    const pitchName = `${noteName}${actualOctave}`;
+                    const relativeOctave = Math.floor(i / 7);
+                    const octave = relativeOctave + octaveOffset;
+                    const semitone = WHITE_NOTE_TABLE[whiteKeyIndex];
+                    const pitch: Pitch = { octave, semitone };
+                    const pitchName = pitchToString(pitch);
                     const isPressed = pressedKeys.has(pitchName);
 
                     return (
@@ -232,21 +216,11 @@ export function AudioPreview(): React.JSX.Element {
                             : "bg-white hover:bg-gray-100"
                         }`}
                         onPointerDown={(e) =>
-                          handlePointerDown(
-                            e,
-                            actualOctave,
-                            noteNumber,
-                            pitchName
-                          )
+                          handlePointerDown(e, pitch, pitchName)
                         }
                         onPointerUp={handlePointerUp}
                         onPointerEnter={(e) =>
-                          handlePointerEnter(
-                            e,
-                            actualOctave,
-                            noteNumber,
-                            pitchName
-                          )
+                          handlePointerEnter(e, pitch, pitchName)
                         }
                         onPointerLeave={(e) => handlePointerLeave(e, pitchName)}
                       >
@@ -262,15 +236,15 @@ export function AudioPreview(): React.JSX.Element {
                 <div className="absolute top-0 flex">
                   {[...iota(DISPLAYED_WHITE_KEY_COUNT)].map((i) => {
                     const whiteKeyIndex = i % 7;
-                    const pair = BLACK_NOTE_NAME_MAP.get(whiteKeyIndex);
-                    if (!pair) {
+                    const semitone = BLACK_NOTE_NAME_MAP.get(whiteKeyIndex);
+                    if (!semitone) {
                       return <div key={`spacer-${i}`} className="w-6" />;
                     }
 
-                    const [noteName, noteNumber] = pair;
-                    const octave = Math.floor(i / 7);
-                    const actualOctave = octave + octaveOffset;
-                    const pitchName = `${noteName}${actualOctave}`;
+                    const relativeOctave = Math.floor(i / 7);
+                    const octave = relativeOctave + octaveOffset;
+                    const pitch: Pitch = { octave, semitone };
+                    const pitchName = pitchToString(pitch);
                     const isPressed = pressedKeys.has(pitchName);
 
                     return (
@@ -284,21 +258,11 @@ export function AudioPreview(): React.JSX.Element {
                         }`}
                         style={{ marginLeft: i === 0 ? "16px" : "8px" }}
                         onPointerDown={(e) =>
-                          handlePointerDown(
-                            e,
-                            actualOctave,
-                            noteNumber,
-                            pitchName
-                          )
+                          handlePointerDown(e, pitch, pitchName)
                         }
                         onPointerUp={handlePointerUp}
                         onPointerEnter={(e) =>
-                          handlePointerEnter(
-                            e,
-                            actualOctave,
-                            noteNumber,
-                            pitchName
-                          )
+                          handlePointerEnter(e, pitch, pitchName)
                         }
                         onPointerLeave={(e) => handlePointerLeave(e, pitchName)}
                       >
