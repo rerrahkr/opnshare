@@ -9,6 +9,17 @@ export type Synthesizer = {
   keyOff: (id: number) => Promise<void>;
 };
 
+type KeyOnRequestMessage = {
+  type: "keyOn";
+  id: number;
+  pitch: Pitch;
+};
+
+type KeyOffRequestMessage = {
+  type: "keyOff";
+  id: number;
+};
+
 export function useSynthesizer() {
   const ref = useRef<Synthesizer>(null);
 
@@ -16,19 +27,30 @@ export function useSynthesizer() {
     (async () => {
       const audioContext = new AudioContext();
 
-      const sineNode = new OscillatorNode(audioContext, { type: "sine" });
-      sineNode.connect(audioContext.destination);
-      sineNode.start();
+      await audioContext.audioWorklet.addModule("/processor.js");
+
+      const synthNode = new AudioWorkletNode(audioContext, "processor");
+      synthNode.connect(audioContext.destination);
 
       ref.current = {
         audioContext,
-        synthNode: sineNode,
+        synthNode,
         keyOn: async (pitch, id) => {
-          sineNode.frequency.setValueAtTime(440.0, audioContext.currentTime);
-          await audioContext.resume();
+          synthNode.port.postMessage({
+            type: "keyOn",
+            id,
+            pitch,
+          } satisfies KeyOnRequestMessage);
+
+          if (audioContext.state !== "running") {
+            await audioContext.resume();
+          }
         },
         keyOff: async (id) => {
-          await audioContext.suspend();
+          synthNode.port.postMessage({
+            type: "keyOff",
+            id,
+          } satisfies KeyOffRequestMessage);
         },
       };
     })();
