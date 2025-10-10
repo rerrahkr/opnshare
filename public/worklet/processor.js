@@ -34,7 +34,7 @@ class SineProcessor extends AudioWorkletProcessor {
      */
     this.voices = [];
 
-    this.port.onmessage = (event) => {
+    this.port.onmessage = async (event) => {
       const data = event.data;
       switch (data.type) {
         case "keyOn":

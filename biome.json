@@ -14,8 +14,11 @@
       "contexts/**/*",
       "hooks/**/*",
       "lib/**/*",
+      "public/worker/**/*",
+      "public/worklet/**/*",
       "styles/**/*",
       "stores/**/*",
+      "types/**/*",
       "utils/**/*",
       "features/**/*",
       "!features/instrument/format/**/grammar.cjs"
