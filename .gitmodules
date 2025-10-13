@@ -1,0 +1,6 @@
+[submodule "wasm-src/lib/ymfm"]
+	path = wasm-src/lib/ymfm
+	url = https://github.com/aaronsgiles/ymfm.git
+[submodule "wasm-src/lib/miniaudio"]
+	path = wasm-src/lib/miniaudio
+	url = https://github.com/mackron/miniaudio.git
