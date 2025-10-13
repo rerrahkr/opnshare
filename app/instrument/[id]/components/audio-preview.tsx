@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FaVolumeUp } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useFmSynthesizer } from "@/contexts/synth";
+import type { FmInstrument } from "@/features/instrument/types";
 import { AVAILABLE_CHIPS } from "@/features/preview/consts";
 import { clampOctave, withinOctave } from "@/features/preview/octave";
 import { type Pitch, pitchToString } from "@/features/preview/pitch";
@@ -36,7 +37,11 @@ type ActiveKey = {
   keyId: string;
 };
 
-export function AudioPreview(): React.JSX.Element {
+export function AudioPreview({
+  instrument,
+}: {
+  instrument: FmInstrument;
+}): React.JSX.Element {
   const [playbackChip, setPlaybackChip] = useState<AvailableChip>("OPN");
   const [octaveOffset, setOctaveOffset] = useState<number>(3);
 
@@ -47,6 +52,13 @@ export function AudioPreview(): React.JSX.Element {
   const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set());
 
   const synthContext = useFmSynthesizer();
+
+  useEffect(() => {
+    synthContext?.setInstrument(instrument);
+
+    // TODO: for test
+    synthContext?.testGenerate();
+  }, [instrument, synthContext]);
 
   async function noteOn(pitch: Pitch, pointerId: number) {
     // TODO: Control note-on in AudioWorklet.

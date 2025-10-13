@@ -39,7 +39,7 @@ export type FmOperator = {
   ks: number;
   ml: number;
   dt: number;
-  ssg_eg: number;
+  ssgEg: number;
   am: boolean;
 };
 
@@ -49,7 +49,7 @@ export type FmInstrument = {
   al: number;
   fb: number;
   op: FmOperatorArray;
-  lfo_freq: number;
+  lfoFreq: number;
   ams: number;
   pms: number;
 };
@@ -57,17 +57,17 @@ export type FmInstrument = {
 type EmbindModule = {
   initialize(): boolean;
   deinitialize(): boolean;
-  reset(): void;
+  reset(): boolean;
   changeChip(type: number): boolean;
   setSamplingRate(rate: number): boolean;
-  keyOn(id: number, octave: number, semitone: number): void;
-  keyOff(id: number): void;
-  setInstrument(instrument: FmInstrument): void;
+  keyOn(id: number, octave: number, semitone: number): boolean;
+  keyOff(id: number): boolean;
+  setInstrument(instrument: FmInstrument): boolean;
   generate(
     leftBuffer: BufferView,
     rightBuffer: BufferView,
     numSamples: number
-  ): number;
+  ): boolean;
 };
 
 type BufferView = SharedArrayBuffer | ArrayBuffer | Float32Array;

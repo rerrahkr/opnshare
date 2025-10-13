@@ -282,7 +282,7 @@ export function InstrumentDetailContent({
         </Card>
 
         {/* Audio Player */}
-        <AudioPreview />
+        <AudioPreview instrument={instrument} />
 
         {/* Parameters Section */}
         <Card>
