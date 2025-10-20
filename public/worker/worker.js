@@ -1,7 +1,27 @@
 importScripts("/wasm/synth.js");
 
-let wasm = null;
-let audioSampleRate = 0;
+let wasm;
+
+/** @type {Int32Array} */
+let control;
+const SAB_CONTROL_SIZE = 2;
+const SAB_READ_POSITION_INDEX = 0;
+const SAB_WRITE_POSITION_INDEX = 1;
+
+/** @type {Float32Array} */
+let leftBuffer;
+/** @type {Float32Array} */
+let rightBuffer;
+/** @type {number} */
+let bufferSize, fillThreshold;
+
+const messageQueue = [];
+
+/**
+ * @typedef Pitch
+ * @property {number} octave  - Octave number (e.g., 4 = around middle C)
+ * @property {number} semitone - Index within the octave (0–11)
+ */
 
 const WASM_NOT_LOADED_MESSAGE = {
   type: "error",
@@ -24,7 +44,11 @@ async function handleLoadWasm() {
   }
 }
 
-function handleInitialize(sampleRate) {
+/**
+ * @param {number} sampleRate
+ * @param {SharedArrayBuffer} sab
+ */
+function handleInitialize(sampleRate, sab) {
   if (!wasm) {
     self.postMessage(WASM_NOT_LOADED_MESSAGE);
     return;
@@ -38,16 +62,61 @@ function handleInitialize(sampleRate) {
     if (wasm.setSamplingRate(sampleRate) === false) {
       throw new Error("Could not set sample rate");
     }
-    audioSampleRate = sampleRate;
-
-    self.postMessage({
-      type: "initialized",
-    });
   } catch (e) {
     self.postMessage({
       type: "error",
       message: `Failed to initialize: ${e.message}`,
     });
+  }
+
+  control = new Int32Array(sab, 0, SAB_CONTROL_SIZE);
+  bufferSize =
+    (sab.byteLength - control.byteLength) / Float32Array.BYTES_PER_ELEMENT / 2;
+  leftBuffer = new Float32Array(sab, control.byteLength, bufferSize);
+  rightBuffer = new Float32Array(
+    sab,
+    control.byteLength + leftBuffer.byteLength,
+    bufferSize
+  );
+  fillThreshold = (bufferSize * 3) / 4;
+
+  self.postMessage({
+    type: "initialized",
+  });
+
+  startWatchingBuffer();
+}
+
+function startWatchingBuffer() {
+  function process() {
+    consumeMessageQueue();
+    handleGenerate();
+    setTimeout(process);
+  }
+
+  setTimeout(process);
+}
+
+function consumeMessageQueue() {
+  while (messageQueue.length > 0) {
+    const data = messageQueue.shift();
+
+    switch (data.type) {
+      case "setInstrument":
+        handleSetInstrument(data.instrument);
+        break;
+
+      case "keyOn":
+        handleKeyOn(data.id, data.pitch);
+        break;
+
+      case "keyOff":
+        handleKeyOff(data.id);
+        break;
+
+      default:
+        break;
+    }
   }
 }
 
@@ -60,6 +129,10 @@ function handleSetInstrument(instrument) {
   wasm.setInstrument(instrument);
 }
 
+/**
+ * @param {number} id
+ * @param {Pitch} pitch
+ */
 function handleKeyOn(id, pitch) {
   if (!wasm) {
     self.postMessage(WASM_NOT_LOADED_MESSAGE);
@@ -78,6 +151,42 @@ function handleKeyOff(id) {
   wasm.keyOff(id);
 }
 
+function handleGenerate() {
+  if (!control || !leftBuffer || !rightBuffer) {
+    return;
+  }
+
+  const readPos = Atomics.load(control, SAB_READ_POSITION_INDEX);
+  const writePos = Atomics.load(control, SAB_WRITE_POSITION_INDEX);
+
+  // One sample is left unused to distinguish "empty" from "full"
+  // when the write and read positions coincide.
+  let nWritables = (readPos + bufferSize - 1 - writePos) % bufferSize;
+
+  if (nWritables < fillThreshold) {
+    const TIMEOUT = 50;
+    Atomics.wait(control, SAB_READ_POSITION_INDEX, readPos, TIMEOUT);
+    return;
+  }
+
+  let pos = writePos;
+  while (nWritables > 0) {
+    const chunk = Math.min(nWritables, bufferSize - pos);
+    const end = pos + chunk;
+
+    wasm.generate(
+      leftBuffer.subarray(pos, end),
+      rightBuffer.subarray(pos, end),
+      chunk
+    );
+
+    nWritables -= chunk;
+    pos = end % bufferSize;
+  }
+
+  Atomics.store(control, SAB_WRITE_POSITION_INDEX, pos);
+}
+
 self.onmessage = async ({ data }) => {
   switch (data.type) {
     case "loadWasm":
@@ -85,64 +194,14 @@ self.onmessage = async ({ data }) => {
       break;
 
     case "initialize":
-      handleInitialize(data.sampleRate);
+      handleInitialize(data.sampleRate, data.sab);
       break;
 
     case "setInstrument":
-      handleSetInstrument(data.instrument);
-      break;
-
     case "keyOn":
-      handleKeyOn(data.id, data.pitch);
-      break;
-
     case "keyOff":
-      handleKeyOff(data.id);
+      messageQueue.push(data);
       break;
-
-    // For test: Generate audio sample and send it to main thread
-    case "testGenerate": {
-      if (!wasm) {
-        self.postMessage(WASM_NOT_LOADED_MESSAGE);
-        return;
-      }
-
-      try {
-        // Create buffers for 0.25 seconds of audio
-        const leftBuffer = new Float32Array(audioSampleRate / 4);
-        const rightBuffer = new Float32Array(leftBuffer);
-
-        // Play A4 note
-        wasm.keyOn(0, 4, 9); // A4
-
-        // Generate audio samples
-        wasm.generate(leftBuffer, rightBuffer, leftBuffer.length / 2);
-
-        wasm.keyOff(0);
-
-        wasm.generate(
-          leftBuffer.subarray(leftBuffer.length / 2),
-          rightBuffer.subarray(rightBuffer.length / 2),
-          leftBuffer.length / 2
-        );
-
-        // Send the generated audio data to main thread
-        self.postMessage({
-          type: "generatedAudio",
-          data: {
-            left: leftBuffer,
-            right: rightBuffer,
-            sampleRate: audioSampleRate,
-          },
-        });
-      } catch (e) {
-        self.postMessage({
-          type: "error",
-          message: `Failed to generate audio: ${e.message}`,
-        });
-      }
-      break;
-    }
 
     default:
       break;

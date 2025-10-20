@@ -55,9 +55,6 @@ export function AudioPreview({
 
   useEffect(() => {
     synthContext?.setInstrument(instrument);
-
-    // TODO: for test
-    synthContext?.testGenerate();
   }, [instrument, synthContext]);
 
   async function noteOn(pitch: Pitch, pointerId: number) {

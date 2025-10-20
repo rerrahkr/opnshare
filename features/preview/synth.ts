@@ -6,14 +6,22 @@ export type Synthesizer = {
   audioContext: AudioContext;
   wasmWorker: Worker;
   synthNode: AudioNode;
+  sab: SharedArrayBuffer;
 
   keyOn: (pitch: Pitch, id: number) => Promise<void>;
   keyOff: (id: number) => void;
   setInstrument: (instrument: FmInstrument) => void;
-
-  // TODO: for test
-  testGenerate: () => void;
 };
+
+const RING_BUFFER_SIZE = 8192;
+const RING_BUFFER_CHANNELS = 2;
+const RING_BUFFER_BYTE_SIZE =
+  RING_BUFFER_SIZE * RING_BUFFER_CHANNELS * Float32Array.BYTES_PER_ELEMENT;
+const RING_BUFFER_READ_POS_SIZE = Int32Array.BYTES_PER_ELEMENT;
+const RING_BUFFER_WRITE_POS_SIZE = Int32Array.BYTES_PER_ELEMENT;
+const RING_BUFFER_CONTROLS_SIZE =
+  RING_BUFFER_READ_POS_SIZE + RING_BUFFER_WRITE_POS_SIZE;
+const SAB_SIZE = RING_BUFFER_CONTROLS_SIZE + RING_BUFFER_BYTE_SIZE;
 
 type KeyOnWorkerRequestMessage = {
   type: "keyOn";
@@ -39,6 +47,7 @@ type LoadWasmWorkerRequestMessage = {
 type InitializeWorkerRequestMessage = {
   type: "initialize";
   sampleRate: number;
+  sab: SharedArrayBuffer;
 };
 
 type LoadedWasmWorkerResponseMessage = {
@@ -69,12 +78,23 @@ type WorkerResponseMessage =
   | GeneratedAudioWorkerResponseMessage
   | ErrorWorkerResponseMessage;
 
+type InitializeWorkletRequestMessage = {
+  type: "initialize";
+  sab: SharedArrayBuffer;
+};
+
+type InitializedWorkletResponseMessage = {
+  type: "initialized";
+};
+
 type ErrorWorkletResponseMessage = {
   type: "error";
   message: string;
 };
 
-type WorkletResponseMessage = ErrorWorkletResponseMessage;
+type WorkletResponseMessage =
+  | InitializedWorkletResponseMessage
+  | ErrorWorkletResponseMessage;
 
 /*
  * Synthesizer Workflows
@@ -82,9 +102,15 @@ type WorkletResponseMessage = ErrorWorkletResponseMessage;
  * [Setup]
  * 1. Main thread requests the worker to load the WASM module.
  * 2. Worker loads the WASM module and responds to the main thread when done.
- * 3. Main thread request the worker to initialize the synthesizer with the audio context's sample rate.
- * 4. Worker initializes the synthesizer and responds to the main thread when done.
+ * 3. Main thread request the worker to initialize the synthesizer with the
+ *    audio context's sample rate.
+ * 4. Worker initializes the synthesizer and responds to the main thread when
+ *    done.
  *
+ * [Streaming]
+ * 1. Pull samples from the ring buffer in the Audio Worklet's process().
+ * 2. The worker monitors the ring buffer and generates samples when the
+ *    remaining count gets low, then packs them into the buffer.
  */
 
 export function useSynthesizer() {
@@ -92,10 +118,24 @@ export function useSynthesizer() {
 
   useEffect(() => {
     (async () => {
+      /**
+       * SharedArrayBuffer is mapped following data:
+       * - [Int32] Start position in ring buffer
+       * - [Int32] End position in ring buffer
+       * - [Float32 * BUFFER_SIZE] Left channel of ring buffer
+       * - [Float32 * BUFFER_SIZE] Right channel of ring buffer
+       *
+       * It is necessary to use Atomics API to read and write positions.
+       */
+      const sab = new SharedArrayBuffer(SAB_SIZE);
+
       const wasmWorker = new Worker("/worker/worker.js");
       const audioContext = new AudioContext();
       await audioContext.audioWorklet.addModule("/worklet/processor.js");
-      const synthNode = new AudioWorkletNode(audioContext, "processor");
+      const synthNode = new AudioWorkletNode(audioContext, "processor", {
+        numberOfOutputs: 1,
+        outputChannelCount: [2],
+      });
       synthNode.connect(audioContext.destination);
 
       // Setup message handlers.
@@ -107,6 +147,7 @@ export function useSynthesizer() {
             wasmWorker.postMessage({
               type: "initialize",
               sampleRate: audioContext.sampleRate,
+              sab,
             } satisfies InitializeWorkerRequestMessage);
             break;
 
@@ -116,19 +157,6 @@ export function useSynthesizer() {
 
           case "error":
             console.error("Error from worker:", data.message);
-            break;
-
-          case "generatedAudio":
-            {
-              // Create AudioBuffer from the received data
-              const audioBuffer = new AudioBuffer({
-                length: data.data.left.length,
-                numberOfChannels: 2,
-                sampleRate: data.data.sampleRate,
-              });
-              audioBuffer.getChannelData(0).set(data.data.left);
-              audioBuffer.getChannelData(1).set(data.data.right);
-            }
             break;
 
           default:
@@ -141,6 +169,10 @@ export function useSynthesizer() {
         data,
       }: MessageEvent<WorkletResponseMessage>) => {
         switch (data.type) {
+          case "initialized":
+            console.log("worklet is ready.");
+            break;
+
           case "error":
             console.error("Error from synth processor:", data.message);
             break;
@@ -156,10 +188,16 @@ export function useSynthesizer() {
         loaderUrl: "/wasm/synth.js",
       } satisfies LoadWasmWorkerRequestMessage);
 
+      synthNode.port.postMessage({
+        type: "initialize",
+        sab,
+      } satisfies InitializeWorkletRequestMessage);
+
       ref.current = {
         audioContext,
         wasmWorker,
         synthNode,
+        sab,
 
         keyOn: async (pitch, id) => {
           wasmWorker.postMessage({
@@ -185,13 +223,6 @@ export function useSynthesizer() {
             instrument,
           } satisfies SetInstrumentWorkerRequestMessage);
         },
-
-        // TODO: for test
-        testGenerate: () => {
-          wasmWorker.postMessage({
-            type: "testGenerate",
-          });
-        },
       };
     })();
 
@@ -199,6 +230,7 @@ export function useSynthesizer() {
       if (ref.current) {
         ref.current.audioContext.close();
         ref.current.synthNode.disconnect();
+        ref.current.wasmWorker.terminate();
         ref.current = null;
       }
     };
