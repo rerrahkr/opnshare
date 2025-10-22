@@ -135,7 +135,7 @@ bool Ym2608::KeyOn(std::uint8_t ch, const Pitch& pitch) {
     const auto high_ch = ch - 3;
     WriteHigh(0xA4 + high_ch, block_and_fnum >> 8);
     WriteHigh(0xA0 + high_ch, block_and_fnum & 0xFF);
-    WriteHigh(0x28, kSlotFlags | kHighChannelKeyOnFlag | high_ch);
+    WriteLow(0x28, kSlotFlags | kHighChannelKeyOnFlag | high_ch);
   }
 
   return true;
@@ -150,7 +150,7 @@ bool Ym2608::KeyOff(std::uint8_t ch) {
     WriteLow(0x28, ~kSlotFlags & ch);
   } else if (ch < 6) {
     const auto high_ch = ch - 3;
-    WriteHigh(0x28, ~kSlotFlags & (kHighChannelKeyOnFlag | high_ch));
+    WriteLow(0x28, ~kSlotFlags & (kHighChannelKeyOnFlag | high_ch));
   }
 
   return true;
