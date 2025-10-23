@@ -152,7 +152,7 @@ export function useSynthesizer() {
             break;
 
           case "initialized":
-            console.log("Synthesizer is ready.");
+            // console.log("Synthesizer is ready.");
             break;
 
           case "error":
@@ -160,7 +160,7 @@ export function useSynthesizer() {
             break;
 
           default:
-            console.warn("Unknown message from worker:", data);
+            console.error("Unknown message from worker:", data);
             break;
         }
       };
@@ -170,7 +170,7 @@ export function useSynthesizer() {
       }: MessageEvent<WorkletResponseMessage>) => {
         switch (data.type) {
           case "initialized":
-            console.log("worklet is ready.");
+            // console.log("worklet is ready.");
             break;
 
           case "error":
@@ -178,7 +178,7 @@ export function useSynthesizer() {
             break;
 
           default:
-            console.warn("Unknown message from synth processor:", data);
+            console.error("Unknown message from synth processor:", data);
             break;
         }
       };

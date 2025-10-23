@@ -42,7 +42,7 @@ export function AudioPreview({
 }: {
   instrument: FmInstrument;
 }): React.JSX.Element {
-  const [playbackChip, setPlaybackChip] = useState<AvailableChip>("OPN");
+  const [playbackChip, setPlaybackChip] = useState<AvailableChip>("OPNA");
   const [octaveOffset, setOctaveOffset] = useState<number>(3);
 
   // Key: pointerId, Value: ActiveNote
@@ -58,17 +58,11 @@ export function AudioPreview({
   }, [instrument, synthContext]);
 
   async function noteOn(pitch: Pitch, pointerId: number) {
-    // TODO: Control note-on in AudioWorklet.
-    console.log(`Note On: ${pitchToString(pitch)}, pointer=${pointerId}`);
-
     await synthContext?.keyOn(pitch, pointerId);
   }
 
-  async function noteOff(pitch: Pitch, pointerId: number) {
-    // TODO: Control note-off in AudioWorklet.
-    console.log(`Note Off: ${pitchToString(pitch)}, pointer=${pointerId}`);
-
-    await synthContext?.keyOff(pointerId);
+  async function noteOff(pointerId: number) {
+    synthContext?.keyOff(pointerId);
   }
 
   async function handlePointerDown(
@@ -89,7 +83,7 @@ export function AudioPreview({
   async function handlePointerUp(e: React.PointerEvent<HTMLButtonElement>) {
     const active = activeNotes.current.get(e.pointerId);
     if (active) {
-      await noteOff(active.pitch, e.pointerId);
+      await noteOff(e.pointerId);
       activeNotes.current.delete(e.pointerId);
       setPressedKeys((prev) => {
         const next = new Set(prev);
@@ -114,7 +108,7 @@ export function AudioPreview({
       }
 
       // Note off previous pressed note.
-      await noteOff(active.pitch, e.pointerId);
+      await noteOff(e.pointerId);
       setPressedKeys((prev) => {
         const next = new Set(prev);
         next.delete(active.keyId);
