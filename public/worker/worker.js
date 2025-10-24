@@ -151,6 +151,16 @@ function handleKeyOff(id) {
   wasm.keyOff(id);
 }
 
+function handleReset() {
+  if (!wasm) {
+    self.postMessage(WASM_NOT_LOADED_MESSAGE);
+    return;
+  }
+
+  messageQueue.length = 0;
+  wasm.reset();
+}
+
 function handleGenerate() {
   if (!control || !leftBuffer || !rightBuffer) {
     return;
@@ -201,6 +211,10 @@ self.onmessage = async ({ data }) => {
     case "keyOn":
     case "keyOff":
       messageQueue.push(data);
+      break;
+
+    case "reset":
+      handleReset();
       break;
 
     default:

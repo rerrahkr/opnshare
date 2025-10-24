@@ -11,6 +11,7 @@ export type Synthesizer = {
   keyOn: (pitch: Pitch, id: number) => Promise<void>;
   keyOff: (id: number) => void;
   setInstrument: (instrument: FmInstrument) => void;
+  reset: () => void;
 };
 
 const RING_BUFFER_SIZE = 8192;
@@ -37,6 +38,10 @@ type KeyOffWorkerRequestMessage = {
 type SetInstrumentWorkerRequestMessage = {
   type: "setInstrument";
   instrument: FmInstrument;
+};
+
+type ResetWorkerRequestMessage = {
+  type: "reset";
 };
 
 type LoadWasmWorkerRequestMessage = {
@@ -222,6 +227,12 @@ export function useSynthesizer() {
             type: "setInstrument",
             instrument,
           } satisfies SetInstrumentWorkerRequestMessage);
+        },
+
+        reset: () => {
+          wasmWorker.postMessage({
+            type: "reset",
+          } satisfies ResetWorkerRequestMessage);
         },
       };
     })();

@@ -53,9 +53,18 @@ export function AudioPreview({
 
   const synthContext = useFmSynthesizer();
 
+  // Set an instrument on loading this component.
   useEffect(() => {
     synthContext?.setInstrument(instrument);
   }, [instrument, synthContext]);
+
+  // Reset synthesizer on unmount this component and jump to the different
+  // page.
+  useEffect(() => {
+    return () => {
+      synthContext?.reset();
+    };
+  }, [synthContext]);
 
   async function noteOn(pitch: Pitch, pointerId: number) {
     await synthContext?.keyOn(pitch, pointerId);
