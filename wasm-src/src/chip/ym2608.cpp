@@ -15,8 +15,8 @@ constexpr std::uint32_t kClock{3'993'600 * 2};
 
 std::uint16_t PitchToBlockAndFNumber(const synth::Pitch& pitch) {
   static std::int16_t fnum_table[12] = {
-      0x0266, 0x028b, 0x02b2, 0x02db, 0x0307, 0x0334,
-      0x0365, 0x0398, 0x03ce, 0x0406, 0x0442, 0x0480,
+      0x026A, 0x028F, 0x02b6, 0x02dF, 0x030B, 0x0339,
+      0x036A, 0x039E, 0x03D5, 0x0410, 0x044E, 0x048F,
   };
 
   return (pitch.octave << 11) | fnum_table[static_cast<int>(pitch.semitone)];
