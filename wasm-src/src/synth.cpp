@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "chip/ym2608.hpp"
+#include "chip/ym2612.hpp"
 #include "instrument.hpp"
 #include "keyboard.hpp"
 #include "miniaudio.h"
@@ -21,7 +22,7 @@
 
 namespace {
 // Chip instance.
-using VariantChip = std::variant<synth::chip::Ym2608>;
+using VariantChip = std::variant<synth::chip::Ym2608, synth::chip::Ym2612>;
 VariantChip chip_instance;
 
 // Temporary buffer.
@@ -90,13 +91,11 @@ std::mutex chip_input_mutex, chip_output_mutex;
 
 namespace synth {
 enum ChipType {
-  Ym2203 = 0,
-  Ym2608 = 1,
-  Ym2610 = 2,
-  Ym2612 = 3,
+  Ym2608 = 0,
+  Ym2612 = 1,
 };
 
-bool SetSamplingRateInternal(std::uint32_t rate) {
+bool initializeResampler(std::uint32_t rate) {
   ma_resampler_uninit(&left_resampler, nullptr);
   ma_resampler_uninit(&right_resampler, nullptr);
 
@@ -111,25 +110,35 @@ bool SetSamplingRateInternal(std::uint32_t rate) {
     return false;
   }
 
-  sampling_rate = rate;
   return true;
 }
 
 bool SetSamplingRate(std::uint32_t rate) {
   std::scoped_lock lock(chip_input_mutex, chip_output_mutex);
 
-  return SetSamplingRateInternal(rate);
+  bool result = initializeResampler(rate);
+  if (result) {
+    sampling_rate = rate;
+  }
+
+  return result;
 }
 
-bool SwitchChip(ChipType type, std::uint32_t rate) {
+bool ChangeChip(int type) {
   std::scoped_lock lock(chip_input_mutex, chip_output_mutex);
 
-  switch (type) {
+  switch (static_cast<ChipType>(type)) {
     case ChipType::Ym2608:
       if (!std::holds_alternative<synth::chip::Ym2608>(chip_instance)) {
         chip_instance.emplace<synth::chip::Ym2608>();
       }
       break;
+
+    case ChipType::Ym2612:
+    if (!std::holds_alternative<synth::chip::Ym2612>(chip_instance)) {
+      chip_instance.emplace<synth::chip::Ym2612>();
+    }
+    break;
 
     default:
       // Unsupported chip type.
@@ -141,11 +150,7 @@ bool SwitchChip(ChipType type, std::uint32_t rate) {
       [](const auto& chip) { return chip.num_channels(); }, chip_instance);
   keyboard = Keyboard(num_channels);
 
-  return SetSamplingRateInternal(rate);
-}
-
-bool ChangeChip(int type) {
-  return SwitchChip(static_cast<ChipType>(type), sampling_rate);
+  return initializeResampler(sampling_rate);
 }
 
 bool Initialize() { return ChangeChip(ChipType::Ym2608); }
