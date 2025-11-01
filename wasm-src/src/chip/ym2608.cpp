@@ -32,7 +32,7 @@ class Ym2608InstrumentView {
       : instrument_(instrument) {}
 
   std::uint8_t value_fb_al() const noexcept {
-    return (instrument_.fb & 0x7) >> 3 | (instrument_.al & 0x7);
+    return (instrument_.fb & 0x7) << 3 | (instrument_.al & 0x7);
   }
 
   std::uint8_t value_lfo_freq() const noexcept {
