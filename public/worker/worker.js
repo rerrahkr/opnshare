@@ -2,6 +2,8 @@ importScripts("/wasm/synth.js");
 
 let wasm;
 
+let currentInstrument;
+
 /** @type {Int32Array} */
 let control;
 const SAB_CONTROL_SIZE = 2;
@@ -127,6 +129,7 @@ function handleSetInstrument(instrument) {
   }
 
   wasm.setInstrument(instrument);
+  currentInstrument = instrument;
 }
 
 /**
@@ -197,6 +200,20 @@ function handleGenerate() {
   Atomics.store(control, SAB_WRITE_POSITION_INDEX, pos);
 }
 
+function handleChangeChip(id) {
+  if (!wasm) {
+    self.postMessage(WASM_NOT_LOADED_MESSAGE);
+    return;
+  }
+
+  wasm.changeChip(id);
+  messageQueue.length = 0;
+
+  if (currentInstrument) {
+    wasm.setInstrument(currentInstrument);
+  }
+}
+
 self.onmessage = async ({ data }) => {
   switch (data.type) {
     case "loadWasm":
@@ -215,6 +232,10 @@ self.onmessage = async ({ data }) => {
 
     case "reset":
       handleReset();
+      break;
+
+    case "changeChip":
+      handleChangeChip(data.chipId);
       break;
 
     default:
