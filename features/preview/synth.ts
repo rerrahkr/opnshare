@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
 import type { FmInstrument } from "../instrument/types";
+import { AVAILABLE_CHIP_MAP } from "./consts";
 import type { Pitch } from "./pitch";
+import type { AvailableChip } from "./types";
 
 export type Synthesizer = {
   audioContext: AudioContext;
@@ -12,6 +14,7 @@ export type Synthesizer = {
   keyOff: (id: number) => void;
   setInstrument: (instrument: FmInstrument) => void;
   reset: () => void;
+  changeChip: (chip: AvailableChip) => void;
 };
 
 const RING_BUFFER_SIZE = 8192;
@@ -42,6 +45,11 @@ type SetInstrumentWorkerRequestMessage = {
 
 type ResetWorkerRequestMessage = {
   type: "reset";
+};
+
+type ChangeChipWorkerRequestMessage = {
+  type: "changeChip";
+  chipId: number;
 };
 
 type LoadWasmWorkerRequestMessage = {
@@ -233,6 +241,18 @@ export function useSynthesizer() {
           wasmWorker.postMessage({
             type: "reset",
           } satisfies ResetWorkerRequestMessage);
+        },
+
+        changeChip: (chip) => {
+          const chipId = AVAILABLE_CHIP_MAP.get(chip);
+          if (chipId === undefined) {
+            return;
+          }
+
+          wasmWorker.postMessage({
+            type: "changeChip",
+            chipId,
+          } satisfies ChangeChipWorkerRequestMessage);
         },
       };
     })();

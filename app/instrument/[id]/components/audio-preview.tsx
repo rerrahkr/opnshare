@@ -15,10 +15,11 @@ import {
 } from "@/components/ui/select";
 import { useFmSynthesizer } from "@/contexts/synth";
 import type { FmInstrument } from "@/features/instrument/types";
-import { AVAILABLE_CHIPS } from "@/features/preview/consts";
+import { AVAILABLE_CHIP_MAP } from "@/features/preview/consts";
 import { clampOctave, withinOctave } from "@/features/preview/octave";
 import { type Pitch, pitchToString } from "@/features/preview/pitch";
 import type { AvailableChip } from "@/features/preview/types";
+import { useSynthSettings } from "@/stores/synth-settings";
 import { iota } from "@/utils/range";
 
 const DISPLAYED_OCTAVE_RANGE = 4;
@@ -42,7 +43,7 @@ export function AudioPreview({
 }: {
   instrument: FmInstrument;
 }): React.JSX.Element {
-  const [playbackChip, setPlaybackChip] = useState<AvailableChip>("OPNA");
+  const { playbackChip, setPlaybackChip } = useSynthSettings();
   const [octaveOffset, setOctaveOffset] = useState<number>(3);
 
   // Key: pointerId, Value: ActiveNote
@@ -65,6 +66,12 @@ export function AudioPreview({
       synthContext?.reset();
     };
   }, [synthContext]);
+
+  function handlePlaybackChipValueChanged(value: string) {
+    const chipType = value as AvailableChip;
+    synthContext?.changeChip(chipType);
+    setPlaybackChip(chipType);
+  }
 
   async function noteOn(pitch: Pitch, pointerId: number) {
     await synthContext?.keyOn(pitch, pointerId);
@@ -161,17 +168,19 @@ export function AudioPreview({
               <Label className="text-sm font-medium">Chip:</Label>
               <Select
                 value={playbackChip}
-                onValueChange={(chip) => setPlaybackChip(chip as AvailableChip)}
+                onValueChange={handlePlaybackChipValueChanged}
               >
                 <SelectTrigger className="w-32">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {AVAILABLE_CHIPS.map((chip) => (
-                    <SelectItem key={chip} value={chip}>
-                      {chip}
-                    </SelectItem>
-                  ))}
+                  {[
+                    ...AVAILABLE_CHIP_MAP.keys().map((chip) => (
+                      <SelectItem key={chip} value={chip}>
+                        {chip}
+                      </SelectItem>
+                    )),
+                  ]}
                 </SelectContent>
               </Select>
             </div>
