@@ -2,6 +2,8 @@ import type { FmInstrument, FmOperator, FmOperators } from "../../types";
 import { DataCorruptionError, UnsupportedInstrumentTypeError } from "../errors";
 import { readNullTerminatedString } from "../utils";
 
+const DT_TABLE: ReadonlyArray<number> = [7, 6, 5, 0, 1, 2, 3, 4];
+
 function loadOldFormat(view: DataView): [FmInstrument, string] {
   if (view.byteLength < 24) throw new DataCorruptionError();
 
@@ -51,7 +53,7 @@ function loadOldFormat(view: DataView): [FmInstrument, string] {
     const tl = view.getUint8(csr++);
     csr++; // Skip
     const ks = view.getUint8(csr++);
-    const dt = view.getUint8(csr++);
+    const dt = DT_TABLE[view.getUint8(csr++) & 7];
     const sr = view.getUint8(csr++);
     const ssgEg = view.getUint8(csr++);
 
@@ -123,7 +125,7 @@ function loadNewFormat(view: DataView): [FmInstrument, string] {
       const opOrder = [0, 2, 1, 3];
       for (const o of opOrder) {
         tmp = view.getUint8(csr++);
-        op[o].dt = (tmp >> 4) & 7;
+        op[o].dt = DT_TABLE[(tmp >> 4) & 7];
         op[o].ml = tmp & 15;
         op[o].tl = view.getUint8(csr++) & 127;
         tmp = view.getUint8(csr++);
@@ -204,7 +206,7 @@ export function save(instrument: FmInstrument, name: string): ArrayBuffer {
   const opOrder = [0, 2, 1, 3];
   for (const o of opOrder) {
     const op = instrument.op[o];
-    view.setUint8(csr++, (op.dt << 4) | op.ml);
+    view.setUint8(csr++, (DT_TABLE.indexOf(op.dt) << 4) | op.ml);
     view.setUint8(csr++, op.tl);
     view.setUint8(csr++, (op.ks << 6) | op.ar);
     view.setUint8(csr++, (op.am ? 1 << 7 : 0) | op.dr);
