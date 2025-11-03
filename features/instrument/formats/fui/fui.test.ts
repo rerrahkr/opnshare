@@ -77,8 +77,8 @@ describe(".fui file handler", () => {
     expect(loadedInstrument).toEqual(instrument);
   });
 
-  it("should handle a .fui file", async () => {
-    const fuiPath = path.resolve(__dirname, "./test.fui");
+  it("should handle a .fui file v133", async () => {
+    const fuiPath = path.resolve(__dirname, "./test133.fui");
     const buffer = (await fs.readFile(fuiPath)).buffer;
 
     const expected: FmInstrument = {
@@ -137,6 +137,79 @@ describe(".fui file handler", () => {
           tl: 0,
           ks: 0,
           ml: 0,
+          dt: 7,
+          am: false,
+          ssgEg: 0,
+        },
+      ],
+    };
+
+    const [loaded, name] = load(buffer);
+    expect(loaded).toEqual(expected);
+
+    const saved = save(loaded, name);
+    expect(saved).toEqual(buffer);
+  });
+
+  it("should handle a .fui file v 230", async () => {
+    const fuiPath = path.resolve(__dirname, "./test230.fui");
+    const buffer = (await fs.readFile(fuiPath)).buffer;
+
+    const expected: FmInstrument = {
+      al: 4,
+      fb: 5,
+      lfoFreq: 0,
+      pms: 0,
+      ams: 0,
+      op: [
+        {
+          ar: 31,
+          dr: 8,
+          sr: 0,
+          rr: 7,
+          sl: 12,
+          tl: 20,
+          ks: 0,
+          ml: 2,
+          dt: 4,
+          am: true,
+          ssgEg: 0,
+        },
+        {
+          ar: 31,
+          dr: 5,
+          sr: 2,
+          rr: 7,
+          sl: 6,
+          tl: 4,
+          ks: 0,
+          ml: 2,
+          dt: 0,
+          am: false,
+          ssgEg: 0,
+        },
+        {
+          ar: 31,
+          dr: 7,
+          sr: 4,
+          rr: 7,
+          sl: 10,
+          tl: 18,
+          ks: 0,
+          ml: 2,
+          dt: 0,
+          am: false,
+          ssgEg: 0,
+        },
+        {
+          ar: 31,
+          dr: 0,
+          sr: 4,
+          rr: 7,
+          sl: 0,
+          tl: 0,
+          ks: 0,
+          ml: 2,
           dt: 7,
           am: false,
           ssgEg: 0,
