@@ -67,14 +67,14 @@ describe("PMD parse", () => {
 
     const text = `@0 ;comment
 4 5
-31 8 0  7 12 20 0  2 7 0
+31 8 0  7 12 20,0  2 7 0
    31 5 2 7 6 4 0
 
 2\`dummy\` 3 0
 31 7 4 7\`
 dummy 2
 \`
-10 18 0 2 3 0
+10 18	0 2 3 0
 31 0 4 7 0 0 0 2 0 1`;
 
     expect(parse(text)).toEqual(instrument);
