@@ -8,7 +8,7 @@
   const moo = require("moo");
 
   const lexer = moo.compile({
-    space: /[ \t]+/,
+    separators: /[, \t]+/,
     number: /[0-9]+/,
     command_sig: /@/,
     eol: { match: /\r?\n/, lineBreaks: true },
@@ -24,15 +24,15 @@
         name: "instrument",
         symbols: [
           "command_header",
-          "spaces",
+          "separators",
           "al_fb",
-          "spaces",
+          "separators",
           "operator",
-          "spaces",
+          "separators",
           "operator",
-          "spaces",
+          "separators",
           "operator",
-          "spaces",
+          "separators",
           "operator",
         ],
         postprocess: (d) => ({
@@ -45,7 +45,9 @@
       },
       {
         name: "command_header$ebnf$1",
-        symbols: [lexer.has("space") ? { type: "space" } : space],
+        symbols: [
+          lexer.has("separators") ? { type: "separators" } : separators,
+        ],
         postprocess: id,
       },
       {
@@ -65,30 +67,30 @@
       },
       {
         name: "al_fb",
-        symbols: ["number", "spaces", "number"],
+        symbols: ["number", "separators", "number"],
         postprocess: (d) => ({ al: d[0], fb: d[2] }),
       },
       {
         name: "operator",
         symbols: [
           "number",
-          "spaces",
+          "separators",
           "number",
-          "spaces",
+          "separators",
           "number",
-          "spaces",
+          "separators",
           "number",
-          "spaces",
+          "separators",
           "number",
-          "spaces",
+          "separators",
           "number",
-          "spaces",
+          "separators",
           "number",
-          "spaces",
+          "separators",
           "number",
-          "spaces",
+          "separators",
           "number",
-          "spaces",
+          "separators",
           "number",
         ],
         postprocess: (d) => {
@@ -108,42 +110,48 @@
         },
       },
       {
-        name: "spaces",
-        symbols: [lexer.has("space") ? { type: "space" } : space],
-      },
-      {
-        name: "spaces$subexpression$1$ebnf$1",
-        symbols: [lexer.has("space") ? { type: "space" } : space],
-        postprocess: id,
-      },
-      {
-        name: "spaces$subexpression$1$ebnf$1",
-        symbols: [],
-        postprocess: function (d) {
-          return null;
-        },
-      },
-      {
-        name: "spaces$subexpression$1$ebnf$2",
-        symbols: [lexer.has("space") ? { type: "space" } : space],
-        postprocess: id,
-      },
-      {
-        name: "spaces$subexpression$1$ebnf$2",
-        symbols: [],
-        postprocess: function (d) {
-          return null;
-        },
-      },
-      {
-        name: "spaces$subexpression$1",
+        name: "separators",
         symbols: [
-          "spaces$subexpression$1$ebnf$1",
-          lexer.has("eol") ? { type: "eol" } : eol,
-          "spaces$subexpression$1$ebnf$2",
+          lexer.has("separators") ? { type: "separators" } : separators,
         ],
       },
-      { name: "spaces", symbols: ["spaces$subexpression$1"] },
+      {
+        name: "separators$subexpression$1$ebnf$1",
+        symbols: [
+          lexer.has("separators") ? { type: "separators" } : separators,
+        ],
+        postprocess: id,
+      },
+      {
+        name: "separators$subexpression$1$ebnf$1",
+        symbols: [],
+        postprocess: function (d) {
+          return null;
+        },
+      },
+      {
+        name: "separators$subexpression$1$ebnf$2",
+        symbols: [
+          lexer.has("separators") ? { type: "separators" } : separators,
+        ],
+        postprocess: id,
+      },
+      {
+        name: "separators$subexpression$1$ebnf$2",
+        symbols: [],
+        postprocess: function (d) {
+          return null;
+        },
+      },
+      {
+        name: "separators$subexpression$1",
+        symbols: [
+          "separators$subexpression$1$ebnf$1",
+          lexer.has("eol") ? { type: "eol" } : eol,
+          "separators$subexpression$1$ebnf$2",
+        ],
+      },
+      { name: "separators", symbols: ["separators$subexpression$1"] },
       {
         name: "number",
         symbols: [lexer.has("number") ? { type: "number" } : number],
