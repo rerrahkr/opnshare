@@ -2,6 +2,8 @@ import type { FmInstrument, FmOperator, FmOperators } from "../../types";
 import { DataCorruptionError, UnsupportedInstrumentTypeError } from "../errors";
 import { readNullTerminatedString } from "../utils";
 
+const DT_TABLE: ReadonlyArray<number> = [7, 6, 5, 0, 1, 2, 3, 4];
+
 function loadOldFormat(view: DataView): [FmInstrument, string] {
   if (view.byteLength < 24) throw new DataCorruptionError();
 
@@ -51,7 +53,7 @@ function loadOldFormat(view: DataView): [FmInstrument, string] {
     const tl = view.getUint8(csr++);
     csr++; // Skip
     const ks = view.getUint8(csr++);
-    const dt = view.getUint8(csr++);
+    const dt = DT_TABLE[view.getUint8(csr++) & 7];
     const sr = view.getUint8(csr++);
     const ssgEg = view.getUint8(csr++);
 
@@ -78,7 +80,11 @@ function loadOldFormat(view: DataView): [FmInstrument, string] {
 function loadNewFormat(view: DataView): [FmInstrument, string] {
   if (view.byteLength < 12) throw new DataCorruptionError();
 
-  let csr = 6;
+  let csr = 4;
+
+  const version = view.getUint16(csr, true);
+  csr += 2;
+
   const instType = view.getUint16(csr, true);
   csr += 2;
   if (instType !== 1) throw new UnsupportedInstrumentTypeError();
@@ -119,11 +125,14 @@ function loadNewFormat(view: DataView): [FmInstrument, string] {
       partialInstrument.ams = (tmp >> 3) & 3;
       partialInstrument.pms = tmp & 7;
       csr++;
+      if (version >= 224) {
+        csr++;
+      }
 
       const opOrder = [0, 2, 1, 3];
       for (const o of opOrder) {
         tmp = view.getUint8(csr++);
-        op[o].dt = (tmp >> 4) & 7;
+        op[o].dt = DT_TABLE[(tmp >> 4) & 7];
         op[o].ml = tmp & 15;
         op[o].tl = view.getUint8(csr++) & 127;
         tmp = view.getUint8(csr++);
@@ -166,24 +175,35 @@ export function save(instrument: FmInstrument, name: string): ArrayBuffer {
   const nameLen = nameBytes.length;
 
   let totalSize = 4 + 2 + 2; // FINS, version, instType
+
   if (nameLen > 0) {
     totalSize += 2 + 2 + nameLen + 1; // NA, len, name, null
   }
-  totalSize += 2 + 2 + 36; // FM, len, data
+
+  const FM_BLOCK_SIZE = 37;
+  totalSize += 2 + 2 + FM_BLOCK_SIZE; // FM, len, data
 
   const buffer = new ArrayBuffer(totalSize);
   const view = new DataView(buffer);
   let csr = 0;
 
-  new Uint8Array(buffer, csr, 4).set(new TextEncoder().encode("FINS"));
+  const MAGIC = "FINS";
+  new Uint8Array(buffer, csr, 4).set(new TextEncoder().encode(MAGIC));
   csr += 4;
-  view.setUint16(csr, 0x85, true);
+
+  const VERSION = 224;
+  view.setUint16(csr, VERSION, true);
   csr += 2;
-  view.setUint16(csr, 1, true);
+
+  const INST_TYPE_FM = 1;
+  view.setUint16(csr, INST_TYPE_FM, true);
   csr += 2;
 
   if (nameLen > 0) {
-    new Uint8Array(buffer, csr, 2).set(new TextEncoder().encode("NA"));
+    const NAME_FEATURE_CODE = "NA";
+    new Uint8Array(buffer, csr, 2).set(
+      new TextEncoder().encode(NAME_FEATURE_CODE)
+    );
     csr += 2;
     view.setUint16(csr, nameLen + 1, true);
     csr += 2;
@@ -192,19 +212,23 @@ export function save(instrument: FmInstrument, name: string): ArrayBuffer {
     view.setUint8(csr++, 0); // Null terminator
   }
 
-  new Uint8Array(buffer, csr, 2).set(new TextEncoder().encode("FM"));
+  const FM_FEATURE_CODE = "FM";
+  new Uint8Array(buffer, csr, 2).set(new TextEncoder().encode(FM_FEATURE_CODE));
   csr += 2;
-  view.setUint16(csr, 36, true);
+
+  view.setUint16(csr, FM_BLOCK_SIZE, true);
   csr += 2;
+
   view.setUint8(csr++, 0xf4);
   view.setUint8(csr++, (instrument.al << 4) | instrument.fb);
   view.setUint8(csr++, (instrument.ams << 3) | instrument.pms);
+  view.setUint8(csr++, 0);
   view.setUint8(csr++, 0);
 
   const opOrder = [0, 2, 1, 3];
   for (const o of opOrder) {
     const op = instrument.op[o];
-    view.setUint8(csr++, (op.dt << 4) | op.ml);
+    view.setUint8(csr++, (DT_TABLE.indexOf(op.dt) << 4) | op.ml);
     view.setUint8(csr++, op.tl);
     view.setUint8(csr++, (op.ks << 6) | op.ar);
     view.setUint8(csr++, (op.am ? 1 << 7 : 0) | op.dr);
