@@ -31,13 +31,14 @@ import type {
   EditableInstrumentMetaInfo,
   RecommendedChip,
 } from "@/features/instrument/models";
-import type { FmInstrument, FmOperator } from "@/features/instrument/types";
+import type { FmInstrument } from "@/features/instrument/types";
 import { useAuthUserId } from "@/stores/auth";
 import { isoStringToLocaleString } from "@/utils/date";
 import { AudioPreview } from "./audio-preview";
 import { DeleteDialog } from "./delete-dialog";
 import { InfoEditDialog } from "./info-edit-dialog";
 import { LikeButton } from "./like-button";
+import { ParametersView } from "./parameters-view";
 import { TextExportDialog } from "./text-export-dialog";
 
 function downloadFile(file: File) {
@@ -50,20 +51,6 @@ function downloadFile(file: File) {
 
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-}
-
-function instrumentToText(instrument: FmInstrument): string {
-  function operatorToText(op: FmOperator): string {
-    return `AR=${op.ar}, DR=${op.dr}, SR=${op.sr}, RR=${op.rr}, SL=${op.sl}, TL=${op.tl}, KS=${op.ks}, ML=${op.ml}, DT=${op.dt}, AM=${op.am ? "ON" : "OFF"}, SSGEG=${op.ssgEg}`;
-  }
-
-  return `AL: ${instrument.al}
-FB: ${instrument.fb}
-OP1: ${operatorToText(instrument.op[0])}
-OP2: ${operatorToText(instrument.op[1])}
-OP3: ${operatorToText(instrument.op[2])}
-OP4: ${operatorToText(instrument.op[3])}
-LFO: Freq=${instrument.lfoFreq}, AMS=${instrument.ams}, PMS=${instrument.pms}`;
 }
 
 type InstrumentDetailContentProps = {
@@ -285,18 +272,7 @@ export function InstrumentDetailContent({
         <AudioPreview instrument={instrument} />
 
         {/* Parameters Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Parameters</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="p-4 bg-muted rounded-lg">
-              <pre className="text-xs font-mono whitespace-pre-wrap break-words">
-                {instrumentToText(instrument)}
-              </pre>
-            </div>
-          </CardContent>
-        </Card>
+        <ParametersView instrument={instrument} />
       </div>
 
       <InfoEditDialog

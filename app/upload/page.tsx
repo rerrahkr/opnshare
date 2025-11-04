@@ -40,7 +40,9 @@ import {
   type RecommendedChip,
 } from "@/features/instrument/models";
 import type { FmInstrument } from "@/features/instrument/types";
+import { AudioPreviewContent } from "@/features/preview/components/audio-preview";
 import { useAuthUser } from "@/stores/auth";
+import { ParametersView } from "./components/parameters-view";
 import { TextInputDialogButton } from "./components/text-input-dialog-button";
 
 type UploadMethod = "file" | "text";
@@ -270,99 +272,118 @@ export default function UploadPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>File Upload</CardTitle>
+            <CardTitle>Instrument Data</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Upload Method Selection */}
-            <div className="grid grid-cols-2 gap-4">
-              <Button
-                variant={uploadMethod === "file" ? "default" : "outline"}
-                className="h-20 flex flex-col"
-                onClick={() => setUploadMethod("file")}
-                disabled={isSubmitting}
-              >
-                <FaMemory className="h-6 w-6 mb-2" />
-                Binary File
-              </Button>
-              <Button
-                variant={uploadMethod === "text" ? "default" : "outline"}
-                className="h-20 flex flex-col"
-                onClick={() => setUploadMethod("text")}
-                disabled={isSubmitting}
-              >
-                <FaFileAlt className="h-6 w-6 mb-2" />
-                Text Input
-              </Button>
-            </div>
+            {/* Import Method Selection */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Import Method</Label>
+              <div className="grid grid-cols-2 gap-4">
+                <Button
+                  variant={uploadMethod === "file" ? "default" : "outline"}
+                  className="h-20 flex flex-col"
+                  onClick={() => setUploadMethod("file")}
+                  disabled={isSubmitting}
+                >
+                  <FaMemory className="h-6 w-6 mb-2" />
+                  Binary File
+                </Button>
+                <Button
+                  variant={uploadMethod === "text" ? "default" : "outline"}
+                  className="h-20 flex flex-col"
+                  onClick={() => setUploadMethod("text")}
+                  disabled={isSubmitting}
+                >
+                  <FaFileAlt className="h-6 w-6 mb-2" />
+                  Text Input
+                </Button>
+              </div>
 
-            {/* File Upload */}
-            {uploadMethod === "file" && (
-              <div className="space-y-4">
-                <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center relative">
-                  <FaUpload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium">
-                      Drop files here or click to select
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Supported format: {supportedFileExtensions.join(", ")}
-                    </p>
+              {/* File Upload */}
+              {uploadMethod === "file" && (
+                <div className="space-y-4">
+                  <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center relative">
+                    <FaUpload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">
+                        Drop files here or click to select
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Supported format: {supportedFileExtensions.join(", ")}
+                      </p>
+                    </div>
+                    {!isSubmitting && (
+                      <input
+                        type="file"
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        accept={supportedFileExtensions.join(",")}
+                        onChange={handleFileChange}
+                      />
+                    )}
                   </div>
-                  {!isSubmitting && (
-                    <input
-                      type="file"
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      accept={supportedFileExtensions.join(",")}
-                      onChange={handleFileChange}
-                    />
+
+                  {fileLoadError && (
+                    <Alert variant="destructive">
+                      <LucideAlertCircle className="h-4 w-4" />
+                      <AlertDescription>{fileLoadError}</AlertDescription>
+                    </Alert>
+                  )}
+
+                  {binFile && (
+                    <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                      <span className="text-sm">{binFile.name}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setInstrument(undefined);
+                          setBinFile(undefined);
+                        }}
+                        disabled={isSubmitting}
+                      >
+                        <FaTimes className="h-4 w-4" />
+                      </Button>
+                    </div>
                   )}
                 </div>
+              )}
 
-                {fileLoadError && (
-                  <Alert variant="destructive">
-                    <LucideAlertCircle className="h-4 w-4" />
-                    <AlertDescription>{fileLoadError}</AlertDescription>
-                  </Alert>
-                )}
+              {/* Text Input */}
+              {uploadMethod === "text" && (
+                <div className="space-y-4">
+                  <TextInputDialogButton
+                    disabled={isSubmitting}
+                    onImported={(newInstrument) => {
+                      setInstrument(newInstrument);
+                      setImportStatus("text");
+                      setBinFile(undefined);
+                    }}
+                  />
 
-                {binFile && (
-                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                    <span className="text-sm">{binFile.name}</span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setInstrument(undefined);
-                        setBinFile(undefined);
-                      }}
-                      disabled={isSubmitting}
-                    >
-                      <FaTimes className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
+                  {importStatus === "text" && (
+                    <div className="p-3 bg-muted rounded-lg">
+                      <p className="text-sm text-muted-foreground">
+                        Text data imported successfully
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Parameters View */}
+            {importStatus !== "none" && instrument && (
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Parameters</Label>
+                <ParametersView instrument={instrument} />
               </div>
             )}
 
-            {/* Text Input */}
-            {uploadMethod === "text" && (
-              <div className="space-y-4">
-                <TextInputDialogButton
-                  disabled={isSubmitting}
-                  onImported={(newInstrument) => {
-                    setInstrument(newInstrument);
-                    setImportStatus("text");
-                    setBinFile(undefined);
-                  }}
-                />
-
-                {importStatus === "text" && (
-                  <div className="p-3 bg-muted rounded-lg">
-                    <p className="text-sm text-muted-foreground">
-                      Text data imported successfully
-                    </p>
-                  </div>
-                )}
+            {/* Audio Preview */}
+            {importStatus !== "none" && instrument && (
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Sound Preview</Label>
+                <AudioPreviewContent instrument={instrument} octaveRange={3} />
               </div>
             )}
           </CardContent>
