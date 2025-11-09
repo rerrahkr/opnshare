@@ -155,7 +155,7 @@ export function AudioPreviewContent({
   }
 
   return (
-    <div className={"space-y-4"}>
+    <div className="isolate space-y-4">
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
           <Label className="text-sm font-medium">Chip:</Label>
@@ -205,7 +205,7 @@ export function AudioPreviewContent({
       {/* Piano Keyboard */}
       <div className="bg-muted rounded-lg p-4">
         <div className="flex justify-center">
-          <div className="relative">
+          <div className="relative [&_button]:bg-none">
             {/* White keys */}
             <div className="flex">
               {[...iota(displayedWhiteKeyCount)].map((i) => {
@@ -221,9 +221,12 @@ export function AudioPreviewContent({
                   <button
                     key={pitchName}
                     type="button"
-                    className={`w-6 h-16 border border-gray-300 relative transition-colors ${
-                      isPressed ? "bg-blue-300" : "bg-white hover:bg-gray-100"
+                    className={`w-6 h-16 border border-gray-300 relative transition-colors bg-white hover:bg-gray-100 ${
+                      isPressed ? "!bg-blue-300" : ""
                     }`}
+                    style={{
+                      backgroundColor: isPressed ? "rgb(147 197 253)" : "white",
+                    }}
                     onPointerDown={(e) =>
                       handlePointerDown(e, pitch, pitchName)
                     }
@@ -233,7 +236,7 @@ export function AudioPreviewContent({
                     }
                     onPointerLeave={(e) => handlePointerLeave(e, pitchName)}
                   >
-                    <span className="text-xs text-gray-600 select-none absolute bottom-1 left-1/2 transform -translate-x-1/2">
+                    <span className="text-xs text-gray-600 select-none absolute bottom-0 left-1/2 transform -translate-x-1/2 mb-1">
                       {pitchName}
                     </span>
                   </button>
@@ -260,12 +263,15 @@ export function AudioPreviewContent({
                   <button
                     key={pitchName}
                     type="button"
-                    className={`w-4 h-10 relative -ml-2 z-10 transition-colors ${
-                      isPressed
-                        ? "bg-blue-600"
-                        : "bg-gray-800 hover:bg-gray-700"
+                    className={`w-4 h-10 relative -ml-2 z-10 transition-colors hover:bg-gray-700 ${
+                      isPressed ? "!bg-blue-600" : ""
                     }`}
-                    style={{ marginLeft: i === 0 ? "16px" : "8px" }}
+                    style={{
+                      marginLeft: i === 0 ? "16px" : "8px",
+                      backgroundColor: isPressed
+                        ? "rgb(37 99 235)"
+                        : "rgb(31 41 55)",
+                    }}
                     onPointerDown={(e) =>
                       handlePointerDown(e, pitch, pitchName)
                     }
