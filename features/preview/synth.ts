@@ -17,15 +17,26 @@ export type Synthesizer = {
   changeChip: (chip: AvailableChip) => void;
 };
 
-const RING_BUFFER_SIZE = 8192;
-const RING_BUFFER_CHANNELS = 2;
-const RING_BUFFER_BYTE_SIZE =
-  RING_BUFFER_SIZE * RING_BUFFER_CHANNELS * Float32Array.BYTES_PER_ELEMENT;
-const RING_BUFFER_READ_POS_SIZE = Int32Array.BYTES_PER_ELEMENT;
-const RING_BUFFER_WRITE_POS_SIZE = Int32Array.BYTES_PER_ELEMENT;
-const RING_BUFFER_CONTROLS_SIZE =
-  RING_BUFFER_READ_POS_SIZE + RING_BUFFER_WRITE_POS_SIZE;
-const SAB_SIZE = RING_BUFFER_CONTROLS_SIZE + RING_BUFFER_BYTE_SIZE;
+function calculateRingBufferSize(
+  time: number,
+  sampleRate: number
+): {
+  sabSize: number;
+  bufferSize: number;
+} {
+  const RING_BUFFER_READ_POS_SIZE = Int32Array.BYTES_PER_ELEMENT;
+  const RING_BUFFER_WRITE_POS_SIZE = Int32Array.BYTES_PER_ELEMENT;
+  const RING_BUFFER_CONTROLS_SIZE =
+    RING_BUFFER_READ_POS_SIZE + RING_BUFFER_WRITE_POS_SIZE;
+
+  const RING_BUFFER_CHANNELS = 2;
+
+  const bufferSize = Math.floor(time * sampleRate);
+  const ringBufferSize =
+    bufferSize * RING_BUFFER_CHANNELS * Float32Array.BYTES_PER_ELEMENT;
+  const sabSize = RING_BUFFER_CONTROLS_SIZE + ringBufferSize;
+  return { sabSize, bufferSize };
+}
 
 type KeyOnWorkerRequestMessage = {
   type: "keyOn";
@@ -140,7 +151,6 @@ export function useSynthesizer() {
        *
        * It is necessary to use Atomics API to read and write positions.
        */
-      const sab = new SharedArrayBuffer(SAB_SIZE);
 
       const wasmWorker = new Worker("/worker/worker.js");
       const audioContext = new AudioContext();
@@ -150,6 +160,9 @@ export function useSynthesizer() {
         outputChannelCount: [2],
       });
       synthNode.connect(audioContext.destination);
+
+      const { sabSize } = calculateRingBufferSize(0.2, audioContext.sampleRate);
+      const sab = new SharedArrayBuffer(sabSize);
 
       // Setup message handlers.
       wasmWorker.onmessage = async ({

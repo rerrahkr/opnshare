@@ -74,6 +74,9 @@ class SynthProcessor extends AudioWorkletProcessor {
     const nReadables = (writePos + this.bufferSize - readPos) % this.bufferSize;
 
     let nReads = Math.min(leftChannel.length, nReadables);
+    if (nReads !== leftChannel.length) {
+      console.warn("buffer underrun!", leftChannel.length - nReads);
+    }
 
     let pos = readPos;
     while (nReads > 0) {
