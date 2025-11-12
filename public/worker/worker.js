@@ -78,7 +78,7 @@ function handleInitialize(sampleRate, sab) {
     control.byteLength + leftBuffer.byteLength,
     bufferSize
   );
-  fillThreshold = (bufferSize * 3) / 4;
+  fillThreshold = bufferSize / 2;
 
   self.postMessage({
     type: "initialized",
@@ -174,8 +174,8 @@ function handleGenerate() {
   let nWritables = (readPos + bufferSize - 1 - writePos) % bufferSize;
 
   if (nWritables < fillThreshold) {
-    const TIMEOUT = 50;
-    Atomics.wait(control, SAB_READ_POSITION_INDEX, readPos, TIMEOUT);
+    const TIMEOUT_MSEC = 50;
+    Atomics.wait(control, SAB_READ_POSITION_INDEX, readPos, TIMEOUT_MSEC);
     return;
   }
 
