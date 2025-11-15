@@ -74,17 +74,22 @@ class SynthProcessor extends AudioWorkletProcessor {
     const nReadables = (writePos + this.bufferSize - readPos) % this.bufferSize;
 
     let nReads = Math.min(leftChannel.length, nReadables);
+    // if (nReads !== leftChannel.length) {
+    //   console.warn("buffer underrun!", leftChannel.length - nReads);
+    // }
 
     let pos = readPos;
+    let destOffset = 0;
     while (nReads > 0) {
       const chunk = Math.min(nReads, this.bufferSize - pos);
       const end = pos + chunk;
 
-      leftChannel.set(this.leftBuffer.subarray(pos, end));
-      rightChannel.set(this.rightBuffer.subarray(pos, end));
+      leftChannel.set(this.leftBuffer.subarray(pos, end), destOffset);
+      rightChannel.set(this.rightBuffer.subarray(pos, end), destOffset);
 
       nReads -= chunk;
       pos = end % this.bufferSize;
+      destOffset += chunk;
     }
 
     // It is unnecessary to fill zero-samples in buffer-underrun
